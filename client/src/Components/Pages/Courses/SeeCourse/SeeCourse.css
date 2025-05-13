@@ -1,0 +1,151 @@
+/* Contenedor principal */
+.seeCourseContainer {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem;
+    background: linear-gradient(to right, #0f0f0f, #0d1d12);
+    color: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Título */
+  .seeCourseContainer h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+  }
+  
+  .seeCourseContainer h2 span {
+    color: #00c26e;
+  }
+  
+  /* Detalles del curso */
+  .courseDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .courseDetails label {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #cfcfcf;
+  }
+  
+  .courseDetails input,
+  .courseDetails textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    color: #333;
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    resize: none;
+    box-sizing: border-box;
+  }
+  
+  .courseDetails textarea {
+    min-height: 120px;
+  }
+  
+  .courseDetails input:disabled,
+  .courseDetails textarea:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+  
+  /* Imagen del curso */
+  .courseDetails img {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+  
+  .courseDetails p {
+    font-size: 1rem;
+    color: #bbbbbb;
+  }
+  
+  /* Botón de edición */
+  .edit-button {
+    margin-top: 2rem;
+    width: 180px;
+    height: 44px;
+    background-color: #00c26e;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .edit-button:hover {
+    background-color: #00a65a;
+  }
+
+  .containerDetails_course>p{
+    width: 100%;
+    height: auto;
+    text-align: start;
+  }
+
+  .editCourse{
+    width: auto;
+    height: auto;
+    padding: 0.5rem;
+    border-style: none;
+    background-color: #00843d;
+    border-radius: 10px;
+    font-size: 20px;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  /* Responsividad */
+  @media (max-width: 768px) {
+    .seeCourseContainer {
+      padding: 1.5rem;
+    }
+  
+    .seeCourseContainer h2 {
+      font-size: 2rem;
+    }
+  
+    .courseDetails label {
+      font-size: 1rem;
+    }
+  
+    .courseDetails input,
+    .courseDetails textarea {
+      font-size: 0.9rem;
+    }
+  
+    .courseDetails img {
+      max-width: 100%;
+    }
+  
+    .edit-button {
+      width: 100%;
+    }
+  }

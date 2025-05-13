@@ -1,0 +1,22 @@
+div{
+    color: black;
+}
+
+strong{
+    color: red;
+}
+
+.close_session, .createInstructor{
+    width: 294px;
+    height: 48px;
+    border-radius: 15px;
+    border-style: none;
+    background-color: #00843D;
+}
+
+
+.createInstructor{
+    margin-top: 2rem;
+    display: none;
+}
+

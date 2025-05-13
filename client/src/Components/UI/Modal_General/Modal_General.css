@@ -1,0 +1,174 @@
+#container_modalGeneral {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.579);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    padding: 20px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.modalGeneral {
+    width: 400px;
+    height: 550px;
+    background-color: #1a1a1a;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.triangle_01 {
+    width: 184px;
+    height: 53px;
+    background: linear-gradient(50deg, #b0b0b0, #1a1a1a);
+    opacity: 5%;
+    clip-path: polygon(30% 0%, 0% 100%, 100% 100%);
+    position: relative;
+    left: 5rem;
+    top: 8.4rem;
+}
+
+.triangle_02 {
+    width: 276px;
+    height: 80px;
+    background: linear-gradient(50deg, #b0b0b0, #1a1a1a);
+    opacity: 5%;
+    clip-path: polygon(30% 0%, 0% 100%, 100% 100%);
+    position: relative;
+    left: 9rem;
+    top: 3.4rem;
+}
+
+.triangle_03 {
+    width: 184px;
+    height: 53px;
+    background: linear-gradient(50deg, #b0b0b0, #1a1a1a);
+    opacity: 5%;
+    clip-path: polygon(30% 0%, 0% 100%, 100% 100%);
+    position: relative;
+    left: 12.5rem;
+    top: 0.1rem;
+}
+
+.container_triangles_01 {
+    width: auto;
+    height: auto;
+    transform: rotate(180deg);
+    position: relative;
+    top: 0.1rem;
+}
+
+.container_triangles_02 {
+    width: auto;
+    height: auto;
+    position: relative;
+    top: 177px;
+}
+
+.closeModal {
+    width: 142px;
+    height: 115px;
+    background: #b0b0b0;
+    clip-path: path("M142 115C142 2 0 115 0 0H130C138.581 2.52132 141.503 5.87638 142 16.5V115Z");
+    opacity: 0.3;
+    border-style: none;
+    cursor: pointer;
+}
+
+.container_return>h5 {
+    width: auto;
+    height: auto;
+    position: relative;
+    top: 27%;
+    font-size: 18px;
+    font-weight: 400;
+    z-index: 1000;
+    color: #fff;
+    left: 4%;
+    cursor: pointer;
+}
+
+.container_return {
+    width: 142px;
+    height: 142px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    bottom: 24.5rem;
+    left: 19.9rem;
+}
+
+.container_informationGeneral {
+    width: 90%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    bottom: 72%;
+    left: 5%;
+    text-align: center;
+}
+
+.container_informationGeneral>p {
+    width: 274px;
+    height: auto;
+    font-size: 16px;
+}
+
+.option_1Account,
+.option_2Account {
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+}
+
+.option_2Account>img,
+.option_1Account>img {
+    width: auto;
+    height: auto;
+}
+
+.container_AccountTypeAprendiz,
+.container_AccountTypeEmpresa {
+    width: 90px;
+    height: 90px;
+    background-color: #b0b0b0;
+    border-radius: 50%;
+    opacity: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-style: none;
+    cursor: pointer;
+}
+
+.option_1Account>p,
+.option_2Account>p {
+    width: auto;
+    height: auto;
+}
+
+.container_AccountTypeAprendiz:hover,
+.container_AccountTypeEmpresa:hover {
+    background-color: #00843D;
+    opacity: 70%;
+}
+
+.option_1Account>button>img,.option_2Account>button>img{
+    width: 60%;
+    height: auto;
+}

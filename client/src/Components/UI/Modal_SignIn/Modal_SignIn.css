@@ -1,0 +1,171 @@
+#container_signIn {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.579);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    padding: 20px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+
+}
+
+.modalSignIn {
+    width: 900px;
+    height: 550px;
+    background-color: #1A1A1A;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.container_return_signIn>h5 {
+    width: auto;
+    height: auto;
+    position: relative;
+    top: 27%;
+    font-size: 18px;
+    font-weight: 400;
+    z-index: 1000;
+    color: #fff;
+    left: 4%;
+    cursor: pointer;
+}
+
+.container_return_signIn {
+    width: 142px;
+    height: 142px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    bottom: 225px;
+    left: 0;
+    z-index: 1000;
+}
+
+.title2_signIn {
+    color: #00843D;
+}
+
+.title_signIn {
+    margin-bottom: 2rem;
+}
+
+.modalOptions {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.goTo_register {
+    cursor: pointer;
+
+}
+
+.remember-session {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    margin-top: -0.5rem;
+    padding-left: 7px;
+}
+
+.remember-session input[type="checkbox"] {
+    width: auto;
+    height: auto;
+    margin-right: 8px;
+}
+
+.remember-session label {
+    width: auto;
+    height: auto;
+    color: #fff;
+    font-size: 11px;
+
+}
+
+.forgetPassword {
+    cursor: pointer;
+    width: auto;
+    height: auto;
+    font-size: 12px;
+    color: #00843D;
+    margin-top: 2rem;
+    z-index: 1000;
+}
+
+.option_signUp {
+    background: linear-gradient(90deg, #b0b0b01c, #1a1a1a1b);
+    width: 65%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 15px;
+    opacity: 98%;
+    gap: 1rem;
+}
+
+.option_signUp>h3,
+.option_signUp>p {
+    width: 60%;
+    height: auto;
+    text-align: center;
+    font-weight: 100;
+}
+
+.option_signUp>.logo {
+
+    margin: 4rem 0 1rem 0;
+}
+
+.option_signUp>img {
+    width: 15rem;
+    height: auto;
+}
+
+
+.option_signUp>button {
+    width: 137px;
+    height: auto;
+    font-size: 16px;
+    font-weight: 100;
+    border-radius: 10px;
+    background-color: #00843D;
+    border-style: none;
+    margin-top: 1rem;
+    padding: 10px 0 10px 0;
+
+}
+
+.option_signUp>h3 {
+    font-size: 18px;
+}
+
+.container_form_signIn {
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.otherOption {
+    margin: -13px 0 -28px 0;
+}
+
+.remember-session input[type="checkbox"] {
+    width: auto;
+    height: auto;
+    margin-right: 8px;
+    accent-color: #00843D;
+}
