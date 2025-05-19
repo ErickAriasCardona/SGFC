@@ -3,6 +3,8 @@ const path = require("path");
 
 const  AsignacionCursoInstructor = require('../models/AsignacionCursoInstructor');
 
+const { sendCursoUpdatedNotification } = require('../services/emailService');
+
 //Asignar cursos
 const asignarCursoAInstructor = async (req, res) => {
   const { gestor_ID, instructor_ID, curso_ID, fecha_asignacion, estado } = req.body;
@@ -115,65 +117,108 @@ const createCurso = async (req, res) => {
 };
 
 // Actualizar un curso (solo para administradores)
+// const updateCurso = async (req, res) => {
+//   try {
+//     const { accountType } = req.user; // Asegúrate de que el middleware de autenticación pase el usuario
+//     if (accountType !== "Administrador") {
+//       return res.status(403).json({ message: "No tienes permisos para actualizar cursos." });
+//     }
+
+//     const { id } = req.params; // Obtener el ID del curso desde los parámetros de la URL
+//     const {
+//       nombre_curso,
+//       descripcion,
+//       tipo_oferta,
+//       ficha,
+//       fecha_inicio,
+//       fecha_fin,
+//       hora_inicio,
+//       hora_fin,
+//       dias_formacion,
+//       lugar_formacion,
+//       estado,
+//     } = req.body;
+
+//     // Buscar el curso por ID
+//     const curso = await Curso.findByPk(id);
+//     if (!curso) {
+//       return res.status(404).json({ message: "Curso no encontrado." });
+//     }
+
+//     // Verificar si se envió una nueva imagen
+//     const imagen = req.file ? `/uploads/${req.file.filename}` : curso.imagen;
+
+//     // Actualizar el curso
+//     await curso.update({
+//       nombre_curso,
+//       descripcion,
+//       tipo_oferta,
+//       ficha,
+//       fecha_inicio,
+//       fecha_fin,
+//       hora_inicio,
+//       hora_fin,
+//       dias_formacion,
+//       lugar_formacion,
+//       estado,
+//       imagen, // Actualizar la imagen si se envió una nueva
+//     });
+
+//     res.status(200).json({ message: "Curso actualizado con éxito.", curso });
+//   } catch (error) {
+//     console.error("Error al actualizar el curso:", error);
+
+//     // Manejo de errores específicos
+//     if (error.name === "SequelizeValidationError") {
+//       return res.status(400).json({ message: "Error de validación.", errors: error.errors });
+//     }
+
+//     res.status(500).json({ message: "Error al actualizar el curso." });
+//   }
+// };
+
+
 const updateCurso = async (req, res) => {
   try {
-    const { accountType } = req.user; // Asegúrate de que el middleware de autenticación pase el usuario
+    const { accountType } = req.user;
     if (accountType !== "Administrador") {
       return res.status(403).json({ message: "No tienes permisos para actualizar cursos." });
     }
 
-    const { id } = req.params; // Obtener el ID del curso desde los parámetros de la URL
-    const {
-      nombre_curso,
-      descripcion,
-      tipo_oferta,
-      ficha,
-      fecha_inicio,
-      fecha_fin,
-      hora_inicio,
-      hora_fin,
-      dias_formacion,
-      lugar_formacion,
-      estado,
-    } = req.body;
+    const { id } = req.params;
 
-    // Buscar el curso por ID
-    const curso = await Curso.findByPk(id);
-    if (!curso) {
-      return res.status(404).json({ message: "Curso no encontrado." });
-    }
+    // 🚨 Simulamos un curso como si viniera de la base de datos
+    const curso = {
+      id,
+      nombre_curso: req.body.nombre_curso || "Nombre simulado",
+      descripcion: req.body.descripcion || "Descripción simulada",
+      tipo_oferta: req.body.tipo_oferta || "abierta",
+      estado: req.body.estado || "activo",
+      ficha: req.body.ficha || "F12345",
+      fecha_inicio: req.body.fecha_inicio || "2025-06-01",
+      fecha_fin: req.body.fecha_fin || "2025-07-01",
+      hora_inicio: req.body.hora_inicio || "08:00:00",
+      hora_fin: req.body.hora_fin || "12:00:00",
+      dias_formacion: req.body.dias_formacion || "Lunes y Miércoles",
+      lugar_formacion: req.body.lugar_formacion || "SENA Simulado",
+      imagen: "/uploads/ejemplo.jpg"
+    };
 
-    // Verificar si se envió una nueva imagen
-    const imagen = req.file ? `/uploads/${req.file.filename}` : curso.imagen;
+    // 🔔 Simulamos envío de notificación
+    sendCursoUpdatedNotification("newlandsyt@gmail.com", curso); // cambia el correo real 
 
-    // Actualizar el curso
-    await curso.update({
-      nombre_curso,
-      descripcion,
-      tipo_oferta,
-      ficha,
-      fecha_inicio,
-      fecha_fin,
-      hora_inicio,
-      hora_fin,
-      dias_formacion,
-      lugar_formacion,
-      estado,
-      imagen, // Actualizar la imagen si se envió una nueva
+    // ✅ Respondemos como si se hubiera actualizado
+    res.status(200).json({
+      message: "Curso actualizado (simulado)",
+      curso
     });
 
-    res.status(200).json({ message: "Curso actualizado con éxito.", curso });
   } catch (error) {
-    console.error("Error al actualizar el curso:", error);
-
-    // Manejo de errores específicos
-    if (error.name === "SequelizeValidationError") {
-      return res.status(400).json({ message: "Error de validación.", errors: error.errors });
-    }
-
-    res.status(500).json({ message: "Error al actualizar el curso." });
+    console.error("Error al actualizar curso:", error);
+    res.status(500).json({ message: "Error interno al actualizar el curso." });
   }
 };
+
 
 // Obtener todos los cursos
 const getAllCursos = async (req, res) => {
