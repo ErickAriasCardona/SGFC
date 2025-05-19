@@ -93,12 +93,14 @@ const verifyEmail = async (req, res) => {
         if (!token) {
             return res.status(400).json({ message: "Token no proporcionado" });
         }
-
+        console.log('Token recibido:', token);
         // Buscar usuario por token
         const user = await User.findOne({ where: { token } });
+        
         if (!user) {
-            return res.status(400).json({ message: "Token inválido o expirado" });
-        }
+        return res.status(400).json({ message: "Token inválido o expirado" });
+}
+        console.log('Token en la base de datos:', user.token);
 
         // Actualizar estado de verificación
         user.verificacion_email = true;
@@ -218,11 +220,14 @@ const resetPassword = async (req, res) => {
         user.password = hashedPassword;
         user.resetPasswordToken = null;
         user.resetPasswordExpires = null;
-
+        const email = user.email;
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = Date.now() + 3600000;
         await user.save();
-
-    // se envia la notificacion al correo del cambio de contraseña 
-    await sendPasswordChangeConfirmationEmail(user.email, resetLink);
+        // se envia la notificacion al correo del cambio de contraseña 
+        const resetLink = `http://localhost:5173/resetPassword?token=${resetToken}`;
+        await sendPasswordChangeConfirmationEmail(email, resetLink);
 
         res.status(200).json({ message: "Contraseña restablecida con éxito" });
     } catch (error) {
