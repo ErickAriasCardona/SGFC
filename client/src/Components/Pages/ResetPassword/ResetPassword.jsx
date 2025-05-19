@@ -44,7 +44,7 @@ export const ResetPassword = () => {
       return;
     }
   
-    Axios.post(`https://lucid-reverence-production.up.railway.app/resetPassword?token=${token}`, {
+    Axios.post(`http://localhost:3001/resetPassword?token=${token}`, {
       newPassword,
     })
       .then((response) => {

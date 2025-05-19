@@ -141,3 +141,20 @@
 .name_company>div>p{
     font-size: 14px;
 }
+
+.updateProfile{
+    width: 4rem;
+    height: 4rem;
+    background-color: #b0b0b0;
+    border-radius: 10px;
+    border-style: none;
+}
+
+.input_updateData{
+    width: 9rem;
+    height: auto;
+    background-color: transparent;
+    border-radius: 10px;
+    border-style: none;
+    border: 1px solid #b0b0b0;
+}

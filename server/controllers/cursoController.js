@@ -1,4 +1,6 @@
 const Curso = require("../models/curso");
+const User = require("../models/User");
+
 const path = require("path");
 
 const  AsignacionCursoInstructor = require('../models/AsignacionCursoInstructor');
@@ -8,10 +10,47 @@ const asignarCursoAInstructor = async (req, res) => {
   const { gestor_ID, instructor_ID, curso_ID, fecha_asignacion, estado } = req.body;
 
   try {
+    // Validación básica
     if (!gestor_ID || !instructor_ID || !curso_ID) {
-      return res.status(400).json({ mensaje: 'Todos los campos (gestor_ID, instructor_ID, curso_ID) son obligatorios' });
+      return res.status(400).json({
+        mensaje: 'Todos los campos (gestor_ID, instructor_ID, curso_ID) son obligatorios',
+      });
     }
 
+    // Validar existencia del gestor
+    const gestor = await User.findByPk(gestor_ID);
+    if (!gestor || gestor.accountType !== 'Gestor') {
+      return res.status(404).json({ mensaje: 'Gestor no encontrado o no válido' });
+    }
+
+    // Validar existencia del instructor
+    const instructor = await User.findByPk(instructor_ID);
+    if (!instructor || instructor.accountType !== 'Instructor') {
+      return res.status(404).json({ mensaje: 'Instructor no encontrado o no válido' });
+    }
+
+    // Validar existencia del curso
+    const curso = await Curso.findByPk(curso_ID);
+    if (!curso) {
+      return res.status(404).json({ mensaje: 'Curso no encontrado' });
+    }
+
+    // Validar que no se haya asignado ya este curso al instructor
+    const asignacionExistente = await AsignacionCursoInstructor.findOne({
+      where: {
+        gestor_ID,
+        instructor_ID,
+        curso_ID,
+      },
+    });
+
+    if (asignacionExistente) {
+      return res.status(409).json({
+        mensaje: 'Este curso ya ha sido asignado a este instructor previamente',
+      });
+    }
+
+    // Crear la nueva asignación
     const nuevaAsignacion = await AsignacionCursoInstructor.create({
       gestor_ID,
       instructor_ID,
@@ -20,14 +59,21 @@ const asignarCursoAInstructor = async (req, res) => {
       estado: estado || 'aceptada',
     });
 
-    res.status(201).json({ mensaje: 'Curso asignado correctamente', asignacion: nuevaAsignacion });
+    res.status(201).json({
+      mensaje: 'Curso asignado correctamente',
+      asignacion: nuevaAsignacion,
+    });
   } catch (error) {
     console.error('Error al asignar curso:', error);
-    res.status(500).json({ mensaje: 'Error interno al asignar el curso' });
+    res.status(500).json({
+      mensaje: 'Error interno al asignar el curso',
+    });
   }
 };
 
-//consultar cursos asignador a un instructor 
+
+
+//consultar cursos asignador a un instructor  
 const obtenerCursosAsignadosAInstructor = async (req, res) => {
   const { instructor_ID } = req.params;
 
