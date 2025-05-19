@@ -2,6 +2,8 @@ const Curso = require("../models/curso");
 const path = require("path");
 
 const  AsignacionCursoInstructor = require('../models/AsignacionCursoInstructor');
+const { Router } = require("express");
+const upload = require("../config/multer");
 
 //Asignar cursos
 const asignarCursoAInstructor = async (req, res) => {
@@ -82,9 +84,47 @@ const createCurso = async (req, res) => {
       });
     }
 
+    /*
     // Obtener la ruta de la imagen subida
     const imagen = req.file ? `/uploads/${req.file.filename}` : null;
+    */
 
+    // Nuevo controlador con transformacion
+
+    const fs = require('fs');
+    
+    const uploadImagesBase64 = async (req, res) => {
+      try{
+          const file = req.file;
+          if (!file) return res.status(400).json({message: 'No se recibio ningun archivo'});
+
+          const base64Data = file.buffer.toString('base64');
+          const uniqueName = `${file.fieldname}-${Data.now()}.txt`;
+          const savePath = path.join(__dirname, '../base64storage', uniqueName);
+
+          if (!fs.existsSync(path.dirname(save))) {
+            fs.mkdirSync(path.dirname(savePath), {recursive: true});
+          }
+
+          fs.writeFileSync(savePath, base64Data);
+
+          return res.status(200).json({
+            message: 'Imagen convertida y guardada.',
+            filename: uniqueName,
+            path: savePath
+          });
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({message:'Error al guardar la imagen.'});
+      
+      }
+      
+    };
+
+    // ruta asociada al controlador 
+    Router.post('/uploads', upload.single('image'), uploadImagesBase64);
+    
+    
     // Crear el curso
     const nuevoCurso = await Curso.create({
       nombre_curso,

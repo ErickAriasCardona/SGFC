@@ -3,7 +3,7 @@ import Axios from "axios";
 import "./Modal_SignUp.css";
 import ilustration_02 from "../../../assets/Ilustrations/SignUp.svg";
 import seePassword from "../../../assets/Icons/seePassword.png";
-import hidePassword from "../../../assets/Icons/ hidePassword.png";
+import hidePassword from "../../../assets/Icons/hidePassword.png";
 import iconGoogle from "../../../assets/Icons/google.png";
 import { Modal_Successful } from "../Modal_Successful/Modal_Successful";
 export const Modal_SignUp = ({ accountType }) => {
@@ -217,8 +217,8 @@ export const Modal_SignUp = ({ accountType }) => {
 
           <div className="option_signIn">
             <div className="logo">Logo</div>
-            <h3>Lorem Ipsum es simplemente el texto</h3>
-            <p>Lorem Ipsum es simplemente</p>
+            <h3>Lorem Ipsum es simplemente el texto</h3>
+            <p>Lorem Ipsum es simplemente</p>
             <button className="goTo_SignIn" onClick={showModalSignIn}>
               Iniciar sesión
             </button>

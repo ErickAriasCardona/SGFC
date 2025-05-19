@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Axios from "axios";
 import "./ResetPassword.css";
 import seePassword from "../../../assets/Icons/seePassword.png";
-import hidePassword from "../../../assets/Icons/ hidePassword.png";
+import hidePassword from "../../../assets/Icons/hidePassword.png";
 
 export const ResetPassword = () => {
   const navigate = useNavigate();
