@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Axios from "axios";
 import "./ResetPassword.css";
 import seePassword from "../../../assets/Icons/seePassword.png";
-import hidePassword from "../../../assets/Icons/ hidePassword.png";
+import hidePassword from "../../../assets/Icons/hidePassword.png";
 
 export const ResetPassword = () => {
   const navigate = useNavigate();
@@ -44,7 +44,7 @@ export const ResetPassword = () => {
       return;
     }
   
-    Axios.post(`https://lucid-reverence-production.up.railway.app/resetPassword?token=${token}`, {
+    Axios.post(`http://localhost:3001/resetPassword?token=${token}`, {
       newPassword,
     })
       .then((response) => {
