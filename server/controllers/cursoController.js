@@ -1,7 +1,10 @@
 const Curso = require("../models/curso");
 const path = require("path");
 
-const  AsignacionCursoInstructor = require('../models/AsignacionCursoInstructor');
+const { Op } = require('sequelize')
+const AsignacionCursoInstructor = require('../models/AsignacionCursoInstructor');
+const User = require("../models/User");
+const { sendCourseCreatedEmail } = require("../services/emailService");
 
 //Asignar cursos
 const asignarCursoAInstructor = async (req, res) => {
@@ -76,7 +79,7 @@ const createCurso = async (req, res) => {
     } = req.body;
 
     // Validar campos obligatorios
-    if (!nombre_curso || !tipo_oferta || !ficha || !descripcion || !estado) {
+    if (!ficha || !nombre_curso || !descripcion || !tipo_oferta  || !estado) {
       return res.status(400).json({
         message: "Los campos nombre_curso, tipo_oferta, ficha, descripcion y estado son obligatorios.",
       });
@@ -101,7 +104,17 @@ const createCurso = async (req, res) => {
       imagen,
     });
 
-    res.status(201).json({ message: "Curso creado con éxito.", curso: nuevoCurso });
+    // Obtener usuarios con correos verificados
+    const usuarios = await User.findAll({ where: { verificacion_email: true , accountType: { [Op.or]: ['Empresa', 'Aprendiz'] }}, attributes: ['email'] });
+    const emails = usuarios.map(user => user.email);
+
+    // Enviar notificación general
+    const courseLink = `http://localhost:5173/cursos/${nuevoCurso.id}`;
+    await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
+
+    res.status(201).json({ message: "Curso creado con éxito y notificaciones enviadas.", curso: nuevoCurso, emails });
+
+    
   } catch (error) {
     console.error("Error al crear el curso:", error);
 
