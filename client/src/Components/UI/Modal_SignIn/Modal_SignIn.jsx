@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./Modal_SignIn.css";
 
 import seePassword from "../../../assets/Icons/seePassword.png";
-import hidePassword from "../../../assets/Icons/ hidePassword.png";
+import hidePassword from "../../../assets/Icons/hidePassword.png";
 import ilustration_03 from "../../../assets/Ilustrations/ilusatration_03.svg";
 import iconGoogle from "../../../assets/Icons/google.png";
 import companyGreen from "../../../assets/Icons/companyGreen.png";

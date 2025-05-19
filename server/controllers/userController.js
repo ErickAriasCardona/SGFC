@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const crypto = require("crypto");
-const { sendVerificationEmail, sendPasswordResetEmail } = require("../services/emailService");
+const { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirmationEmail } = require("../services/emailService");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
@@ -221,11 +221,15 @@ const resetPassword = async (req, res) => {
 
         await user.save();
 
+    // se envia la notificacion al correo del cambio de contraseña 
+    await sendPasswordChangeConfirmationEmail(user.email, resetLink);
+
         res.status(200).json({ message: "Contraseña restablecida con éxito" });
     } catch (error) {
         console.error("Error al restablecer la contraseña:", error);
         res.status(500).json({ message: "Error al restablecer la contraseña" });
     }
+
 };
 
 // Obtener todos los usuarios
