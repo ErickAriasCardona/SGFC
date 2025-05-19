@@ -2,7 +2,6 @@ import "./Modal_SignIn.css";
 import React, { useState, useEffect } from "react";
 import seePassword from "../../../assets/Icons/seePassword.png";
 import hidePassword from "../../../assets/Icons/hidePassword.png";
-import hidePassword from "../../../assets/Icons/hidePassword.png";
 import ilustration_03 from "../../../assets/Ilustrations/ilusatration_03.svg";
 import companyGreen from "../../../assets/Icons/companyGreen.png";
 import companyGrey from "../../../assets/Icons/companyGrey.png";

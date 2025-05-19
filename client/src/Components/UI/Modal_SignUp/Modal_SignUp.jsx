@@ -3,6 +3,7 @@ import "./Modal_SignUp.css";
 import ilustration_02 from "../../../assets/Ilustrations/SignUp.svg";
 import seePassword from "../../../assets/Icons/seePassword.png";
 import hidePassword from "../../../assets/Icons/hidePassword.png";
+import iconGoogle from "../../../assets/Icons/google.png";
 import { Modal_Successful } from "../Modal_Successful/Modal_Successful";
 import axiosInstance from "../../../config/axiosInstance";
 import { GoogleLogin } from '@react-oauth/google';

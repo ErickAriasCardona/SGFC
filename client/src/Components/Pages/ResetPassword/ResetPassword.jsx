@@ -4,7 +4,6 @@ import axiosInstance from "../../../config/axiosInstance";
 import "./ResetPassword.css";
 import seePassword from "../../../assets/Icons/seePassword.png";
 import hidePassword from "../../../assets/Icons/hidePassword.png";
-import axios from "axios";
 
 export const ResetPassword = () => {
   const navigate = useNavigate();
