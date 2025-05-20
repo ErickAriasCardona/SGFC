@@ -104,15 +104,21 @@ const createCurso = async (req, res) => {
       imagen,
     });
 
+    res.status(201).json({ message: "Curso creado con éxito."});
+
     // Obtener usuarios con correos verificados
     const usuarios = await User.findAll({ where: { verificacion_email: true , accountType: { [Op.or]: ['Empresa', 'Aprendiz'] }}, attributes: ['email'] });
     const emails = usuarios.map(user => user.email);
+    
+    if(emails.length === 0){
+      console.warn('No hay usuarios para mandar Email')
+    }else{
+      // Enviar notificación general
+      const courseLink = `http://localhost:5173/cursos/${nuevoCurso.id}`;
+      await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
+    }
 
-    // Enviar notificación general
-    const courseLink = `http://localhost:5173/cursos/${nuevoCurso.id}`;
-    await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
-
-    res.status(201).json({ message: "Curso creado con éxito y notificaciones enviadas.", curso: nuevoCurso, emails });
+    
 
     
   } catch (error) {
