@@ -84,46 +84,24 @@ const createCurso = async (req, res) => {
       });
     }
 
+    let image = null;
+        if (req.file) {
+          const base64Data = req.file.buffer.toString('base64');
+          const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+          const savePath = path.join(__dirname, '../base64storage', uniqueName);
+    
+          if (!fs.existsSync(path.dirname(savePath))) {
+            fs.mkdirSync(path.dirname(savePath), { recursive: true});
+          }
+          fs.writeFileSync(savePath, base64Data);
+    
+          image = `/base64storage/${uniqueName}`;
+        } 
+        
     /*
     // Obtener la ruta de la imagen subida
     const imagen = req.file ? `/uploads/${req.file.filename}` : null;
     */
-
-    // Nuevo controlador con transformacion
-
-    const fs = require('fs');
-    
-    const uploadImagesBase64 = async (req, res) => {
-      try{
-          const file = req.file;
-          if (!file) return res.status(400).json({message: 'No se recibio ningun archivo'});
-
-          const base64Data = file.buffer.toString('base64');
-          const uniqueName = `${file.fieldname}-${Data.now()}.txt`;
-          const savePath = path.join(__dirname, '../base64storage', uniqueName);
-
-          if (!fs.existsSync(path.dirname(save))) {
-            fs.mkdirSync(path.dirname(savePath), {recursive: true});
-          }
-
-          fs.writeFileSync(savePath, base64Data);
-
-          return res.status(200).json({
-            message: 'Imagen convertida y guardada.',
-            filename: uniqueName,
-            path: savePath
-          });
-      } catch (error) {
-        console.error(error);
-        return res.status(500).json({message:'Error al guardar la imagen.'});
-      
-      }
-      
-    };
-
-    // ruta asociada al controlador 
-    Router.post('/uploads', upload.single('image'), uploadImagesBase64);
-    
     
     // Crear el curso
     const nuevoCurso = await Curso.create({
@@ -138,7 +116,7 @@ const createCurso = async (req, res) => {
       hora_fin,
       dias_formacion,
       lugar_formacion,
-      imagen,
+      imagen: image,
     });
 
     res.status(201).json({ message: "Curso creado con éxito.", curso: nuevoCurso });
@@ -264,5 +242,46 @@ const getCursoByFicha = async (req, res) => {
   }
 };
 
-module.exports = { createCurso, updateCurso, getAllCursos, getCursoById, getCursoByFicha, asignarCursoAInstructor, obtenerCursosAsignadosAInstructor };
+// Nuevo controlador para transformacion
+
+    const fs = require('fs');
+    
+    const uploadImagesBase64 = async (req, res) => {
+      try{
+          const file = req.file;
+          if (!file) return res.status(400).json({message: 'No se recibio ningun archivo'});
+
+          const base64Data = file.buffer.toString('base64');
+          const uniqueName = `${file.fieldname}-${Date.now()}.txt`;
+          const savePath = path.join(__dirname, '../base64storage', uniqueName);
+
+          if (!fs.existsSync(path.dirname(savePath))) {
+            fs.mkdirSync(path.dirname(savePath), {recursive: true});
+          }
+
+          fs.writeFileSync(savePath, base64Data);
+
+          return res.status(200).json({
+            message: 'Imagen convertida y guardada.',
+            filename: uniqueName,
+            path: savePath
+          });
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({message:'Error al guardar la imagen.'});
+      }
+      
+    };
+
+module.exports = { 
+  createCurso, 
+  updateCurso, 
+  getAllCursos, 
+  getCursoById, 
+  getCursoByFicha, 
+  asignarCursoAInstructor, 
+  obtenerCursosAsignadosAInstructor,
+  uploadImagesBase64
+};
+
 
