@@ -68,7 +68,7 @@ export const ResetPassword = () => {
     passwordRequirements.specialChar;
 
   return (
-    <div id="forgot-password-container2">
+    <div id="reset-password-container">
       <div className="container_form_forgotPassword">
         <div className="container_triangles_01">
           <div className="triangle_01"></div>
