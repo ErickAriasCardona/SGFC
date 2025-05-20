@@ -78,13 +78,13 @@
     padding: 5px;
 }
 
-.container_options_profile>button>img,#NavLink_profile>img {
+.container_options_profile>button>img{
     width: 100%;
     height: auto;
     padding: 0.5rem;
 }
 
-#NavLink_profile{
+#btn_profile{
     width: 2rem;
     height:2rem;
     border-style: none;

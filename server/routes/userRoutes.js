@@ -1,5 +1,5 @@
 const express = require("express");
-const { registerUser, verifyEmail, loginUser,requestPasswordReset,resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile,updateProfilePicture,createInstructor, createGestor } = require("../controllers/userController");
+const { registerUser, verifyEmail, loginUser,requestPasswordReset,resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile,updateProfilePicture,createInstructor, createGestor,logoutUser } = require("../controllers/userController");
 const router = express.Router();
 const upload = require("../config/multer"); // Importar configuración de multer
 
@@ -18,6 +18,8 @@ router.put('/perfil/actualizar/:id', upload.single('foto_perfil'), updateUserPro
 router.put('/perfil/actualizarFoto/:id', updateProfilePicture); // Actualizar foto de perfil de usuario por ID
 router.post('/crearInstructor', upload.single('foto_perfil'), createInstructor);
 router.post('/crearGestor', upload.single('foto_perfil'), createGestor);
+router.post("/logout", logoutUser);
+
 
 router.get("/", (req, res) => {
     res.send("🚀 API funcionando correctamente");
