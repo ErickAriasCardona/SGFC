@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './UpdateGestor.css';
-import axiosInstance from '../../../../config/axiosInstance'; // Asegúrate de ajustar esta ruta según la estructura de tu proyecto
+import axiosInstance from '../../../../config/axiosInstance'; 
 
 export const UpdateGestor = ({ gestor }) => {
     const [isEditing, setIsEditing] = useState(false);
