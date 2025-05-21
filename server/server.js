@@ -2,11 +2,14 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser"); // Importar cookie-parser
 const initializeDatabase = require("./models/index");
+const generalConfig = require('./config/general');
+const authGoogleController = require('./controllers/authGoogleController'); // Importar controlador de autenticación de Google
 const userRoutes = require("./routes/userRoutes"); // Importar rutas de usuario
 const cursoRoutes = require("./routes/cursoRoutes"); // Importar rutas de cursos
 // libreria para programar tareas
 const cron = require('node-cron');
 const { cleanExpiredTokens } = require('./controllers/userController');
+
 
 // Ejecuta la limpieza de tokens expirados cada hora
 cron.schedule('0 * * * *', cleanExpiredTokens);
@@ -33,14 +36,13 @@ const path = require("path");
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 async function startServer() {
-  const { sequelize, Usuario,Departamento, Ciudad, Sena } = await initializeDatabase(); // Inicializar base de datos
-
+  const db = await initializeDatabase(); // Inicializar base de datos
+  authGoogleController.setDb(db);
   // Crear el usuario administrador por defecto
-  await Usuario.createDefaultAdmin();
-  await Departamento.createDefaultDeparment();
-  await Ciudad.createDefaultCiudad();
-  await Sena.createDefaultSENA(); 
-
+  await db.Usuario.createDefaultAdmin(); // Accede al método a través de la instancia db
+  await db.Departamento.createDefaultDeparment();
+  await db.Ciudad.createDefaultCiudad();
+  await db.Sena.createDefaultSENA();
 
 
   const PORT = process.env.PORT || 3001;

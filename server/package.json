@@ -3,7 +3,9 @@
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
     "express": "^4.21.2",
+    "google-auth-library": "^9.15.1",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.2",
     "mysql": "^2.18.1",
@@ -11,6 +13,7 @@
     "node": "^18.20.8",
     "node-cron": "^4.0.5",
     "nodemailer": "^6.10.0",
+    "passport-google-oauth2": "^0.2.0",
     "sequelize": "^6.37.7",
     "socket.io": "^4.8.1"
   },
