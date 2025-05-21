@@ -14,7 +14,7 @@
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.10"
   },
   "scripts": {
     "dev": "nodemon server.js",
