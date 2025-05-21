@@ -143,7 +143,7 @@ export const SeeMyProfile = () => {
                         </button>
 
                         {editMode && (
-                            <button className='updateProfile' onClick={handleSaveChanges}>
+                            <button className='updateProfile1' onClick={handleSaveChanges}>
                                 Guardar Cambios
                             </button>
                         )}

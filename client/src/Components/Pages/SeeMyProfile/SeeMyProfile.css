@@ -143,11 +143,29 @@
 }
 
 .updateProfile{
+    position: absolute;
+    z-index: 999999999;
+    top:6.1rem;
+    right: 7rem;
     width: 4rem;
     height: 4rem;
     background-color: #b0b0b0;
     border-radius: 10px;
     border-style: none;
+    
+}
+
+.updateProfile1{
+    position: absolute;
+    z-index: 999999999;
+    top:11rem;
+    right: 7rem;
+    width: 4rem;
+    height: 4rem;
+    background-color: #b0b0b0;
+    border-radius: 10px;
+    border-style: none;
+    
 }
 
 .input_updateData{
