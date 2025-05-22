@@ -111,7 +111,7 @@ const createCurso = async (req, res) => {
     const emails = usuarios.map(user => user.email);
     
     if(emails.length === 0){
-      console.warn('No hay usuarios para mandar Email')
+      console.warn('No hay usuarios aceptados para mandar Email')
     }else{
       // Enviar notificación general
       const courseLink = `http://localhost:5173/cursos/${nuevoCurso.id}`;
