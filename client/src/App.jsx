@@ -30,7 +30,6 @@ import { Modal_Failed } from './Components/UI/Modal_Failed/Modal_Failed';
 import { CreateInstructor } from './Components/Pages/GestionsInstructor/CreateInstructor/CreateInstructor';
 import { CreateGestor } from './Components/Pages/GestionsGestor/CreateGestor/CreateGestor';
 import { UpdateInstructor } from './Components/Pages/GestionsInstructor/UpdateInstructor/UpdateInstructor';
-import { AssignInstructorCourse } from './Components/Pages/Courses/AssignInstructorCourse/AssignInstructorCourse';
 // Importación de estilos
 import './App.css';
 
@@ -57,7 +56,6 @@ function App() {
       <Modal_Failed />
       <CreateInstructor />
       <CreateGestor />
-      {/* <AssignInstructorCourse/> */}
 
 
       {/* Rutas */}
@@ -80,7 +78,7 @@ function App() {
         <Route path="/Empleados/CrearEmpleado" element={<CreateEmploye />} />
         <Route path="/Empleados/ActualizarEmpleado/:id" element={<UpdateEmploye />} />
         <Route path="/Empleados/BuscarEmpleado" element={<SeachEmployes />} />
-        <Route path="/Cursos/AsignarInstructores" element={<AssignInstructorCourse />} />
+        {/* <Route path="/Cursos/AsignarInstructores" element={<AssignInstructorCourse />} /> */}
         
       
       

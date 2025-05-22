@@ -147,8 +147,54 @@ export const SeeMyProfile = () => {
                                 Guardar Cambios
                             </button>
                         )}
-                        
                     </div>
+
+                    {(tipoCuenta === 'Administrador' || tipoCuenta === 'Instructor' || tipoCuenta === 'Gestor') && perfil?.Sena && (
+                        <div className='container_data_company'>
+                            <div className='name_company'>
+                                <img src="" alt="" />
+                                <div>
+                                    <h3>{perfil.Sena.nombre_sede || '-'}</h3>
+                                    <p>
+                                        NIT: {perfil.Sena.NIT || '-'}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className='container_data'>
+                                <div className='data_company'>
+                                    <p>
+                                        Dirección: <br />
+                                        {perfil.Sena.direccion || '-'}
+                                    </p>
+                                    <p>
+                                        Teléfono: <br />
+                                        {perfil.Sena.telefono || '-'}
+                                    </p>
+                                    <p>
+                                        Email: <br />
+                                        {perfil.Sena.email_sena || '-'}
+                                    </p>
+                                    <p>
+                                        Ciudad: <br />
+                                        {perfil.Sena.Ciudad?.nombre || '-'}
+                                    </p>
+                                    <p>
+                                        Departamento: <br />
+                                        {perfil.Sena.Ciudad?.Departamento?.nombre || '-'}
+                                    </p>
+                                </div>
+                                <div className='data_courses_instructor'>
+                                    <div className='data_courses'>
+                                        {/* Aquí puedes mostrar cursos si aplica */}
+                                    </div>
+                                    <div className='data_instructor'>
+                                        {/* Aquí puedes mostrar datos adicionales si aplica */}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {tipoCuenta === 'Empresa' && (
                         <div className='container_data_company'>
                             <div className='name_company'>

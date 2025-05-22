@@ -7,13 +7,28 @@ import { Main } from '../../../Layouts/Main/Main';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../../../../config/axiosInstance';
 import calendar from '../../../../assets/Icons/calendar.png';
+import buttonEdit from '../../../../assets/Icons/buttonEdit.png';
+import { AssignInstructorCourse } from '../AssignInstructorCourse/AssignInstructorCourse';
 
 export const SeeCourse = () => {
-   
+
     const { id } = useParams(); // Obtener el ID del curso desde la URL
     const [curso, setCurso] = useState(null); // Estado para almacenar los datos del curso
     const navigate = useNavigate(); // Hook para redirigir
-  
+    const [showModal, setShowModal] = useState(false);
+
+
+    const showModalAssignInstructor = () => {
+        console.log("Mostrando modal con ID:", curso?.ID);
+        setShowModal(true);
+    };
+
+    const userSession =
+        JSON.parse(localStorage.getItem('userSession')) ||
+        JSON.parse(sessionStorage.getItem('userSession'));
+
+
+
     // Obtener los datos del curso al cargar la página
     useEffect(() => {
         const fetchCurso = async () => {
@@ -88,12 +103,13 @@ export const SeeCourse = () => {
 
                                 <div>
                                     <p id='p_addInstructor'> Instructor: Sin asignar
-                                        {/* <button className='addInstructor'>
-                                            <img src={buttonEdit} alt="" />
-                                        </button> */}
+                                        {userSession && (userSession.accountType === 'Administrador' || userSession.accountType === 'Gestor') && (
+                                            <button className='addInstructor' onClick={showModalAssignInstructor}>
+                                                <img src={buttonEdit} alt="" />
+                                            </button>
+                                        )}
                                     </p>
 
-                                    {/* Botón para abrir el modal general */}
                                     <button className='addDate' >
                                         <img src={calendar} alt="" />
                                         Ver fechas y horarios
@@ -105,14 +121,26 @@ export const SeeCourse = () => {
 
                     </div>
 
-                    <button
-                        className='editCourse'
-                        onClick={() => navigate(`/Cursos/ActualizarCurso/${id}`)} // Redirigir a la página de actualización
-                    >
-                        Editar Curso
-                    </button>                </div>
+                    {/* Mostrar botón solo si el usuario es Administrador o Gestor */}
+                    {userSession && (userSession.accountType === 'Administrador' || userSession.accountType === 'Gestor') && (
+                        <button
+                            className='editCourse'
+                            onClick={() => navigate(`/Cursos/ActualizarCurso/${id}`)}
+                        >
+                            Editar Curso
+                        </button>
+                    )}
+                </div>
+
             </Main>
             <Footer />
+            {showModal && curso && (
+                <AssignInstructorCourse
+                    curso_ID={curso.ID}
+                    onClose={() => setShowModal(false)} // Para poder cerrarlo desde dentro
+                />
+            )}
+
         </>
     );
 };

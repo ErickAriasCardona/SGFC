@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import './CreateGestor.css';
 import addIMG from '../../../../assets/Icons/addImg.png';
+import axiosInstance from '../../../../config/axiosInstance';
 
 export const CreateGestor = ({ onClose }) => {
     const fileInputRef = useRef(null);
@@ -54,28 +55,22 @@ export const CreateGestor = ({ onClose }) => {
         data.append('estado', formData.estado);
 
         try {
-            const response = await fetch('http://localhost:3001/crearGestor', {
-                method: 'POST',
-                body: data,
+            const response = await axiosInstance.post('/crearGestor', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Error del servidor:', errorData);
-                alert(`Error: ${errorData.message}`);
-                return; // Detener el flujo si hay un error
-            }
-
-            const result = await response.json();
             alert('Gestor creado con éxito');
-            console.log(result);
+            console.log(response.data);
 
             // Cerrar el modal y recargar la página
             document.getElementById("modal-overlayCreateGestor").style.display = "none";
             window.location.reload();
         } catch (error) {
             console.error('Error al crear el gestor:', error);
-            alert('Hubo un problema al crear el gestor.');
+            const errorMsg = error.response?.data?.message || 'Hubo un problema al crear el gestor.';
+            alert(`Error: ${errorMsg}`);
         }
     };
 

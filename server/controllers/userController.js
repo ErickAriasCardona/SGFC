@@ -124,6 +124,11 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ message: "Usuario o contraseña incorrectos" });
         }
 
+        // Validar si el correo está verificado
+        if (!user.verificacion_email) {
+            return res.status(403).json({ message: "Debes verificar tu correo antes de iniciar sesión." });
+        }
+
         // Comparar contraseñas
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
@@ -147,7 +152,7 @@ const loginUser = async (req, res) => {
 
         res.status(200).json({
             message: "Inicio de sesión exitoso",
-            id: user.ID, // 👈 Esto es lo que necesitas agregar
+            id: user.ID,
             accountType: user.accountType,
         });
     } catch (error) {
@@ -193,7 +198,7 @@ const requestPasswordReset = async (req, res) => {
     } catch (error) {
         console.error("Error al solicitar recuperación de contraseña:", error);
         res.status(500).json({ message: "Error al procesar la solicitud de recuperación de contraseña." });
-    }
+    } 
 };
 
 // Cambiar contraseña con token

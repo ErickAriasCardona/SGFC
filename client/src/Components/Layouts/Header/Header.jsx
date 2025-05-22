@@ -78,8 +78,6 @@ export const Header = () => {
                 { label: 'Mis cursos', path: '/Cursos/MisCursos' },
                 { label: 'Buscar cursos', path: '/Cursos/BuscarCursos' },
                 { label: 'Crear curso', path: '/Cursos/CrearCurso' },
-                { label: 'Actualizar curso', path: '/Cursos/ActualizarCurso' },
-                { label: 'Asignar instructores', path: '/Cursos/AsignarInstructores' },
               ];
               break;
             case 'Instructor':
@@ -94,8 +92,6 @@ export const Header = () => {
                 { label: 'Mis cursos', path: '/Cursos/MisCursos' },
                 { label: 'Buscar cursos', path: '/Cursos/BuscarCursos' },
                 { label: 'Crear curso', path: '/Cursos/CrearCurso' },
-                { label: 'Actualizar curso', path: '/Cursos/ActualizarCurso' },
-                { label: 'Asignar instructores', path: '/Cursos/AsignarInstructores' },
               ];
               break;
             case 'Empresa':

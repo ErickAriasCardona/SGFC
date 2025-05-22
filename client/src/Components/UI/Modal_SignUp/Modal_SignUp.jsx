@@ -6,6 +6,8 @@ import seePassword from "../../../assets/Icons/seePassword.png";
 import hidePassword from "../../../assets/Icons/hidePassword.png";
 import iconGoogle from "../../../assets/Icons/google.png";
 import { Modal_Successful } from "../Modal_Successful/Modal_Successful";
+import axiosInstance from "../../../config/axiosInstance";
+
 export const Modal_SignUp = ({ accountType }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,7 +65,7 @@ export const Modal_SignUp = ({ accountType }) => {
   
     // Enviar datos al backend
     try {
-      const response = await Axios.post("http://localhost:3001/createUser", {
+      const response = await axiosInstance.post("/createUser", {
         email,
         password,
         accountType, // Tipo de cuenta seleccionado

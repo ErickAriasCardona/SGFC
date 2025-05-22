@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Axios from "axios";
 import { Modal_Successful } from "../../UI/Modal_Successful/Modal_Successful";
 import { Modal_Failed } from "../../UI/Modal_Failed/Modal_Failed";
+import axiosInstance from "../../../config/axiosInstance";
 import "./EmailVerification.css";
 
 export const EmailVerification = () => {
@@ -18,7 +19,7 @@ export const EmailVerification = () => {
 
     if (token) {
       // Llamar al backend para validar el token
-      Axios.get(`https://lucid-reverence-production.up.railway.app/verificarCorreo?token=${token}`)
+      axiosInstance.get(`/verificarCorreo?token=${token}`)
         .then((response) => {
           console.log(response.data.message);
           setIsVerified(true); // Actualizar estado a verificado
