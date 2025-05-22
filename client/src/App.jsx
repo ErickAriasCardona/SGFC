@@ -53,7 +53,7 @@ function App() {
   
   return (
     // Envuelve tu aplicación con GoogleOAuthProvider
-    <GoogleOAuthProvider clientId="115305318075-tuumqfnouocvndkr04jiks7ait9qspju.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <>
         {/* Modales globales */}
         <Modal_SignIn showSignIn={showSignIn} setShowSignIn={setShowSignIn} />
