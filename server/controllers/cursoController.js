@@ -4,6 +4,8 @@ const path = require("path");
 const  AsignacionCursoInstructor = require('../models/AsignacionCursoInstructor');
 
 const { sendCursoUpdatedNotification } = require('../services/emailService');
+const { Usuario, InscripcionCurso } = require('../models');
+const { Op } = require('sequelize');
 
 //Asignar cursos
 const asignarCursoAInstructor = async (req, res) => {
@@ -164,23 +166,53 @@ const updateCurso = async (req, res) => {
       imagen,
     });
 
-    // Enviar notificación por correo
-    await sendCursoUpdatedNotification("newlandsyt@gmail.com", curso); // Reemplaza con destinatario real
+    // Obtener inscripciones con usuarios tipo Aprendiz y email verificado
+    const inscripciones = await InscripcionCurso.findAll({
+      where: { curso_ID: curso.ID },
+      include: [
+        {
+          model: Usuario,
+          as: 'usuario',
+          attributes: ['email', 'accountType', 'verificacion_email']
+        }
+      ]
+    });
+
+    // Filtrar emails de aprendices inscritos y verificados
+    const emailsAprendices = inscripciones
+      .filter(inscripcion => {
+        const user = inscripcion.usuario;
+        return user && user.accountType === 'Aprendiz' && user.verificacion_email;
+      })
+      .map(inscripcion => inscripcion.usuario.email);
+
+    // Obtener usuarios tipo Empresa con email verificado
+    const usuariosEmpresa = await Usuario.findAll({
+      where: {
+        accountType: 'Empresa',
+        verificacion_email: true,
+      },
+      attributes: ['email']
+    });
+
+    const emailsEmpresa = usuariosEmpresa.map(user => user.email);
+
+    // Unir listas y eliminar duplicados
+    const emailsFinales = [...new Set([...emailsAprendices, ...emailsEmpresa])];
+
+    // Enviar notificaciones a todos los emails finales
+    emailsFinales.forEach(email => {
+      sendCursoUpdatedNotification(email, curso);
+    });
 
     res.status(200).json({
-      message: "Curso actualizado con éxito.",
-      curso,
+      message: `Curso actualizado con éxito. Notificaciones enviadas a ${emailsFinales.length} usuarios.`,
+      curso
     });
 
   } catch (error) {
     console.error("Error al actualizar el curso:", error);
-
-    // Errores de validación de Sequelize
-    if (error.name === "SequelizeValidationError") {
-      return res.status(400).json({ message: "Error de validación.", errors: error.errors });
-    }
-
-    res.status(500).json({ message: "Error interno al actualizar el curso." });
+    res.status(500).json({ message: "Error al actualizar el curso." });
   }
 };
 
