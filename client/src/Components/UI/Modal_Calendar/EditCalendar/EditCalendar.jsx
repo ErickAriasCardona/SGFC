@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Calendar.css';
 
 const times = [
@@ -6,11 +6,20 @@ const times = [
 ];
 const days = ['Lun', 'Mar', 'Mier', 'Jue', 'Vier', 'Sab'];
 
-export const EditCalendar = ({ closeModal }) => {
+export const EditCalendar = ({ closeModal, onSave, initialData }) => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   // Store selected slots as a set of "day-time" strings
   const [selectedSlots, setSelectedSlots] = useState(new Set());
+
+  // Initialize state from initialData when modal opens
+  useEffect(() => {
+    if (initialData) {
+      setStartDate(initialData.startDate || '');
+      setEndDate(initialData.endDate || '');
+      setSelectedSlots(new Set(initialData.selectedSlots || []));
+    }
+  }, [initialData]);
 
   const toggleSlot = (day, time) => {
     const slot = `${day}-${time}`;
@@ -24,10 +33,19 @@ export const EditCalendar = ({ closeModal }) => {
   };
 
   const handleSave = () => {
-    // Here you can handle saving the selected dates and slots
-    console.log('Start Date:', startDate);
-    console.log('End Date:', endDate);
-    console.log('Selected Slots:', Array.from(selectedSlots));
+    // Pass selected data back to parent component
+    if (onSave) {
+      onSave({
+        startDate,
+        endDate,
+        selectedSlots: Array.from(selectedSlots),
+      });
+    }
+    closeModal();
+  };
+
+  const handleCancel = () => {
+    // Close modal without saving changes
     closeModal();
   };
 
@@ -35,27 +53,28 @@ export const EditCalendar = ({ closeModal }) => {
     <div className="modal-overlay">
       <div className="modal-background">
         <div className="modal-container calendar-modal centered-modal">
-        <button className="close-button" onClick={closeModal}>Volver</button>
-        <h2 className="modal-title">
-          Editar Fechas y <span className="highlight">horarios</span>
-        </h2>
-        <div className="date-inputs organized-date-inputs">
-          <label>
-            Fecha inicio:
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-          </label>
-          <label>
-            Fecha fin:
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-          </label></div>
+          <button className="close-button" onClick={handleCancel}>Volver</button>
+          <h2 className="modal-title">
+            Editar Fechas y <span className="highlight">horarios</span>
+          </h2>
+          <div className="date-inputs organized-date-inputs">
+            <label>
+              Fecha inicio:
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </label>
+            <label>
+              Fecha fin:
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </label>
+          </div>
           <div className="calendar-card-wrapper">
             <div className="calendar-card layered-card card1"></div>
             <div className="calendar-card layered-card card2"></div>
@@ -91,11 +110,9 @@ export const EditCalendar = ({ closeModal }) => {
               ))}
             </tbody>
           </table>
+          <button className="save-button organized-save-button" onClick={handleSave}>Guardar</button>
         </div>
-        <button className="save-button organized-save-button" onClick={handleSave}>Guardar</button>
       </div>
-        
     </div>
-      
   );
 };
