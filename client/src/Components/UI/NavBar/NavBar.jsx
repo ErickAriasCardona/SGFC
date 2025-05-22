@@ -18,9 +18,6 @@ export const NavBar = ({ children, setShowSignIn }) => {
 
   const isLoggedIn = !!userSession; // Verificar si el usuario está logueado
 
-  // Función para mostrar el modal de inicio de sesión
-  const showModalSignIn = () => setShowSignIn(true);
-
   // ✅ Manejador para el click en perfil
   const handleProfileClick = () => {
     console.log('ID del usuario logueado:', userSession?.id);
@@ -54,7 +51,7 @@ export const NavBar = ({ children, setShowSignIn }) => {
 
       {/* Mostrar el botón de "Iniciar sesión" solo si el usuario no está logueado */}
       {!isLoggedIn && (
-        <button className="button_signIn" onClick={showModalSignIn}>
+        <button className="button_signIn" onClick={() => setShowSignIn(true)}>
           Iniciar sesión
         </button>
       )}

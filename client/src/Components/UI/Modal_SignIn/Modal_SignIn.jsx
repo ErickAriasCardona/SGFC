@@ -16,14 +16,14 @@ import { GoogleLogin } from '@react-oauth/google';
 
 import axiosInstance from "../../../config/axiosInstance";
 
-export const Modal_SignIn = () => {
+export const Modal_SignIn = ({ showSignIn, setShowSignIn }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberSession, setRememberSession] = useState(false);
   const [hoveredButton, setHoveredButton] = useState("");
   const [selectedAccountType, setSelectedAccountType] = useState(""); // Estado para guardar el tipo de cuenta seleccionado
-  const [showSignIn, setShowSignIn] = useState(true);
+
 
   const navigate = useNavigate();
 
@@ -215,10 +215,14 @@ export const Modal_SignIn = () => {
                     Iniciar sesión
                   </button>
                   <p className="otherOption">o</p>
+
+
                   <GoogleLogin
                     onSuccess={handleGoogleSignInSuccess}
                     onError={() => alert('Error al iniciar sesión con Google')}
                   />
+
+
                 </form>
                 <NavLink to={"/forgotPassword"} className={"forgetPassword"}>
                   ¿Olvidó su contraseña?
