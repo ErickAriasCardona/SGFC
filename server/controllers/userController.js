@@ -42,6 +42,21 @@ const registerUser = async (req, res) => {
         // Hashear la contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Procesar imagen de perfil si se sube
+        let foto_perfil = null;
+        if (req.file) {
+            const path = require('path');
+            const fs = require('fs');
+            const base64Data = req.file.buffer.toString('base64');
+            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+            const savePath = path.join(__dirname, '../base64storage', uniqueName);
+            if (!fs.existsSync(path.dirname(savePath))) {
+                fs.mkdirSync(path.dirname(savePath), { recursive: true });
+            }
+            fs.writeFileSync(savePath, base64Data);
+            foto_perfil = `/base64storage/${uniqueName}`;
+        }
+
         // Crear nuevo usuario
         const newUser = await User.create({
             email,
@@ -54,6 +69,7 @@ const registerUser = async (req, res) => {
             titulo_profesional: titulo_profesional || null,
             verificacion_email: false,
             token,
+            foto_perfil: image, // Guardar la ruta del archivo base64 si existe
         });
 
         // Si el tipo de cuenta es Empresa, crear un registro en la tabla Empresa y relacionarlo con el usuario
@@ -387,10 +403,22 @@ const updateUserProfile = async (req, res) => {
             password,
         } = req.body;
 
-        // Ruta de la imagen si se envió
+        // Procesar imagen de perfil si se sube
         let foto_perfil = null;
-        if (req.file && req.file.path) {
-            foto_perfil = req.file.path; // Guardar ruta del archivo en disco
+        if (req.file) {
+            const path = require('path');
+            const fs = require('fs');
+            const base64Data = req.file.buffer.toString('base64');
+            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+            const savePath = path.join(__dirname, '../base64storage', uniqueName);
+            if (!fs.existsSync(path.dirname(savePath))) {
+                fs.mkdirSync(path.dirname(savePath), { recursive: true });
+            }
+            fs.writeFileSync(savePath, base64Data);
+            foto_perfil = `/base64storage/${uniqueName}`;
+        } else if (req.file && req.file.path) {
+            // Compatibilidad con imágenes subidas como archivo normal
+            foto_perfil = req.file.path;
         }
 
         const token = req.cookies.token;
@@ -418,7 +446,7 @@ const updateUserProfile = async (req, res) => {
 
         // ADMINISTRADOR
         if (loggedInUser.accountType === "Administrador") {
-            if (["Instructor", "Gestor", "Administrador"].includes(user.accountType)) {
+            if (["Instructor", "Gestor", "Administrador", "Empresa", "Aprendiz"].includes(user.accountType)) {
 
                 // Validaciones únicas
                 if (email && email !== user.email) {
@@ -515,6 +543,24 @@ const updateUserProfile = async (req, res) => {
             return res.status(200).json({ message: "Perfil de empresa actualizado con éxito." });
         }
 
+        // APRENDIZ
+        if (loggedInUser.accountType === "Aprendiz" && user.accountType === "Aprendiz") {
+            if (email) user.email = email;
+            if (nombres) user.nombres = nombres;
+            if (apellidos) user.apellidos = apellidos;
+            if (celular) user.celular = celular;
+            if (cedula) user.cedula = cedula;
+            if (estado) user.estado = estado;
+            if (titulo_profesional) user.titulo_profesional = titulo_profesional;
+            if (password) {
+                const hashedPassword = await bcrypt.hash(password, 10);
+                user.password = hashedPassword;
+            }
+            if (foto_perfil) user.foto_perfil = foto_perfil;
+            await user.save();
+            return res.status(200).json({ message: "Perfil de aprendiz actualizado con éxito." });
+        }
+
         return res.status(403).json({ message: "No tienes permiso para actualizar este perfil." });
     } catch (error) {
         console.error("Error al actualizar el perfil del usuario:", error);
@@ -535,7 +581,16 @@ const updateProfilePicture = async (req, res) => {
 
         console.log("Archivo recibido:", req.file); // Verificar qué archivo se recibió
 
-        const filePath = `uploads/${req.file.filename}`; // Ruta de la imagen subida
+        const path = require('path');
+        const fs = require('fs');
+        const base64Data = req.file.buffer.toString('base64');
+        const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+        const savePath = path.join(__dirname, '../base64storage', uniqueName);
+        if (!fs.existsSync(path.dirname(savePath))) {
+            fs.mkdirSync(path.dirname(savePath), { recursive: true });
+        }
+        fs.writeFileSync(savePath, base64Data);
+        const filePath = `/base64storage/${uniqueName}`; // Ruta de la imagen subida
 
         // Buscar el usuario por ID
         const user = await User.findByPk(id);
@@ -563,10 +618,19 @@ const createInstructor = async (req, res) => {
 
         const { nombres, apellidos, titulo_profesional, celular, email, cedula, estado } = req.body;
 
-        // Verificar si se subió un archivo
+        // Procesar imagen de perfil si se sube
         let foto_perfil = null;
         if (req.file) {
-            foto_perfil = `uploads/${req.file.filename}`; // Ruta de la imagen subida
+            const path = require('path');
+            const fs = require('fs');
+            const base64Data = req.file.buffer.toString('base64');
+            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+            const savePath = path.join(__dirname, '../base64storage', uniqueName);
+            if (!fs.existsSync(path.dirname(savePath))) {
+                fs.mkdirSync(path.dirname(savePath), { recursive: true });
+            }
+            fs.writeFileSync(savePath, base64Data);
+            foto_perfil = `/base64storage/${uniqueName}`;
         }
 
         // Validar datos obligatorios
@@ -626,10 +690,19 @@ const createGestor = async (req, res) => {
 
         const { nombres, apellidos, celular, email, cedula, estado } = req.body;
 
-        // Verificar si se subió un archivo
+        // Procesar imagen de perfil si se sube
         let foto_perfil = null;
         if (req.file) {
-            foto_perfil = `uploads/${req.file.filename}`; // Ruta de la imagen subida
+            const path = require('path');
+            const fs = require('fs');
+            const base64Data = req.file.buffer.toString('base64');
+            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+            const savePath = path.join(__dirname, '../base64storage', uniqueName);
+            if (!fs.existsSync(path.dirname(savePath))) {
+                fs.mkdirSync(path.dirname(savePath), { recursive: true });
+            }
+            fs.writeFileSync(savePath, base64Data);
+            foto_perfil = `/base64storage/${uniqueName}`;
         }
 
         // Validar datos obligatorios
