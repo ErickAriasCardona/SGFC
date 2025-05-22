@@ -602,6 +602,7 @@ const createInstructor = async (req, res) => {
             cedula,
             estado,
             foto_perfil,
+            sena_ID: 1, //ID Sena 
             accountType: "Instructor", // Tipo de cuenta
             password: hashedPassword, // Contraseña encriptada
             verificacion_email: false, // Estado de verificación
