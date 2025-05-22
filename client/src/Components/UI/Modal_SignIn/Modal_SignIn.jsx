@@ -1,5 +1,5 @@
-import React, { useState } from "react";
 import "./Modal_SignIn.css";
+import React, { useState, useEffect } from "react";
 
 import seePassword from "../../../assets/Icons/seePassword.png";
 import hidePassword from "../../../assets/Icons/hidePassword.png";
@@ -23,10 +23,7 @@ export const Modal_SignIn = ({ showSignIn, setShowSignIn }) => {
   const [rememberSession, setRememberSession] = useState(false);
   const [hoveredButton, setHoveredButton] = useState("");
   const [selectedAccountType, setSelectedAccountType] = useState(""); // Estado para guardar el tipo de cuenta seleccionado
-
-
   const navigate = useNavigate();
-
   const closeModalSignIn = () => setShowSignIn(false);
 
   const showModalAccountType = () => {
@@ -78,8 +75,8 @@ export const Modal_SignIn = ({ showSignIn, setShowSignIn }) => {
   };
 
 
-  const handleGoogleSignInSuccess = async (credentialResponse) => {
-    const idToken = credentialResponse.credential;
+  const handleGoogleResponse = async (response) => {
+    const idToken = response.credential;
     console.log("ID token de google:", idToken);
 
     try {
@@ -114,8 +111,6 @@ export const Modal_SignIn = ({ showSignIn, setShowSignIn }) => {
       console.error('Error de red al enviar el token de Google:', error);
     }
   };
-
-
 
   return (
     <>
@@ -215,13 +210,15 @@ export const Modal_SignIn = ({ showSignIn, setShowSignIn }) => {
                     Iniciar sesión
                   </button>
                   <p className="otherOption">o</p>
-
-
                   <GoogleLogin
-                    onSuccess={handleGoogleSignInSuccess}
+                    onSuccess={handleGoogleResponse}
                     onError={() => alert('Error al iniciar sesión con Google')}
+                    theme="filled_blue"
+                    size="large" 
+                    text="signin_with"
+                    shape="rectangular" 
+                    width="300" 
                   />
-
 
                 </form>
                 <NavLink to={"/forgotPassword"} className={"forgetPassword"}>

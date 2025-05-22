@@ -170,11 +170,12 @@
     accent-color: #00843D;
 }
 
-.button_registerGoogle{
-    background: linear-gradient(50deg, #b0b0b00f, #00843e7e);
+.form_registerSignIn {
+    width: 100%;
+    height: auto;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
     gap: 1rem;
-}     
+}
 
