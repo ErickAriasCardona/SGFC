@@ -4,6 +4,7 @@ import { Header } from '../../../Layouts/Header/Header';
 import { Footer } from '../../../Layouts/Footer/Footer';
 import { Main } from '../../../Layouts/Main/Main';
 import { Modal_General } from '../../../UI/Modal_General/Modal_General';
+import { EditCalendar } from '../../../UI/Modal_Calendar/EditCalendar/EditCalendar';
 import addIMG from '../../../../assets/Icons/addImg.png';
 import buttonEdit from '../../../../assets/Icons/buttonEdit.png';
 import calendar from '../../../../assets/Icons/calendar.png';
@@ -30,11 +31,10 @@ export const CreateCourse = () => {
     };
 
     // Función para abrir el modal general
+    const [isEditCalendarOpen, setIsEditCalendarOpen] = React.useState(false);
+
     const showModalGeneral = () => {
-        const modalGeneral = document.getElementById('container_modalGeneral');
-        if (modalGeneral) {
-            modalGeneral.style.display = 'flex'; // Cambia el display a flex para mostrar el modal
-        }
+        setIsEditCalendarOpen(true);
     };
 
     // Función para manejar la creación del curso
@@ -198,12 +198,10 @@ const handleCreateCourse = async () => {
             </Main>
             <Footer />
 
-            {/* Modal General */}
-            <Modal_General closeModal={() => (document.getElementById('container_modalGeneral').style.display = 'none')}>
-                <h2>Agregar Fechas y Horarios</h2>
-                <p>Aquí puedes agregar las fechas y horarios para el curso.</p>
-                {/* Agrega aquí los campos o contenido necesario para el modal */}
-            </Modal_General>
+            {/* Edit Calendar Modal */}
+            {isEditCalendarOpen && (
+                <EditCalendar closeModal={() => setIsEditCalendarOpen(false)} />
+            )}
         </>
     );
 };
