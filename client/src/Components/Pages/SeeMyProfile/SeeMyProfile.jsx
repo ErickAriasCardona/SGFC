@@ -138,13 +138,16 @@ export const SeeMyProfile = () => {
                             )}
                         </p>
 
-                        <button className='updateProfile' onClick={() => setEditMode(!editMode)}>
-                            {editMode ? 'Cancelar' : 'Actualizar Perfil'}
+                        <button
+                            className={`updateProfile ${editMode ? 'cancel' : ''}`}
+                            onClick={() => setEditMode(!editMode)}
+                            >
+                            {editMode ? '' : ''}
                         </button>
 
                         {editMode && (
                             <button className='updateProfile1' onClick={handleSaveChanges}>
-                                Guardar Cambios
+
                             </button>
                         )}
                         
