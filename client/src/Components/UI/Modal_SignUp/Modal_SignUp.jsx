@@ -5,11 +5,14 @@ import seePassword from "../../../assets/Icons/seePassword.png";
 import hidePassword from "../../../assets/Icons/hidePassword.png";
 import iconGoogle from "../../../assets/Icons/google.png";
 import { Modal_Successful } from "../Modal_Successful/Modal_Successful";
+import Modal_General from "../Modal_General/Modal_General";
 import axiosInstance from "../../../config/axiosInstance";
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from "react-router-dom";
 
 export const Modal_SignUp = ({ accountType }) => {
+  const [isModalVisible, setIsModalVisible] = useState(true); // Estado para controlar la visibilidad del modal
+
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -104,18 +107,12 @@ export const Modal_SignUp = ({ accountType }) => {
   };
 
   const closeModalSignUp = () => {
-    const modalSignUp = document.getElementById("container_signUp");
-    const modalGeneral = document.getElementById("container_modalGeneral");
-
-    if (modalSignUp) {
-      modalSignUp.style.display = "none";
-    }
-
-    if (modalGeneral) {
-      modalGeneral.style.display = "flex"; // abre el Modal_AccountType
-    }
+    setIsModalVisible(false); // Cambia el estado para cerrar el modal
   };
 
+  if (!isModalVisible) {
+    return null; // Si el modal no es visible, no renderiza nada
+  }
   const showModalSignIn = () => {
     const modalAccountType = document.getElementById("container_modalGeneral");
     const modalSignUp = document.getElementById("container_signUp");
@@ -321,12 +318,12 @@ export const Modal_SignUp = ({ accountType }) => {
           </div>
 
           <div className="container_return_signUp">
-            <h5>Volver</h5>
+            <h5 onClick={closeModalSignUp} style={{ cursor: "pointer" }}>Volver</h5>
             <button onClick={closeModalSignUp} className="closeModal"></button>
           </div>
         </div>
+        <Modal_General closeModal={closeModalSignUp} />
       </div>
     </>
-
   );
 };
