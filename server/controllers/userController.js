@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const crypto = require("crypto");
-const { sendVerificationEmail, sendPasswordResetEmail } = require("../services/emailService");
+const { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirmationEmail } = require("../services/emailService");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
@@ -105,12 +105,14 @@ const verifyEmail = async (req, res) => {
         if (!token) {
             return res.status(400).json({ message: "Token no proporcionado" });
         }
-
+        console.log('Token recibido:', token);
         // Buscar usuario por token
         const user = await User.findOne({ where: { token } });
+
         if (!user) {
             return res.status(400).json({ message: "Token inválido o expirado" });
         }
+        console.log('Token en la base de datos:', user.token);
 
         // Actualizar estado de verificación
         user.verificacion_email = true;
@@ -238,10 +240,20 @@ const resetPassword = async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
         user.password = hashedPassword;
+        // Limpiar el token usado
         user.resetPasswordToken = null;
         user.resetPasswordExpires = null;
 
+        // Generar un nuevo token de recuperación por si el usuario no hizo el cambio
+        const newResetToken = crypto.randomBytes(32).toString("hex");
+        user.resetPasswordToken = newResetToken;
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hora más
+
         await user.save();
+
+        // Enlace para volver a cambiar la contraseña
+        const resetLink = `http://localhost:5173/resetPassword?token=${newResetToken}`;
+        await sendPasswordChangeConfirmationEmail(user.email, resetLink);
 
         res.status(200).json({ message: "Contraseña restablecida con éxito" });
     } catch (error) {
@@ -249,6 +261,25 @@ const resetPassword = async (req, res) => {
         res.status(500).json({ message: "Error al restablecer la contraseña" });
     }
 };
+
+//limpiar tokens expirados
+const cleanExpiredTokens = async () => {
+    try {
+        // Limpia los tokens de recuperación de contraseña expirados
+        await User.update(
+            { resetPasswordToken: null, resetPasswordExpires: null },
+            {
+                where: {
+                    resetPasswordExpires: { [Op.lt]: Date.now() }
+                }
+            }
+        );
+        console.log("Tokens de recuperación expirados limpiados correctamente.");
+    } catch (error) {
+        console.error("Error al limpiar tokens expirados:", error);
+    }
+};
+
 
 // Obtener todos los usuarios
 const getAllUsers = async (req, res) => {
@@ -266,45 +297,45 @@ const getAllUsers = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
     try {
-      const userId = req.params.id;
-  
-      const usuario = await User.findByPk(userId, {
-        include: [
-          {
-            model: Sena,
-            as: 'Sena',
+        const userId = req.params.id;
+
+        const usuario = await User.findByPk(userId, {
             include: [
-              {
-                model: Ciudad,
-                as: 'Ciudad',
-                attributes: ['ID', 'nombre'],
-                include: [
-                  {
-                    model: Departamento,
-                    as: 'Departamento',
-                    attributes: ['ID', 'nombre'],
-                  },
-                ],
-              },
+                {
+                    model: Sena,
+                    as: 'Sena',
+                    include: [
+                        {
+                            model: Ciudad,
+                            as: 'Ciudad',
+                            attributes: ['ID', 'nombre'],
+                            include: [
+                                {
+                                    model: Departamento,
+                                    as: 'Departamento',
+                                    attributes: ['ID', 'nombre'],
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    model: Empresa,
+                    as: 'Empresa',
+                },
             ],
-          },
-          {
-            model: Empresa,
-            as: 'Empresa',
-          },
-        ],
-      });
-  
-      if (!usuario) {
-        return res.status(404).json({ error: 'Usuario no encontrado' });
-      }
-  
-      res.json(usuario);
+        });
+
+        if (!usuario) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        res.json(usuario);
     } catch (error) {
-      console.error('Error al obtener el perfil del usuario:', error);
-      res.status(500).json({ error: 'Error al obtener el perfil del usuario' });
+        console.error('Error al obtener el perfil del usuario:', error);
+        res.status(500).json({ error: 'Error al obtener el perfil del usuario' });
     }
-  };    
+};
 
 //Consultar lista de aprendices 
 const getAprendices = async (req, res) => {
@@ -619,8 +650,8 @@ const updateProfilePicture = async (req, res) => {
 // Crear Instructor
 const createInstructor = async (req, res) => {
     try {
-        console.log("Cuerpo de la solicitud:", req.body); 
-        console.log("Archivo recibido:", req.file); 
+        console.log("Cuerpo de la solicitud:", req.body);
+        console.log("Archivo recibido:", req.file);
 
         const { nombres, apellidos, titulo_profesional, celular, email, cedula, estado } = req.body;
 
@@ -674,9 +705,9 @@ const createInstructor = async (req, res) => {
 
         await sendVerificationEmail(email, token);
 
-        res.status(201).json({ 
-            message: "Instructor creado con éxito. Por favor verifica tu correo.", 
-            instructor: newInstructor 
+        res.status(201).json({
+            message: "Instructor creado con éxito. Por favor verifica tu correo.",
+            instructor: newInstructor
         });
     } catch (error) {
         console.error("Error al crear el instructor:", error);
@@ -743,7 +774,7 @@ const createGestor = async (req, res) => {
             accountType: "Gestor", // Tipo de cuenta
             password: hashedPassword, // Contraseña encriptada
             verificacion_email: false, // Estado de verificación
-            sena_ID: 1, 
+            sena_ID: 1,
             token, // Token de verificación
         });
 
@@ -757,4 +788,4 @@ const createGestor = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor, logoutUser };
+module.exports = { registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor, logoutUser, cleanExpiredTokens };

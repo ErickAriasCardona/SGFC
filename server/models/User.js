@@ -14,13 +14,26 @@ class Usuario extends Model {
           type: DataTypes.STRING(100),
           allowNull: false,
           unique: true,
-          validate: { 
+          validate: {
             isEmail: true,
           },
         },
         password: {
           type: DataTypes.STRING(255),
-          allowNull: false,
+          allowNull: true,
+        },
+        googleId: {
+          type: DataTypes.STRING(255), // Para almacenar el 'sub' de Google
+          allowNull: true, // Será nulo para usuarios tradicionales
+          unique: true,    // Cada googleId debe ser único
+          // Puedes añadir 'sparse: true' si tu versión de MySQL/Sequelize lo soporta
+          // para índices únicos que permitan múltiples nulos.
+          // Si no, asegúrate de que solo se guarde un googleId por usuario.
+        },
+        // --- Campo para foto_perfil (cambiado a STRING) ---
+        foto_perfil: {
+          type: DataTypes.STRING(500), // Usar STRING para la URL de la imagen de Google
+          allowNull: true,
         },
         verificacion_email: {
           type: DataTypes.BOOLEAN,
@@ -55,10 +68,6 @@ class Usuario extends Model {
           allowNull: true,
           unique: true,
         },
-        foto_perfil: {
-          type: DataTypes.BLOB('medium'),
-          allowNull: true,
-        },
         titulo_profesional: {
           type: DataTypes.STRING(100),
           allowNull: true,
@@ -78,7 +87,7 @@ class Usuario extends Model {
         timestamps: false,
       }
     );
-  } 
+  }
 
   static associate(models) {
     this.belongsTo(models.Sena, {
@@ -87,7 +96,7 @@ class Usuario extends Model {
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE'
     });
-  
+
     this.belongsTo(models.Empresa, {
       foreignKey: 'empresa_ID',
       as: 'Empresa', // Agrega este alias
@@ -95,7 +104,7 @@ class Usuario extends Model {
       onUpdate: 'CASCADE'
     });
   }
-  
+
 
   // Método para crear un usuario administrador por defecto
   static async createDefaultAdmin() {
@@ -117,7 +126,7 @@ class Usuario extends Model {
         password: hashedPassword,
         verificacion_email: true, // El correo ya está verificado
         accountType: 'Administrador',
-        sena_ID: 1  
+        sena_ID: 1
       });
 
       console.log('Usuario administrador creado con éxito.');

@@ -68,7 +68,7 @@ export const ResetPassword = () => {
     passwordRequirements.specialChar;
 
   return (
-    <div id="forgot-password-container">
+    <div id="reset-password-container">
       <div className="container_form_forgotPassword">
         <div className="container_triangles_01">
           <div className="triangle_01"></div>
@@ -82,7 +82,7 @@ export const ResetPassword = () => {
           <div className="triangle_03"></div>
         </div>
 
-        <div className="container_return">
+        <div className="container_return2">
           <h5>Volver</h5>
           <button onClick={() => navigate("/")} className="closeModal"></button>
         </div>
