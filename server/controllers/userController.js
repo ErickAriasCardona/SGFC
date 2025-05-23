@@ -8,10 +8,8 @@ const { Op } = require("sequelize");
 // Registrar usuario
 const Empresa = require('../models/empresa'); // Importar el modelo Empresa
 const Sena = require('../models/sena'); // Importar el modelo Sena
-const Departamento = require('../models/departamento'); // Importar el modelo Departamento
+const Departamento = require('../models/departamento'); // Importar el modelo Departamento 
 const Ciudad = require('../models/ciudad'); // Importar el modelo Ciudad
-
-
 
 
 
@@ -42,21 +40,6 @@ const registerUser = async (req, res) => {
         // Hashear la contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Procesar imagen de perfil si se sube
-        let foto_perfil = null;
-        if (req.file) {
-            const path = require('path');
-            const fs = require('fs');
-            const base64Data = req.file.buffer.toString('base64');
-            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-            const savePath = path.join(__dirname, '../base64storage', uniqueName);
-            if (!fs.existsSync(path.dirname(savePath))) {
-                fs.mkdirSync(path.dirname(savePath), { recursive: true });
-            }
-            fs.writeFileSync(savePath, base64Data);
-            foto_perfil = `/base64storage/${uniqueName}`;
-        }
-
         // Crear nuevo usuario
         const newUser = await User.create({
             email,
@@ -69,7 +52,6 @@ const registerUser = async (req, res) => {
             titulo_profesional: titulo_profesional || null,
             verificacion_email: false,
             token,
-            foto_perfil: image, // Guardar la ruta del archivo base64 si existe
         });
 
         // Si el tipo de cuenta es Empresa, crear un registro en la tabla Empresa y relacionarlo con el usuario
@@ -146,6 +128,11 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ message: "Usuario o contraseña incorrectos" });
         }
 
+        // Validar si el correo está verificado
+        if (!user.verificacion_email) {
+            return res.status(403).json({ message: "Debes verificar tu correo antes de iniciar sesión." });
+        }
+
         // Comparar contraseñas
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
@@ -169,13 +156,22 @@ const loginUser = async (req, res) => {
 
         res.status(200).json({
             message: "Inicio de sesión exitoso",
-            id: user.ID, // 👈 Esto es lo que necesitas agregar
+            id: user.ID,
             accountType: user.accountType,
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Error en el servidor" });
     }
+};
+
+const logoutUser = (req, res) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+    });
+    res.status(200).json({ message: "Sesión cerrada correctamente" });
 };
 
 // Solicitud de restablecimiento de contraseña
@@ -205,7 +201,7 @@ const requestPasswordReset = async (req, res) => {
     } catch (error) {
         console.error("Error al solicitar recuperación de contraseña:", error);
         res.status(500).json({ message: "Error al procesar la solicitud de recuperación de contraseña." });
-    }
+    } 
 };
 
 // Cambiar contraseña con token
@@ -273,7 +269,6 @@ const cleanExpiredTokens = async () => {
         console.error("Error al limpiar tokens expirados:", error);
     }
 };
-
 
 // Obtener todos los usuarios
 const getAllUsers = async (req, res) => {
@@ -791,4 +786,44 @@ const createGestor = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor, logoutUser, cleanExpiredTokens };
+// Consultar Empleados por Empresa
+const getAprendicesByEmpresa = async (req, res) => {
+    try {
+        // Verifica el token y obtiene el usuario logueado
+        const token = req.cookies.token;
+        if (!token) {
+            return res.status(401).json({ message: "No autorizado. Debes iniciar sesión." });
+        }
+
+        const loggedInUser = jwt.verify(token, process.env.JWT_SECRET || "secret");
+        if (!loggedInUser || loggedInUser.accountType !== "Empresa") {
+            return res.status(403).json({ message: "Solo las empresas pueden acceder a esta información." });
+        }
+
+        // Busca la empresa asociada al usuario logueado
+        const empresaUser = await User.findByPk(loggedInUser.id, {
+            include: [{ model: Empresa, as: "Empresa" }]
+        });
+
+        if (!empresaUser || !empresaUser.empresa_ID) {
+            return res.status(404).json({ message: "Empresa no encontrada o no asociada." });
+        }
+
+        // Busca los aprendices relacionados con la empresa
+        const aprendices = await User.findAll({
+            where: {
+                accountType: "Aprendiz",
+                empresa_ID: empresaUser.empresa_ID
+            },
+            attributes: { exclude: ['password', 'token', 'resetPasswordToken', 'resetPasswordExpires'] }
+        });
+
+        res.status(200).json(aprendices);
+    } catch (error) {
+        console.error("Error al obtener los aprendices de la empresa:", error);
+        res.status(500).json({ message: "Error al obtener los aprendices de la empresa." });
+    }
+};
+
+
+module.exports = {getAprendicesByEmpresa,  registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor, logoutUser, cleanExpiredTokens };

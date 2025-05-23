@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import Axios from "axios";
+import axiosInstance from "../../../config/axiosInstance";
 import "./ResetPassword.css";
 import seePassword from "../../../assets/Icons/seePassword.png";
 import hidePassword from "../../../assets/Icons/hidePassword.png";
+import axios from "axios";
 
 export const ResetPassword = () => {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ export const ResetPassword = () => {
       return;
     }
   
-    Axios.post(`http://localhost:3001/resetPassword?token=${token}`, {
+    axiosInstance.post(`/resetPassword?token=${token}`, {
       newPassword,
     })
       .then((response) => {

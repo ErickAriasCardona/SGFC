@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Axios from "axios";
 import "./ForgotPassword.css";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../../config/axiosInstance";
 
 export const ForgotPassword = () => {
     const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ export const ForgotPassword = () => {
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        Axios.post("http://localhost:3001/requestPasswordReset", { email })
+        axiosInstance.post("/requestPasswordReset", { email })
             .then((response) => {
                 setMessage(response.data.message);
                 setIsSuccess(true); // Indicar que el mensaje es exitoso

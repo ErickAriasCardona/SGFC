@@ -4,7 +4,7 @@ import { Header } from '../../Layouts/Header/Header';
 import { Footer } from '../../Layouts/Footer/Footer';
 import { Main } from '../../Layouts/Main/Main';
 import { UpdateGestor } from './UpdateGestor/UpdateGestor';
-
+import axiosInstance from '../../../config/axiosInstance';
 export const GestionsGestor = () => {
     const [gestores, setGestores] = useState([]); // Estado para almacenar los instructores
     const [filteredGestor, setFilteredGestores] = useState([]); // Estado para los instructores filtrados
@@ -30,13 +30,9 @@ export const GestionsGestor = () => {
     // Función para obtener los gestores desde el backend
     const fetchGestor = async () => {
         try {
-            const response = await fetch('http://localhost:3001/Gestores'); // Cambia la URL según tu configuración
-            if (!response.ok) {
-                throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
-            }
-            const data = await response.json();
-            setGestores(data); // Guardar los datos en el estado
-            setFilteredGestores(data); // Inicialmente, los gestores filtrados son todos
+            const response = await axiosInstance.get('/Gestores'); // Usa la ruta relativa
+            setGestores(response.data); // Guardar los datos en el estado
+            setFilteredGestores(response.data); // Inicialmente, los gestores filtrados son todos
         } catch (error) {
             console.error('Error al obtener los Gestores:', error);
             alert('Hubo un problema al cargar los Gestores. Por favor, inténtalo más tarde.');

@@ -3,7 +3,6 @@ const User = require("../models/User");
 
 const path = require("path");
 
-const { Op } = require('sequelize')
 const AsignacionCursoInstructor = require('../models/AsignacionCursoInstructor');
 const { sendCourseCreatedEmail } = require("../services/emailService");
 const { Router } = require("express");
@@ -11,7 +10,7 @@ const upload = require("../config/multer");
 
 const { sendCursoUpdatedNotification } = require('../services/emailService');
 const { Usuario, InscripcionCurso } = require('../models');
-const { Op } = require('sequelize');
+const { Op } = require('sequelize'); 
 
 //Asignar cursos
 const asignarCursoAInstructor = async (req, res) => {

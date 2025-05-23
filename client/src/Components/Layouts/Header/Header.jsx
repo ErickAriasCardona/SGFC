@@ -82,8 +82,6 @@ export const Header = () => {
                 { label: 'Mis cursos', path: '/Cursos/MisCursos' },
                 { label: 'Buscar cursos', path: '/Cursos/BuscarCursos' },
                 { label: 'Crear curso', path: '/Cursos/CrearCurso' },
-                { label: 'Actualizar curso', path: '/Cursos/ActualizarCurso' },
-                { label: 'Asignar instructores', path: '/Cursos/AsignarInstructores' },
               ];
               break;
             case 'Instructor':
@@ -98,8 +96,6 @@ export const Header = () => {
                 { label: 'Mis cursos', path: '/Cursos/MisCursos' },
                 { label: 'Buscar cursos', path: '/Cursos/BuscarCursos' },
                 { label: 'Crear curso', path: '/Cursos/CrearCurso' },
-                { label: 'Actualizar curso', path: '/Cursos/ActualizarCurso' },
-                { label: 'Asignar instructores', path: '/Cursos/AsignarInstructores' },
               ];
               break;
             case 'Empresa':
@@ -167,10 +163,8 @@ export const Header = () => {
               <div className="dropdown-empleados">
                 <div className="arrow-up" />
                 <button onClick={() => handleMenuClick('/Empleados/MisEmpleados')}>Mis empleados</button>
-                <button onClick={() => handleMenuClick('/Empleados/BuscarEmpleado')}>Buscar empleado</button>
                 <button onClick={() => handleMenuClick('/Empleados/CrearEmpleado')}>Crear empleados</button>
                 <button onClick={() => handleMenuClick('/Empleados/CrearVariosEmpleados')}>Crear varios empleados</button>
-                <button onClick={() => handleMenuClick('/Empleados/ActualizarEmpleado')}>Actualizar empleado</button>
               </div>
             )}
           </div>

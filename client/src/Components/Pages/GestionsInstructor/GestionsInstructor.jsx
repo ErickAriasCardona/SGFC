@@ -4,6 +4,7 @@ import { Header } from '../../../Components/Layouts/Header/Header';
 import { Footer } from '../../../Components/Layouts/Footer/Footer';
 import { Main } from '../../../Components/Layouts/Main/Main';
 import { UpdateInstructor } from './UpdateInstructor/UpdateInstructor';
+import axiosInstance from '../../../config/axiosInstance';
 
 export const GestionsInstructor = () => {
     const [instructors, setInstructors] = useState([]); // Estado para almacenar los instructores
@@ -28,13 +29,9 @@ export const GestionsInstructor = () => {
     // Función para obtener los instructores desde el backend
     const fetchInstructors = async () => {
         try {
-            const response = await fetch('http://localhost:3001/instructores'); // Cambia la URL según tu configuración
-            if (!response.ok) {
-                throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
-            }
-            const data = await response.json();
-            setInstructors(data); // Guardar los datos en el estado
-            setFilteredInstructors(data); // Inicialmente, los instructores filtrados son todos
+            const response = await axiosInstance.get('/instructores');
+            setInstructors(response.data); // Guardar los datos en el estado
+            setFilteredInstructors(response.data); // Inicialmente, los instructores filtrados son todos
         } catch (error) {
             console.error('Error al obtener los instructores:', error);
             alert('Hubo un problema al cargar los instructores. Por favor, inténtalo más tarde.');
@@ -83,7 +80,7 @@ export const GestionsInstructor = () => {
             (instructor.apellidos || '').toLowerCase().includes(filter.toLowerCase()) ||
             (instructor.cedula || '').toLowerCase().includes(filter.toLowerCase())
         );
-    
+
         const filteredByState = filtered.filter((instructor) => {
             const estado = (instructor.estado || '').toLowerCase();
             if (selectedState.activo && estado === 'activo') {
@@ -94,11 +91,11 @@ export const GestionsInstructor = () => {
             }
             return false;
         });
-    
+
         setFilteredInstructors(filteredByState);
         setCurrent(0);
     };
-    
+
 
 
     const next = () => setCurrent((prev) => (prev + 1) % filteredInstructors.length);
