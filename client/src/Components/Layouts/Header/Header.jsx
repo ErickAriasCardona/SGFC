@@ -2,16 +2,19 @@ import React, { useState, useRef, useEffect } from 'react';
 import { NavBar } from '../../UI/NavBar/NavBar';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import './Header.css';
+import { Modal_SignIn } from '../../UI/Modal_SignIn/Modal_SignIn';
 
 export const Header = () => {
   const [showCoursesMenu, setShowCoursesMenu] = useState(false);
   const [showGestionesMenu, setShowGestionesMenu] = useState(false);
   const [showEmpleadosMenu, setShowEmpleadosMenu] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
   const coursesMenuRef = useRef(null);
   const gestionesMenuRef = useRef(null);
   const empleadosMenuRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+
 
   const userSession =
     JSON.parse(localStorage.getItem('userSession')) ||
@@ -51,7 +54,8 @@ export const Header = () => {
 
   return (
     <div className="header">
-      <NavBar>
+      <NavBar setShowSignIn={setShowSignIn}>
+
         <NavLink to="/" className={({ isActive }) => (isActive ? 'startOption active' : 'startOption')}>
           Inicio
         </NavLink>
@@ -78,8 +82,6 @@ export const Header = () => {
                 { label: 'Mis cursos', path: '/Cursos/MisCursos' },
                 { label: 'Buscar cursos', path: '/Cursos/BuscarCursos' },
                 { label: 'Crear curso', path: '/Cursos/CrearCurso' },
-                { label: 'Actualizar curso', path: '/Cursos/ActualizarCurso' },
-                { label: 'Asignar instructores', path: '/Cursos/AsignarInstructores' },
               ];
               break;
             case 'Instructor':
@@ -94,8 +96,6 @@ export const Header = () => {
                 { label: 'Mis cursos', path: '/Cursos/MisCursos' },
                 { label: 'Buscar cursos', path: '/Cursos/BuscarCursos' },
                 { label: 'Crear curso', path: '/Cursos/CrearCurso' },
-                { label: 'Actualizar curso', path: '/Cursos/ActualizarCurso' },
-                { label: 'Asignar instructores', path: '/Cursos/AsignarInstructores' },
               ];
               break;
             case 'Empresa':
@@ -163,16 +163,16 @@ export const Header = () => {
               <div className="dropdown-empleados">
                 <div className="arrow-up" />
                 <button onClick={() => handleMenuClick('/Empleados/MisEmpleados')}>Mis empleados</button>
-                <button onClick={() => handleMenuClick('/Empleados/BuscarEmpleado')}>Buscar empleado</button>
                 <button onClick={() => handleMenuClick('/Empleados/CrearEmpleado')}>Crear empleados</button>
                 <button onClick={() => handleMenuClick('/Empleados/CrearVariosEmpleados')}>Crear varios empleados</button>
-                <button onClick={() => handleMenuClick('/Empleados/ActualizarEmpleado')}>Actualizar empleado</button>
               </div>
             )}
           </div>
         )}
-
       </NavBar>
+      {showSignIn && (
+        <Modal_SignIn showSignIn={showSignIn} setShowSignIn={setShowSignIn} />
+      )}
     </div>
   );
 };

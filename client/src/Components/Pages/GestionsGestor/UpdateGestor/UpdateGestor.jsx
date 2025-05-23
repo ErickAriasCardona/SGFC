@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './UpdateGestor.css';
-import axiosInstance from '../../../../config/axiosInstance'; 
+import axiosInstance from '../../../../config/axiosInstance';
 
 export const UpdateGestor = ({ gestor }) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -83,7 +83,7 @@ export const UpdateGestor = ({ gestor }) => {
         <div id="modal-overlayUpdateGestor" style={{ display: 'flex' }}>
             <form className="modal-bodyUpdateGestor" onSubmit={handleButtonClick}>
                 <div className="modal-left-update">
-                    {['nombres', 'apellidos', 'cedula','celular', 'email'].map((field) => (
+                    {['nombres', 'apellidos', 'cedula', 'celular', 'email'].map((field) => (
                         <label key={field}>
                             {field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ')}
                             <input

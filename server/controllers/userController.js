@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const crypto = require("crypto");
-const { sendVerificationEmail, sendPasswordResetEmail } = require("../services/emailService");
+const { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirmationEmail } = require("../services/emailService");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
@@ -8,8 +8,10 @@ const { Op } = require("sequelize");
 // Registrar usuario
 const Empresa = require('../models/empresa'); // Importar el modelo Empresa
 const Sena = require('../models/sena'); // Importar el modelo Sena
-const Departamento = require('../models/departamento'); // Importar el modelo Departamento
+const Departamento = require('../models/departamento'); // Importar el modelo Departamento 
 const Ciudad = require('../models/ciudad'); // Importar el modelo Ciudad
+
+
 
 const registerUser = async (req, res) => {
     try {
@@ -89,12 +91,14 @@ const verifyEmail = async (req, res) => {
         if (!token) {
             return res.status(400).json({ message: "Token no proporcionado" });
         }
-
+        console.log('Token recibido:', token);
         // Buscar usuario por token
         const user = await User.findOne({ where: { token } });
+
         if (!user) {
             return res.status(400).json({ message: "Token inválido o expirado" });
         }
+        console.log('Token en la base de datos:', user.token);
 
         // Actualizar estado de verificación
         user.verificacion_email = true;
@@ -124,6 +128,11 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ message: "Usuario o contraseña incorrectos" });
         }
 
+        // Validar si el correo está verificado
+        if (!user.verificacion_email) {
+            return res.status(403).json({ message: "Debes verificar tu correo antes de iniciar sesión." });
+        }
+
         // Comparar contraseñas
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
@@ -147,7 +156,7 @@ const loginUser = async (req, res) => {
 
         res.status(200).json({
             message: "Inicio de sesión exitoso",
-            id: user.ID, // 👈 Esto es lo que necesitas agregar
+            id: user.ID,
             accountType: user.accountType,
         });
     } catch (error) {
@@ -164,7 +173,6 @@ const logoutUser = (req, res) => {
     });
     res.status(200).json({ message: "Sesión cerrada correctamente" });
 };
-
 
 // Solicitud de restablecimiento de contraseña
 const requestPasswordReset = async (req, res) => {
@@ -193,7 +201,7 @@ const requestPasswordReset = async (req, res) => {
     } catch (error) {
         console.error("Error al solicitar recuperación de contraseña:", error);
         res.status(500).json({ message: "Error al procesar la solicitud de recuperación de contraseña." });
-    }
+    } 
 };
 
 // Cambiar contraseña con token
@@ -222,15 +230,43 @@ const resetPassword = async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
         user.password = hashedPassword;
+        // Limpiar el token usado
         user.resetPasswordToken = null;
         user.resetPasswordExpires = null;
 
+        // Generar un nuevo token de recuperación por si el usuario no hizo el cambio
+        const newResetToken = crypto.randomBytes(32).toString("hex");
+        user.resetPasswordToken = newResetToken;
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hora más
+
         await user.save();
+
+        // Enlace para volver a cambiar la contraseña
+        const resetLink = `http://localhost:5173/resetPassword?token=${newResetToken}`;
+        await sendPasswordChangeConfirmationEmail(user.email, resetLink);
 
         res.status(200).json({ message: "Contraseña restablecida con éxito" });
     } catch (error) {
         console.error("Error al restablecer la contraseña:", error);
         res.status(500).json({ message: "Error al restablecer la contraseña" });
+    }
+};
+
+//limpiar tokens expirados
+const cleanExpiredTokens = async () => {
+    try {
+        // Limpia los tokens de recuperación de contraseña expirados
+        await User.update(
+            { resetPasswordToken: null, resetPasswordExpires: null },
+            {
+                where: {
+                    resetPasswordExpires: { [Op.lt]: Date.now() }
+                }
+            }
+        );
+        console.log("Tokens de recuperación expirados limpiados correctamente.");
+    } catch (error) {
+        console.error("Error al limpiar tokens expirados:", error);
     }
 };
 
@@ -250,47 +286,47 @@ const getAllUsers = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
     try {
-      const userId = req.params.id;
-  
-      const usuario = await User.findByPk(userId, {
-        include: [
-          {
-            model: Sena,
-            as: 'Sena',
-            include: [
-              {
-                model: Ciudad,
-                as: 'Ciudad',
-                attributes: ['ID', 'nombre'],
-                include: [
-                  {
-                    model: Departamento,
-                    as: 'Departamento',
-                    attributes: ['ID', 'nombre'],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            model: Empresa,
-            as: 'Empresa',
-          },
-        ],
-      });
-  
-      if (!usuario) {
-        return res.status(404).json({ error: 'Usuario no encontrado' });
-      }
-  
-      res.json(usuario);
-    } catch (error) {
-      console.error('Error al obtener el perfil del usuario:', error);
-      res.status(500).json({ error: 'Error al obtener el perfil del usuario' });
-    }
-  };    
+        const userId = req.params.id;
 
-//Consultar lista de aprendices 
+        const usuario = await User.findByPk(userId, {
+            include: [
+                {
+                    model: Sena,
+                    as: 'Sena',
+                    include: [
+                        {
+                            model: Ciudad,
+                            as: 'Ciudad',
+                            attributes: ['ID', 'nombre'],
+                            include: [
+                                {
+                                    model: Departamento,
+                                    as: 'Departamento',
+                                    attributes: ['ID', 'nombre'],
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    model: Empresa,
+                    as: 'Empresa',
+                },
+            ],
+        });
+
+        if (!usuario) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        res.json(usuario);
+    } catch (error) {
+        console.error('Error al obtener el perfil del usuario:', error);
+        res.status(500).json({ error: 'Error al obtener el perfil del usuario' });
+    }
+};
+
+//Consultar lista de aprendices
 const getAprendices = async (req, res) => {
     try {
         const aprendices = await User.findAll({
@@ -393,10 +429,22 @@ const updateUserProfile = async (req, res) => {
             password,
         } = req.body;
 
-        // Ruta de la imagen si se envió
+        // Procesar imagen de perfil si se sube
         let foto_perfil = null;
-        if (req.file && req.file.path) {
-            foto_perfil = req.file.path; // Guardar ruta del archivo en disco
+        if (req.file) {
+            const path = require('path');
+            const fs = require('fs');
+            const base64Data = req.file.buffer.toString('base64');
+            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+            const savePath = path.join(__dirname, '../base64storage', uniqueName);
+            if (!fs.existsSync(path.dirname(savePath))) {
+                fs.mkdirSync(path.dirname(savePath), { recursive: true });
+            }
+            fs.writeFileSync(savePath, base64Data);
+            foto_perfil = `/base64storage/${uniqueName}`;
+        } else if (req.file && req.file.path) {
+            // Compatibilidad con imágenes subidas como archivo normal
+            foto_perfil = req.file.path;
         }
 
         const token = req.cookies.token;
@@ -424,7 +472,7 @@ const updateUserProfile = async (req, res) => {
 
         // ADMINISTRADOR
         if (loggedInUser.accountType === "Administrador") {
-            if (["Instructor", "Gestor", "Administrador"].includes(user.accountType)) {
+            if (["Instructor", "Gestor", "Administrador", "Empresa", "Aprendiz"].includes(user.accountType)) {
 
                 // Validaciones únicas
                 if (email && email !== user.email) {
@@ -521,6 +569,24 @@ const updateUserProfile = async (req, res) => {
             return res.status(200).json({ message: "Perfil de empresa actualizado con éxito." });
         }
 
+        // APRENDIZ
+        if (loggedInUser.accountType === "Aprendiz" && user.accountType === "Aprendiz") {
+            if (email) user.email = email;
+            if (nombres) user.nombres = nombres;
+            if (apellidos) user.apellidos = apellidos;
+            if (celular) user.celular = celular;
+            if (cedula) user.cedula = cedula;
+            if (estado) user.estado = estado;
+            if (titulo_profesional) user.titulo_profesional = titulo_profesional;
+            if (password) {
+                const hashedPassword = await bcrypt.hash(password, 10);
+                user.password = hashedPassword;
+            }
+            if (foto_perfil) user.foto_perfil = foto_perfil;
+            await user.save();
+            return res.status(200).json({ message: "Perfil de aprendiz actualizado con éxito." });
+        }
+
         return res.status(403).json({ message: "No tienes permiso para actualizar este perfil." });
     } catch (error) {
         console.error("Error al actualizar el perfil del usuario:", error);
@@ -541,7 +607,16 @@ const updateProfilePicture = async (req, res) => {
 
         console.log("Archivo recibido:", req.file); // Verificar qué archivo se recibió
 
-        const filePath = `uploads/${req.file.filename}`; // Ruta de la imagen subida
+        const path = require('path');
+        const fs = require('fs');
+        const base64Data = req.file.buffer.toString('base64');
+        const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+        const savePath = path.join(__dirname, '../base64storage', uniqueName);
+        if (!fs.existsSync(path.dirname(savePath))) {
+            fs.mkdirSync(path.dirname(savePath), { recursive: true });
+        }
+        fs.writeFileSync(savePath, base64Data);
+        const filePath = `/base64storage/${uniqueName}`; // Ruta de la imagen subida
 
         // Buscar el usuario por ID
         const user = await User.findByPk(id);
@@ -564,33 +639,50 @@ const updateProfilePicture = async (req, res) => {
 // Crear Instructor
 const createInstructor = async (req, res) => {
     try {
-        console.log("Cuerpo de la solicitud:", req.body); 
-        console.log("Archivo recibido:", req.file); 
+        console.log("Cuerpo de la solicitud:", req.body); // Verifica los datos enviados
+        console.log("Archivo recibido:", req.file); // Verifica si el archivo fue recibido
 
         const { nombres, apellidos, titulo_profesional, celular, email, cedula, estado } = req.body;
 
+        // Procesar imagen de perfil si se sube
         let foto_perfil = null;
         if (req.file) {
-            foto_perfil = `uploads/${req.file.filename}`;
+            const path = require('path');
+            const fs = require('fs');
+            const base64Data = req.file.buffer.toString('base64');
+            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+            const savePath = path.join(__dirname, '../base64storage', uniqueName);
+            if (!fs.existsSync(path.dirname(savePath))) {
+                fs.mkdirSync(path.dirname(savePath), { recursive: true });
+            }
+            fs.writeFileSync(savePath, base64Data);
+            foto_perfil = `/base64storage/${uniqueName}`;
         }
 
+        // Validar datos obligatorios
         if (!nombres || !apellidos || !titulo_profesional || !celular || !email || !cedula || !estado) {
             return res.status(400).json({ message: "Todos los campos son obligatorios." });
         }
 
+        // Verificar si el correo ya está registrado
         const existingEmail = await User.findOne({ where: { email } });
         if (existingEmail) {
             return res.status(400).json({ message: "El correo ya está registrado." });
         }
 
+        // Verificar si la cédula ya está registrada
         const existingCedula = await User.findOne({ where: { cedula } });
         if (existingCedula) {
             return res.status(400).json({ message: "La cédula ya está registrada." });
         }
 
+        // Generar token de verificación
         const token = crypto.randomBytes(32).toString("hex");
+
+        // Encriptar la contraseña
         const hashedPassword = await bcrypt.hash("defaultPassword123", 10);
 
+        // Crear el instructor
         const newInstructor = await User.create({
             nombres,
             apellidos,
@@ -600,25 +692,26 @@ const createInstructor = async (req, res) => {
             cedula,
             estado,
             foto_perfil,
-            accountType: "Instructor",
-            password: hashedPassword,
-            verificacion_email: false,
-            token,
-            sena_Id: 1 // ✅ Se asigna la sede fija
+            sena_ID: 1, //ID Sena 
+            accountType: "Instructor", // Tipo de cuenta
+            password: hashedPassword, // Contraseña encriptada
+            verificacion_email: false, // Estado de verificación
+            token, // Token de verificación
         });
 
+        // Enviar correo de verificación
         await sendVerificationEmail(email, token);
 
-        res.status(201).json({ 
-            message: "Instructor creado con éxito. Por favor verifica tu correo.", 
-            instructor: newInstructor 
+
+        res.status(201).json({
+            message: "Instructor creado con éxito. Por favor verifica tu correo.",
+            instructor: newInstructor
         });
     } catch (error) {
         console.error("Error al crear el instructor:", error);
         res.status(500).json({ message: "Error al crear el instructor." });
     }
 };
-
 
 // Crear Gestor
 const createGestor = async (req, res) => {
@@ -628,10 +721,19 @@ const createGestor = async (req, res) => {
 
         const { nombres, apellidos, celular, email, cedula, estado } = req.body;
 
-        // Verificar si se subió un archivo
+        // Procesar imagen de perfil si se sube
         let foto_perfil = null;
         if (req.file) {
-            foto_perfil = `uploads/${req.file.filename}`; // Ruta de la imagen subida
+            const path = require('path');
+            const fs = require('fs');
+            const base64Data = req.file.buffer.toString('base64');
+            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+            const savePath = path.join(__dirname, '../base64storage', uniqueName);
+            if (!fs.existsSync(path.dirname(savePath))) {
+                fs.mkdirSync(path.dirname(savePath), { recursive: true });
+            }
+            fs.writeFileSync(savePath, base64Data);
+            foto_perfil = `/base64storage/${uniqueName}`;
         }
 
         // Validar datos obligatorios
@@ -666,10 +768,11 @@ const createGestor = async (req, res) => {
             cedula,
             estado,
             foto_perfil,
+            sena_ID: 1, // Asignar la sede por defecto
             accountType: "Gestor", // Tipo de cuenta
             password: hashedPassword, // Contraseña encriptada
-            verificacion_email: false, // Estado de verificación
-            sena_ID: 1, 
+            verificacion_email: false, // Estado de verificació
+            sena_ID: 1,
             token, // Token de verificación
         });
 
@@ -683,4 +786,44 @@ const createGestor = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor, logoutUser };
+// Consultar Empleados por Empresa
+const getAprendicesByEmpresa = async (req, res) => {
+    try {
+        // Verifica el token y obtiene el usuario logueado
+        const token = req.cookies.token;
+        if (!token) {
+            return res.status(401).json({ message: "No autorizado. Debes iniciar sesión." });
+        }
+
+        const loggedInUser = jwt.verify(token, process.env.JWT_SECRET || "secret");
+        if (!loggedInUser || loggedInUser.accountType !== "Empresa") {
+            return res.status(403).json({ message: "Solo las empresas pueden acceder a esta información." });
+        }
+
+        // Busca la empresa asociada al usuario logueado
+        const empresaUser = await User.findByPk(loggedInUser.id, {
+            include: [{ model: Empresa, as: "Empresa" }]
+        });
+
+        if (!empresaUser || !empresaUser.empresa_ID) {
+            return res.status(404).json({ message: "Empresa no encontrada o no asociada." });
+        }
+
+        // Busca los aprendices relacionados con la empresa
+        const aprendices = await User.findAll({
+            where: {
+                accountType: "Aprendiz",
+                empresa_ID: empresaUser.empresa_ID
+            },
+            attributes: { exclude: ['password', 'token', 'resetPasswordToken', 'resetPasswordExpires'] }
+        });
+
+        res.status(200).json(aprendices);
+    } catch (error) {
+        console.error("Error al obtener los aprendices de la empresa:", error);
+        res.status(500).json({ message: "Error al obtener los aprendices de la empresa." });
+    }
+};
+
+
+module.exports = {getAprendicesByEmpresa,  registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor, logoutUser, cleanExpiredTokens };

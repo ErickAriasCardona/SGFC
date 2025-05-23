@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import './CreateInstructor.css';
 import addIMG from '../../../../assets/Icons/addImg.png';
-
+import axiosInstance from '../../../../config/axiosInstance';
 export const CreateInstructor = ({ onClose }) => {
     const fileInputRef = useRef(null);
     const [preview, setPreview] = useState(null);
@@ -56,28 +56,22 @@ export const CreateInstructor = ({ onClose }) => {
         data.append('estado', formData.estado);
 
         try {
-            const response = await fetch('http://localhost:3001/crearInstructor', {
-                method: 'POST',
-                body: data,
+            const response = await axiosInstance.post('/crearInstructor', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Error del servidor:', errorData);
-                alert(`Error: ${errorData.message}`);
-                return; // Detener el flujo si hay un error
-            }
-
-            const result = await response.json();
             alert('Instructor creado con éxito');
-            console.log(result);
+            console.log(response.data);
 
             // Cerrar el modal y recargar la página
             document.getElementById("modal-overlayCreateInstructor").style.display = "none";
             window.location.reload();
         } catch (error) {
             console.error('Error al crear el instructor:', error);
-            alert('Hubo un problema al crear el instructor.');
+            const errorMsg = error.response?.data?.message || 'Hubo un problema al crear el instructor.';
+            alert(`Error: ${errorMsg}`);
         }
     };
 
