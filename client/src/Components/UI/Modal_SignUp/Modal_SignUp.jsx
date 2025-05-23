@@ -217,8 +217,8 @@ export const Modal_SignUp = ({ accountType }) => {
 
           <div className="option_signIn">
             <div className="logo">Logo</div>
-            <h3>Lorem Ipsum es simplemente el texto</h3>
-            <p>Lorem Ipsum es simplemente</p>
+            <h3>Lorem Ipsum es simplemente el texto</h3>
+            <p>Lorem Ipsum es simplemente</p>
             <button className="goTo_SignIn" onClick={showModalSignIn}>
               Iniciar sesión
             </button>

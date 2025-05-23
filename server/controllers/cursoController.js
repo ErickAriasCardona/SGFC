@@ -4,6 +4,8 @@ const User = require("../models/User");
 const path = require("path");
 
 const  AsignacionCursoInstructor = require('../models/AsignacionCursoInstructor');
+const { Router } = require("express");
+const upload = require("../config/multer");
 
 //Asignar cursos
 const asignarCursoAInstructor = async (req, res) => {
@@ -128,9 +130,25 @@ const createCurso = async (req, res) => {
       });
     }
 
+    let image = null;
+        if (req.file) {
+          const base64Data = req.file.buffer.toString('base64');
+          const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+          const savePath = path.join(__dirname, '../base64storage', uniqueName);
+    
+          if (!fs.existsSync(path.dirname(savePath))) {
+            fs.mkdirSync(path.dirname(savePath), { recursive: true});
+          }
+          fs.writeFileSync(savePath, base64Data);
+    
+          image = `/base64storage/${uniqueName}`;
+        } 
+        
+    /*
     // Obtener la ruta de la imagen subida
     const imagen = req.file ? `/uploads/${req.file.filename}` : null;
-
+    */
+    
     // Crear el curso
     const nuevoCurso = await Curso.create({
       nombre_curso,
@@ -144,7 +162,7 @@ const createCurso = async (req, res) => {
       hora_fin,
       dias_formacion,
       lugar_formacion,
-      imagen,
+      imagen: image,
     });
 
     res.status(201).json({ message: "Curso creado con éxito.", curso: nuevoCurso });
@@ -190,7 +208,20 @@ const updateCurso = async (req, res) => {
     }
 
     // Verificar si se envió una nueva imagen
-    const imagen = req.file ? `/uploads/${req.file.filename}` : curso.imagen;
+    //const imagen = req.file ? `/uploads/${req.file.filename}` : curso.imagen;
+    let image = null;
+        if (req.file) {
+          const base64Data = req.file.buffer.toString('base64');
+          const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+          const savePath = path.join(__dirname, '../base64storage', uniqueName);
+    
+          if (!fs.existsSync(path.dirname(savePath))) {
+            fs.mkdirSync(path.dirname(savePath), { recursive: true});
+          }
+          fs.writeFileSync(savePath, base64Data);
+    
+          image = `/base64storage/${uniqueName}`;
+        }
 
     // Actualizar el curso
     await curso.update({
@@ -205,7 +236,7 @@ const updateCurso = async (req, res) => {
       dias_formacion,
       lugar_formacion,
       estado,
-      imagen, // Actualizar la imagen si se envió una nueva
+      imagen: image, // Actualizar la imagen si se envió una nueva
     });
 
     res.status(200).json({ message: "Curso actualizado con éxito.", curso });
@@ -270,5 +301,46 @@ const getCursoByFicha = async (req, res) => {
   }
 };
 
-module.exports = { createCurso, updateCurso, getAllCursos, getCursoById, getCursoByFicha, asignarCursoAInstructor, obtenerCursosAsignadosAInstructor };
+// Nuevo controlador para transformacion
+
+    const fs = require('fs');
+    
+    const uploadImagesBase64 = async (req, res) => {
+      try{
+          const file = req.file;
+          if (!file) return res.status(400).json({message: 'No se recibio ningun archivo'});
+
+          const base64Data = file.buffer.toString('base64');
+          const uniqueName = `${file.fieldname}-${Date.now()}.txt`;
+          const savePath = path.join(__dirname, '../base64storage', uniqueName);
+
+          if (!fs.existsSync(path.dirname(savePath))) {
+            fs.mkdirSync(path.dirname(savePath), {recursive: true});
+          }
+
+          fs.writeFileSync(savePath, base64Data);
+
+          return res.status(200).json({
+            message: 'Imagen convertida y guardada.',
+            filename: uniqueName,
+            path: savePath
+          });
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({message:'Error al guardar la imagen.'});
+      }
+      
+    };
+
+module.exports = { 
+  createCurso, 
+  updateCurso, 
+  getAllCursos, 
+  getCursoById, 
+  getCursoByFicha, 
+  asignarCursoAInstructor, 
+  obtenerCursosAsignadosAInstructor,
+  uploadImagesBase64
+};
+
 
