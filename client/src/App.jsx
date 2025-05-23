@@ -40,6 +40,20 @@ import './App.css';
 function App() {
   const navigate = useNavigate();
   const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
+  const [showAccountType, setShowAccountType] = useState(true);
+  const [selectedAccountType, setSelectedAccountType] = useState("");
+
+  useEffect(() => {
+    // Inicializar el cliente de Google
+    if (window.gapi) {
+      window.gapi.load('auth2', () => {
+        window.gapi.auth2.init({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID
+        });
+      });
+    }
+  }, []);
 
   useEffect(() => {
     // Verifica si hay una sesión guardada en localStorage
@@ -50,15 +64,20 @@ function App() {
       navigate('/Inicio', { state: { accountType } });
     }
   }, [navigate]);
-  
+
   return (
     // Envuelve tu aplicación con GoogleOAuthProvider
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <>
         {/* Modales globales */}
         <Modal_SignIn showSignIn={showSignIn} setShowSignIn={setShowSignIn} />
-        <Modal_General />
-        <Modal_SignUp />
+        <Modal_SignUp
+          accountType={selectedAccountType}
+          setSelectedAccountType={setSelectedAccountType}
+          setShowSignUp={setShowSignUp}
+          setShowSignIn={setShowSignIn}
+          setShowAccountType={setShowAccountType}
+        />
         <Modal_Successful />
         <Modal_Failed />
         <CreateInstructor />

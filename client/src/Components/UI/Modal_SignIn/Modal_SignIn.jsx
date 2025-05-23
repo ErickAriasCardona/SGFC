@@ -16,7 +16,10 @@ import { GoogleLogin } from '@react-oauth/google';
 
 import axiosInstance from "../../../config/axiosInstance";
 
-export const Modal_SignIn = ({ showSignIn, setShowSignIn }) => {
+export const Modal_SignIn = ({ showSignIn,
+  setShowSignIn,
+  setShowSignUp,
+  setShowAccountType, }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,6 +28,7 @@ export const Modal_SignIn = ({ showSignIn, setShowSignIn }) => {
   const [selectedAccountType, setSelectedAccountType] = useState(""); // Estado para guardar el tipo de cuenta seleccionado
   const navigate = useNavigate();
   const closeModalSignIn = () => setShowSignIn(false);
+
 
   const showModalAccountType = () => {
     const modalGeneral = document.getElementById("container_modalGeneral");
@@ -150,7 +154,12 @@ export const Modal_SignIn = ({ showSignIn, setShowSignIn }) => {
       </Modal_General>
 
       {/* Modal SignUp para el registro */}
-      <Modal_SignUp accountType={selectedAccountType} />
+      <Modal_SignUp
+        accountType={selectedAccountType}
+        setShowSignUp={setShowSignUp}
+        setShowSignIn={setShowSignIn}
+        setShowAccountType={setShowAccountType}
+      />
       {showSignIn && (
         <div id="container_signIn">
           <div className="modalSignIn">
@@ -164,7 +173,7 @@ export const Modal_SignIn = ({ showSignIn, setShowSignIn }) => {
               <img src={ilustration_03} alt="" />
             </div>
             <div className="container_form_signIn">
-              <div className="container_triangles_01_register">
+              <div className="container_triangles_01_login">
                 <div className="triangle_01"></div>
                 <div className="triangle_02"></div>
                 <div className="triangle_03"></div>
@@ -210,15 +219,18 @@ export const Modal_SignIn = ({ showSignIn, setShowSignIn }) => {
                     Iniciar sesión
                   </button>
                   <p className="otherOption">o</p>
-                  <GoogleLogin
-                    onSuccess={handleGoogleResponse}
-                    onError={() => alert('Error al iniciar sesión con Google')}
-                    theme="filled_blue"
-                    size="large" 
-                    text="signin_with"
-                    shape="rectangular" 
-                    width="300" 
-                  />
+                  <div className="google-login-container">
+                    <GoogleLogin
+                      onSuccess={handleGoogleResponse}
+                      onError={() => alert('Error al iniciar sesión con Google')}
+                      theme="filled_black"
+                      size="large"
+                      text="signin_with"
+                      shape="rectangular"
+                      width="270"
+                      locale="es"
+                    />
+                  </div>
 
                 </form>
                 <NavLink to={"/forgotPassword"} className={"forgetPassword"}>
@@ -226,14 +238,14 @@ export const Modal_SignIn = ({ showSignIn, setShowSignIn }) => {
                 </NavLink>
               </div>
 
-              <div className="container_triangles_02_register">
+              <div className="container_triangles_02_login">
                 <div className="triangle_01"></div>
                 <div className="triangle_02"></div>
                 <div className="triangle_03"></div>
               </div>
             </div>
             <div className="container_return_signIn">
-              <h5>Volver</h5>
+              <h5 onClick={closeModalSignIn} style={{ cursor: "pointer" }}>Volver</h5>
               <button onClick={closeModalSignIn} className="closeModal"></button>
             </div>
           </div>

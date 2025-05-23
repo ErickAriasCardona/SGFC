@@ -6,7 +6,11 @@ import seePassword from "../../../assets/Icons/seePassword.png";
 import hidePassword from "../../../assets/Icons/hidePassword.png";
 import iconGoogle from "../../../assets/Icons/google.png";
 import { Modal_Successful } from "../Modal_Successful/Modal_Successful";
-export const Modal_SignUp = ({ accountType }) => {
+
+export const Modal_SignUp = ({ accountType,
+  setShowSignUp,
+  setShowSignIn,
+  setShowAccountType, }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -19,6 +23,7 @@ export const Modal_SignUp = ({ accountType }) => {
   });
   const [showPassword, setShowPassword] = useState(false); // Estado para controlar la visibilidad
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Estado para controlar la visibilidad
+  const closeModalSignUp = () => setShowSignUp(false);
 
   // 🔄 Limpia los campos cada vez que se seleccione un nuevo tipo de cuenta
   useEffect(() => {
@@ -39,7 +44,7 @@ export const Modal_SignUp = ({ accountType }) => {
 
   const registerUser = async (event) => {
     event.preventDefault();
-  
+
     // Validar que todos los requisitos de la contraseña se cumplan
     if (
       !passwordRequirements.length ||
@@ -52,7 +57,7 @@ export const Modal_SignUp = ({ accountType }) => {
       );
       return;
     }
-  
+
     // Validar que las contraseñas coincidan
     if (password !== confirmPassword) {
       alert("Las contraseñas no coinciden");
@@ -60,7 +65,7 @@ export const Modal_SignUp = ({ accountType }) => {
       setConfirmPassword("");
       return;
     }
-  
+
     // Enviar datos al backend
     try {
       const response = await Axios.post("http://localhost:3001/createUser", {
@@ -68,19 +73,19 @@ export const Modal_SignUp = ({ accountType }) => {
         password,
         accountType, // Tipo de cuenta seleccionado
       });
-  
+
       // Mostrar el Modal_Successful cambiando su estilo a display: flex
       const modalSuccefull = document.getElementById("container_modalSucessfull");
       if (modalSuccefull) {
         document.getElementById("container_signUp").style.display = "none"; // Cierra el Modal_SignUp
-  
+
         modalSuccefull.style.display = "flex"; // Cambia el display a flex para mostrar el modal
-  
+
         // Cerrar el Modal_Successful automáticamente después de 5 segundos y recargar la página
         setTimeout(() => {
           modalSuccefull.style.display = "none";
           window.location.reload(); // Recargar la página
-          
+
         }, 3000);
       }
     } catch (error) {
@@ -92,24 +97,28 @@ export const Modal_SignUp = ({ accountType }) => {
     }
   };
 
-  const closeModalSignUp = () => {
-    document.getElementById("container_signUp").style.display = "none";
-    document.getElementById("container_modalGeneral").style.display = "flex"; // abre el Modal_AccountType
+  /* // Cerrar el modal de registro y mostrar el de tipo de cuenta
+  const closeModalSignUp = () => { // <--- This is the function
+    console.log('Inside closeModalSignUp. setShowSignUp:', setShowSignUp);
+    console.log('Type of setShowSignUp:', typeof setShowSignUp);
+    setShowSignUp(false); // This is likely line 101
   };
-
+ */
+ /*  // Cerrar el modal de registro y mostrar el de inicio de sesión
   const showModalSignIn = () => {
-    document.getElementById("container_AccountType").style.display = "none";
-    document.getElementById("container_signUp").style.display = "none";
-    document.getElementById("container_signIn").style.display = "flex";
+    console.log('Inside showModalSignIn. setShowSignIn:', setShowSignUp);
+    console.log('Type of setShowSignIn:', typeof setShowSignUp);
+    setShowSignUp(false);
+    setShowSignIn(true);
   };
-
+ */
   return (
     <>
 
       {/* Modal General para mostrar el mensaje de éxito */}
       <Modal_Successful closeModal={() => (document.getElementById("container_modalSucessfull").style.display = "none")}>
-      <h2>Registro exitoso</h2>
-      <p>"Hemos enviado un enlace de verificación a tu correo. Haz click en él para activar tu cuenta"</p>
+        <h2>Registro exitoso</h2>
+        <p>"Hemos enviado un enlace de verificación a tu correo. Haz click en él para activar tu cuenta"</p>
       </Modal_Successful>
 
       <div id="container_signUp">
@@ -219,14 +228,14 @@ export const Modal_SignUp = ({ accountType }) => {
             <div className="logo">Logo</div>
             <h3>Lorem Ipsum es simplemente el texto</h3>
             <p>Lorem Ipsum es simplemente</p>
-            <button className="goTo_SignIn" onClick={showModalSignIn}>
+            <button className="goTo_SignIn">
               Iniciar sesión
             </button>
             <img src={ilustration_02} alt="" />
           </div>
 
           <div className="container_return_signUp">
-            <h5>Volver</h5>
+            <h5 onClick={closeModalSignUp} style={{ cursor: "pointer" }}>Volver</h5>
             <button onClick={closeModalSignUp} className="closeModal"></button>
           </div>
         </div>
