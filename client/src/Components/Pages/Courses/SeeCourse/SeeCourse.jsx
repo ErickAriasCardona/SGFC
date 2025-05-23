@@ -73,6 +73,9 @@ export const SeeCourse = () => {
         startDate: curso.fecha_inicio ? curso.fecha_inicio.split('T')[0] : '',
         endDate: curso.fecha_fin ? curso.fecha_fin.split('T')[0] : '',
         selectedSlots: curso.dias_formacion ? JSON.parse(curso.dias_formacion) : [],
+        startDate: curso.fecha_inicio ? curso.fecha_inicio.split('T')[0] : '',
+        endDate: curso.fecha_fin ? curso.fecha_fin.split('T')[0] : '',
+        selectedSlots: curso.dias_formacion ? JSON.parse(curso.dias_formacion) : [],
     };
 
     return (
@@ -181,14 +184,10 @@ export const SeeCourse = () => {
                     closeModal={() => setIsViewCalendarOpen(false)}
                 />
             )}
-            {isViewCalendarOpen && (
-                <ViewCalendar
-                    calendarData={calendarData}
-                    closeModal={() => setIsViewCalendarOpen(false)}
-                />
-            )}
 
         </>
     );
 };
+
+
 
