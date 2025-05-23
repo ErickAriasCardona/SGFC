@@ -143,11 +143,38 @@
 }
 
 .updateProfile{
+    position: absolute;
+    z-index: 999999999;
+    top:6.1rem;
+    right: 7rem;
     width: 4rem;
     height: 4rem;
     background-color: #b0b0b0;
     border-radius: 10px;
     border-style: none;
+    background: center / 70% no-repeat url('../../../assets/Icons/buttonEdit.png'),
+    #b0b0b0;
+    
+}
+
+.updateProfile.cancel {
+  background-image: url('../../../assets/Icons/cerca.png');
+  background-size: 60%;
+}
+
+.updateProfile1{
+    position: absolute;
+    z-index: 999999999;
+    top:11rem;
+    right: 7rem;
+    width: 4rem;
+    height: 4rem;
+    background-color: #b0b0b0;
+    border-radius: 10px;
+    border-style: none;
+    background: center / 70% no-repeat url('../../../assets/Icons/marca-de-verificacion.png'),
+    #b0b0b0;
+    
 }
 
 .input_updateData{
