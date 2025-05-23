@@ -2,16 +2,19 @@ import React, { useState, useRef, useEffect } from 'react';
 import { NavBar } from '../../UI/NavBar/NavBar';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import './Header.css';
+import { Modal_SignIn } from '../../UI/Modal_SignIn/Modal_SignIn';
 
 export const Header = () => {
   const [showCoursesMenu, setShowCoursesMenu] = useState(false);
   const [showGestionesMenu, setShowGestionesMenu] = useState(false);
   const [showEmpleadosMenu, setShowEmpleadosMenu] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
   const coursesMenuRef = useRef(null);
   const gestionesMenuRef = useRef(null);
   const empleadosMenuRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+
 
   const userSession =
     JSON.parse(localStorage.getItem('userSession')) ||
@@ -51,7 +54,8 @@ export const Header = () => {
 
   return (
     <div className="header">
-      <NavBar>
+      <NavBar setShowSignIn={setShowSignIn}>
+
         <NavLink to="/" className={({ isActive }) => (isActive ? 'startOption active' : 'startOption')}>
           Inicio
         </NavLink>
@@ -165,8 +169,10 @@ export const Header = () => {
             )}
           </div>
         )}
-
       </NavBar>
+      {showSignIn && (
+        <Modal_SignIn showSignIn={showSignIn} setShowSignIn={setShowSignIn} />
+      )}
     </div>
   );
 };

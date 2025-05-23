@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Axios from "axios";
 import "./Modal_SignUp.css";
 import ilustration_02 from "../../../assets/Ilustrations/SignUp.svg";
 import seePassword from "../../../assets/Icons/seePassword.png";
@@ -7,8 +6,11 @@ import hidePassword from "../../../assets/Icons/hidePassword.png";
 import iconGoogle from "../../../assets/Icons/google.png";
 import { Modal_Successful } from "../Modal_Successful/Modal_Successful";
 import axiosInstance from "../../../config/axiosInstance";
+import { GoogleLogin } from '@react-oauth/google';
+import { useNavigate } from "react-router-dom";
 
 export const Modal_SignUp = ({ accountType }) => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -73,16 +75,23 @@ export const Modal_SignUp = ({ accountType }) => {
   
       // Mostrar el Modal_Successful cambiando su estilo a display: flex
       const modalSuccefull = document.getElementById("container_modalSucessfull");
-      if (modalSuccefull) {
-        document.getElementById("container_signUp").style.display = "none"; // Cierra el Modal_SignUp
+      const modalSignUp = document.getElementById("container_signUp");
+      const modalGeneral = document.getElementById("container_modalGeneral");
+      
+      if (modalSuccefull && modalSignUp) {
+        modalSignUp.style.display = "none"; // Cierra el Modal_SignUp
+  
+        // Asegurarse de que el modal de tipo de cuenta no se muestre
+        if (modalGeneral) {
+          modalGeneral.style.display = "none";
+        }
   
         modalSuccefull.style.display = "flex"; // Cambia el display a flex para mostrar el modal
   
-        // Cerrar el Modal_Successful automáticamente después de 5 segundos y recargar la página
+        // Cerrar el Modal_Successful automáticamente después de 3 segundos y recargar la página
         setTimeout(() => {
           modalSuccefull.style.display = "none";
-          window.location.reload(); // Recargar la página
-          
+          navigate('/', { state: { accountType } });
         }, 3000);
       }
     } catch (error) {
@@ -95,14 +104,87 @@ export const Modal_SignUp = ({ accountType }) => {
   };
 
   const closeModalSignUp = () => {
-    document.getElementById("container_signUp").style.display = "none";
-    document.getElementById("container_modalGeneral").style.display = "flex"; // abre el Modal_AccountType
+    const modalSignUp = document.getElementById("container_signUp");
+    const modalGeneral = document.getElementById("container_modalGeneral");
+    
+    if (modalSignUp) {
+      modalSignUp.style.display = "none";
+    }
+    
+    if (modalGeneral) {
+      modalGeneral.style.display = "flex"; // abre el Modal_AccountType
+    }
   };
 
   const showModalSignIn = () => {
-    document.getElementById("container_AccountType").style.display = "none";
-    document.getElementById("container_signUp").style.display = "none";
-    document.getElementById("container_signIn").style.display = "flex";
+    const modalAccountType = document.getElementById("container_modalGeneral");
+    const modalSignUp = document.getElementById("container_signUp");
+    const modalSignIn = document.getElementById("container_signIn");
+    
+    if (modalAccountType) {
+      modalAccountType.style.display = "none";
+    }
+    
+    if (modalSignUp) {
+      modalSignUp.style.display = "none";
+    }
+    
+    if (modalSignIn) {
+      modalSignIn.style.display = "flex";
+    }
+  };
+
+  const handleGoogleResponse = async (response) => {
+    const idToken = response.credential;
+    
+    try {
+      const response = await fetch("http://localhost:3001/auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ idToken, accountType }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Guardar información del usuario en sessionStorage
+        sessionStorage.setItem("userSession", JSON.stringify({
+          googleId: data.user.googleId,
+          accountType: data.user.accountType,
+          email: data.user.email,
+        }));
+
+        // Mostrar el Modal_Successful
+        const modalSuccefull = document.getElementById("container_modalSucessfull");
+        const modalSignUp = document.getElementById("container_signUp");
+        const modalGeneral = document.getElementById("container_modalGeneral");
+        
+        if (modalSuccefull && modalSignUp) {
+          modalSignUp.style.display = "none";
+          
+          // Asegurarse de que el modal general permanezca oculto
+          if (modalGeneral) {
+            modalGeneral.style.display = "none";
+          }
+          
+          modalSuccefull.style.display = "flex";
+
+          // Usar navigate en lugar de window.location.reload
+          setTimeout(() => {
+            modalSuccefull.style.display = "none";
+            navigate('/', { state: { accountType: data.user.accountType } });
+          }, 3000);
+        }
+      } else {
+        console.error('Error en el registro con Google (backend):', data.message);
+        alert(data.message || 'Error en el registro con Google');
+      }
+    } catch (error) {
+      console.error('Error de red al enviar el token de Google:', error);
+      alert('Error al conectar con el servidor');
+    }
   };
 
   return (
@@ -204,9 +286,18 @@ export const Modal_SignUp = ({ accountType }) => {
                   Registrarse
                 </button>
                 <p className="otherOption">o</p>
-                <button className="button_registerGoogle">
-                  <img src={iconGoogle} alt="" /> Continuar con Google
-                </button>
+                <div className="google-login-container">
+                  <GoogleLogin
+                    onSuccess={handleGoogleResponse}
+                    onError={() => alert('Error al registrarse con Google')}
+                    theme="filled_black"
+                    size="large"
+                    text="signup_with"
+                    shape="rectangular"
+                    width="270"
+                    locale="es"
+                  />
+                </div>
               </form>
             </div>
 
@@ -219,8 +310,8 @@ export const Modal_SignUp = ({ accountType }) => {
 
           <div className="option_signIn">
             <div className="logo">Logo</div>
-            <h3>Lorem Ipsum es simplemente el texto</h3>
-            <p>Lorem Ipsum es simplemente</p>
+            <h3>Lorem Ipsum es simplemente el texto</h3>
+            <p>Lorem Ipsum es simplemente</p>
             <button className="goTo_SignIn" onClick={showModalSignIn}>
               Iniciar sesión
             </button>

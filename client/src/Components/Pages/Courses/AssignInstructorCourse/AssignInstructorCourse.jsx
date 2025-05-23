@@ -59,28 +59,45 @@ export const AssignInstructorCourse = ({ curso_ID, onClose }) => {
     const next = () => setCurrent((prev) => (prev + 1) % filteredInstructors.length);
     const prev = () => setCurrent((prev) => (prev - 1 + filteredInstructors.length) % filteredInstructors.length);
 
-    const asignarInstructor = async (instructor_ID) => {
-        try {
-            const user = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('userSession'));
-            const gestor_ID = user?.id;
-
-            const response = await axiosInstance.post('/asignaciones', {
-                gestor_ID,
-                instructor_ID,
-                curso_ID,
-                fecha_asignacion: new Date(),
-                estado: 'aceptada'
-            });
-
-            alert(response.data.mensaje || 'Instructor asignado correctamente');
-            if (onClose) onClose(); // ✅ Cierra el modal desde el padre
-        } catch (error) {
-            alert(
-                error.response?.data?.mensaje ||
-                'Error al asignar el instructor. Intenta de nuevo.'
-            );
+const asignarInstructor = async (instructor_ID) => {
+    try {
+        // Busca primero en localStorage, luego en sessionStorage
+        let userSessionString = localStorage.getItem('userSession');
+        if (!userSessionString) {
+            userSessionString = sessionStorage.getItem('userSession');
         }
-    };
+        if (!userSessionString) {
+            alert('No se encontró la sesión de usuario.');
+            return;
+        }
+        const user = JSON.parse(userSessionString);
+        const gestor_ID = user?.id;
+        // Mostrar en consola los datos que se enviarán
+        console.log({
+            gestor_ID,
+            instructor_ID,
+            curso_ID,
+            fecha_asignacion: new Date(),
+            estado: 'aceptada'
+        });
+
+        const response = await axiosInstance.post('/asignaciones', {
+            gestor_ID,
+            instructor_ID,
+            curso_ID,
+            fecha_asignacion: new Date(),
+            estado: 'aceptada'
+        });
+
+        alert(response.data.mensaje || 'Instructor asignado correctamente');
+        if (onClose) onClose();
+    } catch (error) {
+        alert(
+            error.response?.data?.mensaje ||
+            'Error al asignar el instructor. Intenta de nuevo.'
+        );
+    }
+};
 
     return (
         <div id='modal-assingInstructorCourse'>

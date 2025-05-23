@@ -8,7 +8,7 @@ import logout from '../../../assets/Icons/cerrar-sesion.png'
 import axiosInstance from '../../../config/axiosInstance'
 
 
-export const NavBar = ({ children }) => {
+export const NavBar = ({ children, setShowSignIn }) => {
   const navigate = useNavigate();
 
   // Obtener la sesión del usuario desde localStorage o sessionStorage
@@ -17,11 +17,6 @@ export const NavBar = ({ children }) => {
     JSON.parse(sessionStorage.getItem('userSession'));
 
   const isLoggedIn = !!userSession; // Verificar si el usuario está logueado
-
-  // Función para mostrar el modal de inicio de sesión
-  const showModalSignIn = () => {
-    document.getElementById('container_signIn').style.display = 'flex';
-  };
 
   // ✅ Manejador para el click en perfil
   const handleProfileClick = () => {
@@ -56,7 +51,7 @@ export const NavBar = ({ children }) => {
 
       {/* Mostrar el botón de "Iniciar sesión" solo si el usuario no está logueado */}
       {!isLoggedIn && (
-        <button className="button_signIn" onClick={showModalSignIn}>
+        <button className="button_signIn" onClick={() => setShowSignIn(true)}>
           Iniciar sesión
         </button>
       )}
