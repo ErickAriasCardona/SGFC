@@ -16,11 +16,10 @@ import { GestionsInstructor } from './Components/Pages/GestionsInstructor/Gestio
 import { GestionsGestor } from './Components/Pages/GestionsGestor/GestionsGestor';
 import { SeeMyProfile } from './Components/Pages/SeeMyProfile/SeeMyProfile';
 import { GestionsCompany } from './Components/Pages/GestionsCompany/GestionsCompany';
-import { ConsultEmployes } from './Components/Pages/GestionsEmployes/ConsultEmployes/ConsultEmployes';
 import { CreateEmploye } from './Components/Pages/GestionsEmployes/CreateEmploye/CreateEmploye';
 import { UpdateEmploye } from './Components/Pages/GestionsEmployes/UpdateEmploye/UpdateEmploye';
 import { SeachEmployes } from './Components/Pages/GestionsEmployes/SeachEmployes/SeachEmployes';
-
+import { GestionsEmployes } from './Components/Pages/GestionsEmployes/GestionsEmployes';
 // Importación de modales
 import { Modal_SignIn } from './Components/UI/Modal_SignIn/Modal_SignIn';
 import { Modal_General } from './Components/UI/Modal_General/Modal_General';
@@ -74,10 +73,9 @@ function App() {
         <Route path="/Gestiones/Gestor" element={<GestionsGestor />} />
         <Route path="/MiPerfil" element={<SeeMyProfile />} />
         <Route path="/Gestiones/Empresas" element={<GestionsCompany />} />
-        <Route path="/Empleados/MisEmpleados" element={<ConsultEmployes />} />
+        <Route path="/Empleados/MisEmpleados" element={<GestionsEmployes />} />
         <Route path="/Empleados/CrearEmpleado" element={<CreateEmploye />} />
         <Route path="/Empleados/ActualizarEmpleado/:id" element={<UpdateEmploye />} />
-        <Route path="/Empleados/BuscarEmpleado" element={<SeachEmployes />} />
         {/* <Route path="/Cursos/AsignarInstructores" element={<AssignInstructorCourse />} /> */}
         
       

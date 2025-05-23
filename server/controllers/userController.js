@@ -624,7 +624,6 @@ const createInstructor = async (req, res) => {
     }
 };
 
-
 // Crear Gestor
 const createGestor = async (req, res) => {
     try {
@@ -688,4 +687,44 @@ const createGestor = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor, logoutUser };
+// Consultar Empleados por Empresa
+const getAprendicesByEmpresa = async (req, res) => {
+    try {
+        // Verifica el token y obtiene el usuario logueado
+        const token = req.cookies.token;
+        if (!token) {
+            return res.status(401).json({ message: "No autorizado. Debes iniciar sesión." });
+        }
+
+        const loggedInUser = jwt.verify(token, process.env.JWT_SECRET || "secret");
+        if (!loggedInUser || loggedInUser.accountType !== "Empresa") {
+            return res.status(403).json({ message: "Solo las empresas pueden acceder a esta información." });
+        }
+
+        // Busca la empresa asociada al usuario logueado
+        const empresaUser = await User.findByPk(loggedInUser.id, {
+            include: [{ model: Empresa, as: "Empresa" }]
+        });
+
+        if (!empresaUser || !empresaUser.empresa_ID) {
+            return res.status(404).json({ message: "Empresa no encontrada o no asociada." });
+        }
+
+        // Busca los aprendices relacionados con la empresa
+        const aprendices = await User.findAll({
+            where: {
+                accountType: "Aprendiz",
+                empresa_ID: empresaUser.empresa_ID
+            },
+            attributes: { exclude: ['password', 'token', 'resetPasswordToken', 'resetPasswordExpires'] }
+        });
+
+        res.status(200).json(aprendices);
+    } catch (error) {
+        console.error("Error al obtener los aprendices de la empresa:", error);
+        res.status(500).json({ message: "Error al obtener los aprendices de la empresa." });
+    }
+};
+
+
+module.exports = { getAprendicesByEmpresa, registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor, logoutUser };

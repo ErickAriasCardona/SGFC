@@ -5,6 +5,7 @@ import { Footer } from '../../../Components/Layouts/Footer/Footer';
 import { Main } from '../../../Components/Layouts/Main/Main';
 import { UpdateInstructor } from './UpdateInstructor/UpdateInstructor';
 import axiosInstance from '../../../config/axiosInstance';
+
 export const GestionsInstructor = () => {
     const [instructors, setInstructors] = useState([]); // Estado para almacenar los instructores
     const [filteredInstructors, setFilteredInstructors] = useState([]); // Estado para los instructores filtrados
