@@ -78,40 +78,42 @@ export const Modal_SignIn = ({ showSignIn,
       });
   };
 
-
   const handleGoogleResponse = async (response) => {
     const idToken = response.credential;
-  
+
     try {
-      const response = await fetch("http://localhost:3001/auth", {
+      const res = await fetch("http://localhost:3001/auth/googleSignIn", { // Cambia la ruta a googleSignIn
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ idToken }),
+        body: JSON.stringify({ idToken }), // Asegúrate de enviar el idToken
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (response.ok && data.success) {
+      if (res.ok && data.success) {
         console.log("Respuesta del backend Google", data);
-        const accountType = data.accountType;
+        const accountType = data.user.accountType; // Asegúrate de acceder a la propiedad correcta
 
         // Guardar información del usuario en sessionStorage
         sessionStorage.setItem("userSession", JSON.stringify({
           googleId: data.user.googleId,
-          accountType: data.user.accountType,
+          accountType: accountType,
           email: data.user.email,
         }));
         closeModalSignIn();
         // Redirige al Home con el tipo de cuenta
         navigate('/', { state: { accountType } });
+      } else if (data.message === "Correo no registrado") { // Verifica si el correo no está registrado
+        alert("El correo no está registrado. Por favor, regístrese primero.");
       } else {
         console.error('Error en el inicio de sesión con Google (backend):', data.message);
-
+        alert(data.message || 'Error en el inicio de sesión con Google');
       }
     } catch (error) {
       console.error('Error de red al enviar el token de Google:', error);
+      alert('Error de red al intentar iniciar sesión.');
     }
   };
 
