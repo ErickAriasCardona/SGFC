@@ -1,4 +1,5 @@
 const mysql = require("mysql2/promise");
+require('dotenv').config();
 
 // Datos de conexión (ajústalos según tu configuración)
 const DB_NAME = process.env.DB_NAME || "formacion_complementaria";

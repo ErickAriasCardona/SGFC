@@ -1,257 +1,270 @@
-import React, { useEffect, useState } from 'react';
-import './SeeMyProfile.css';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import "./SeeMyProfile.css";
+import { useLocation } from "react-router-dom";
 
-import { Header } from '../../../Components/Layouts/Header/Header';
-import { Footer } from '../../../Components/Layouts/Footer/Footer';
-import { Main } from '../../../Components/Layouts/Main/Main';
-import axiosInstance from '../../../config/axiosInstance';
+import { Header } from "../../../Components/Layouts/Header/Header";
+import { Footer } from "../../../Components/Layouts/Footer/Footer";
+import { Main } from "../../../Components/Layouts/Main/Main";
+import axiosInstance from "../../../config/axiosInstance";
+import f3 from "../../../assets/Ilustrations/f3.jpg";
 
 export const SeeMyProfile = () => {
-    const location = useLocation();
-    const userId = location.state?.userId;
+  const location = useLocation();
+  const userId = location.state?.userId;
 
-    const [perfil, setPerfil] = useState(null);
-    const [tipoCuenta, setTipoCuenta] = useState('');
-    const [editMode, setEditMode] = useState(false);
+  const [perfil, setPerfil] = useState(null);
+  const [tipoCuenta, setTipoCuenta] = useState("");
+  const [editMode, setEditMode] = useState(false);
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const response = await axiosInstance.get(`/perfil/${userId}`);
-                setPerfil(response.data);
-                setTipoCuenta(response.data.accountType);
-            } catch (error) {
-                console.error('Error al obtener el perfil:', error);
-            }
-        };
-
-        if (userId) {
-            fetchProfile();
-        }
-    }, [userId]);
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-
-        if (name.startsWith("Empresa.")) {
-            const key = name.split(".")[1];
-            setPerfil((prevPerfil) => ({
-                ...prevPerfil,
-                Empresa: {
-                    ...prevPerfil.Empresa,
-                    [key]: value,
-                },
-            }));
-        } else {
-            setPerfil({ ...perfil, [name]: value });
-        }
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axiosInstance.get(`/perfil/${userId}`);
+        setPerfil(response.data);
+        setTipoCuenta(response.data.accountType);
+      } catch (error) {
+        console.error("Error al obtener el perfil:", error);
+      }
     };
 
+    if (userId) {
+      fetchProfile();
+    }
+  }, [userId]);
 
-    const handleSaveChanges = async () => {
-        try {
-            // Clonamos el perfil
-            const payload = { ...perfil };
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
 
-            // Si es una empresa, serializamos el objeto Empresa
-            if (tipoCuenta === 'Empresa' && perfil.Empresa) {
-                payload.empresa = JSON.stringify(perfil.Empresa);
-            }
+    if (name.startsWith("Empresa.")) {
+      const key = name.split(".")[1];
+      setPerfil((prevPerfil) => ({
+        ...prevPerfil,
+        Empresa: {
+          ...prevPerfil.Empresa,
+          [key]: value,
+        },
+      }));
+    } else {
+      setPerfil({ ...perfil, [name]: value });
+    }
+  };
 
-            await axiosInstance.put(`/perfil/actualizar/${userId}`, payload);
-            alert('Perfil actualizado con éxito');
-            setEditMode(false);
-        } catch (error) {
-            console.error('Error al actualizar el perfil:', error);
-            alert('Hubo un error al actualizar el perfil');
-        }
-    };
+  const handleSaveChanges = async () => {
+    try {
+      // Clonamos el perfil
+      const payload = { ...perfil };
 
-    return (
-        <>
-            <Header />
-            <Main>
-                <div className='container_mainSeeMyProfile'>
-                    <div className='container_profile'>
-                        <h3>{tipoCuenta}</h3>
-                        <img src="" alt="" />
-                        <h4>Datos <span>{tipoCuenta}</span></h4>
+      // Si es una empresa, serializamos el objeto Empresa
+      if (tipoCuenta === "Empresa" && perfil.Empresa) {
+        payload.empresa = JSON.stringify(perfil.Empresa);
+      }
 
-                        <p>
-                            Nombres <br />
-                            {editMode ? (
-                                <input
-                                    type="text"
-                                    name="nombres"
-                                    className='input_updateData'
-                                    value={perfil?.nombres || ''}
-                                    onChange={handleInputChange}
-                                />
-                            ) : (
-                                perfil?.nombres || ''
-                            )}
-                        </p>
+      await axiosInstance.put(`/perfil/actualizar/${userId}`, payload);
+      alert("Perfil actualizado con éxito");
+      setEditMode(false);
+    } catch (error) {
+      console.error("Error al actualizar el perfil:", error);
+      alert("Hubo un error al actualizar el perfil");
+    }
+  };
 
-                        <p>
-                            Apellidos <br />
-                            {editMode ? (
-                                <input
-                                    type="text"
-                                    name="apellidos"
-                                    className='input_updateData'
-                                    value={perfil?.apellidos || ''}
-                                    onChange={handleInputChange}
-                                />
-                            ) : (
-                                perfil?.apellidos || ''
-                            )}
-                        </p>
+  return (
+    <>
+      <Header />
+      <Main>
+        <div className="container_mainSeeMyProfile">
+          <div className="container_profile">
+            <picture>
+              <img className="imagenRoj" src={f3} alt="" />
+              <div className="fondo1"></div>
+              <div className="fondo2"></div>
+            </picture>
+            <section className="profileInformation">
+              {/* <h3>{tipoCuenta}</h3> */}
+              <br />
+              <h4>
+                Nombre del instructor <span>{tipoCuenta}</span>
+              </h4>
+              <p>
+                <span>Nombres:</span>
+                {editMode ? (
+                  <input
+                    type="text"
+                    name="nombres"
+                    className="input_updateData"
+                    value={perfil?.nombres || ""}
+                    onChange={handleInputChange}
+                  />
+                ) : (
+                  perfil?.nombres || "Nombres"
+                )}
+              </p>
 
-                        <p>
-                            Email <br />
-                            {editMode ? (
-                                <input
-                                    type="email"
-                                    name="email"
-                                    className='input_updateData'
-                                    value={perfil?.email || ''}
-                                    onChange={handleInputChange}
-                                />
-                            ) : (
-                                perfil?.email || ''
-                            )}
-                        </p>
+              <p>
+                <span>Apellidos:</span>
+                {editMode ? (
+                  <input
+                    type="text"
+                    name="apellidos"
+                    className="input_updateData"
+                    value={perfil?.apellidos || ""}
+                    onChange={handleInputChange}
+                  />
+                ) : (
+                  perfil?.apellidos || "Apellido"
+                )}
+              </p>
 
-                        <p>
-                            Celular <br />
-                            {editMode ? (
-                                <input
-                                    type="text"
-                                    name="celular"
-                                    className='input_updateData'
-                                    value={perfil?.celular || ''}
-                                    onChange={handleInputChange}
-                                />
-                            ) : (
-                                perfil?.celular || ''
-                            )}
-                        </p>
+              <p>
+                <span>Email:</span>
+                {editMode ? (
+                  <input
+                    type="email"
+                    name="email"
+                    className="input_updateData"
+                    value={perfil?.email || ""}
+                    onChange={handleInputChange}
+                  />
+                ) : (
+                  perfil?.email || ""
+                )}
+              </p>
 
-                        <button className='updateProfile' onClick={() => setEditMode(!editMode)}>
-                            {editMode ? 'Cancelar' : 'Actualizar Perfil'}
-                        </button>
+              <p>
+                <span>Celular:</span>
+                {editMode ? (
+                  <input
+                    type="text"
+                    name="celular"
+                    className="input_updateData"
+                    value={perfil?.celular || ""}
+                    onChange={handleInputChange}
+                  />
+                ) : (
+                  perfil?.celular || "Celular"
+                )}
+              </p>
 
-                        {editMode && (
-                            <button className='updateProfile' onClick={handleSaveChanges}>
-                                Guardar Cambios
-                            </button>
-                        )}
-                        
-                    </div>
-                    {tipoCuenta === 'Empresa' && (
-                        <div className='container_data_company'>
-                            <div className='name_company'>
-                                <img src="" alt="" />
-                                <div>
-                                    <h3>
-                                        {editMode ? (
-                                            <input
-                                                type="text"
-                                                name="Empresa.nombre_empresa"
-                                                className='input_updateData'
-                                                value={perfil?.Empresa?.nombre_empresa || ''}
-                                                onChange={handleInputChange}
-                                            />
-                                        ) : (
-                                            perfil?.Empresa?.nombre_empresa || ''
-                                        )}
-                                    </h3>
-                                    <p>
-                                        Nit: <br />
-                                        {editMode ? (
-                                            <input
-                                                type="text"
-                                                name="Empresa.NIT"
-                                                className='input_updateData'
-                                                value={perfil?.Empresa?.NIT || ''}
-                                                onChange={handleInputChange}
-                                            />
-                                        ) : (
-                                            perfil?.Empresa?.NIT || ''
-                                        )}
-                                    </p>
-                                </div>
-                            </div>
+              <section className="btnsForm">
+                <button
+                  className="updateProfile1"
+                  onClick={() => setEditMode(!editMode)}
+                >
+                  {editMode ? "Cancelar" : "Actualizar Perfil"}
+                </button>
 
-                            <div className='container_data'>
-                                <div className='data_company'>
-                                    <p>
-                                        Dirección: <br />
-                                        {editMode ? (
-                                            <input
-                                                type="text"
-                                                name="Empresa.direccion"
-                                                className='input_updateData'
-                                                value={perfil?.Empresa?.direccion || ''}
-                                                onChange={handleInputChange}
-                                            />
-                                        ) : (
-                                            perfil?.Empresa?.direccion || ''
-                                        )}
-
-                                    </p>
-                                    <p>Teléfono: <br />
-                                        {editMode ? (
-                                            <input
-                                                type="text"
-                                                name="Empresa.telefono"
-                                                className='input_updateData'
-                                                value={perfil?.Empresa?.telefono || ''}
-                                                onChange={handleInputChange}
-                                            />
-                                        ) : (
-                                            perfil?.Empresa?.telefono || ''
-                                        )}
-                                    </p>
-                                    <p>Email: <br />
-                                        {editMode ? (
-                                            <input
-                                                type="text"
-                                                name="Empresa.email_empresa"
-                                                className='input_updateData'
-                                                value={perfil?.Empresa?.email_empresa || ''}
-                                                onChange={handleInputChange}
-                                            />
-                                        ) : (
-                                            perfil?.Empresa?.email_empresa || ''
-                                        )}
-                                    </p>
-                                    <p>Ciudad: <br />
-                                        {perfil?.Empresa?.Ciudad?.nombre || '-'}
-
-                                    </p>
-
-                                    <p>Departamento <br />
-                                        {perfil?.Empresa?.Ciudad?.Departamento?.nombre || '-'}
-
-                                    </p>
-                                </div>
-
-                                <div className='data_courses_instructor'>
-                                    <div className='data_courses'>
-                                        {/* Aquí puedes colocar cursos si los tienes disponibles */}
-                                    </div>
-                                    <div className='data_instructor'>
-                                        {/* Aquí puedes colocar datos adicionales del instructor si aplica */}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                {editMode && (
+                  <button className="updateProfile" onClick={handleSaveChanges}>
+                    Guardar Cambios
+                  </button>
+                )}
+              </section>
+            </section>
+          </div>
+          {tipoCuenta === "Empresa" && (
+            <div className="container_data_company">
+              <div className="name_company">
+                <img src="" alt="" />
+                <div>
+                  <h3>
+                    {editMode ? (
+                      <input
+                        type="text"
+                        name="Empresa.nombre_empresa"
+                        className="input_updateData"
+                        value={perfil?.Empresa?.nombre_empresa || ""}
+                        onChange={handleInputChange}
+                      />
+                    ) : (
+                      perfil?.Empresa?.nombre_empresa || ""
                     )}
+                  </h3>
+                  <p>
+                    Nit: <br />
+                    {editMode ? (
+                      <input
+                        type="text"
+                        name="Empresa.NIT"
+                        className="input_updateData"
+                        value={perfil?.Empresa?.NIT || ""}
+                        onChange={handleInputChange}
+                      />
+                    ) : (
+                      perfil?.Empresa?.NIT || ""
+                    )}
+                  </p>
                 </div>
-            </Main>
-            <Footer />
-        </>
-    );
+              </div>
+
+              <div className="container_data">
+                <div className="data_company">
+                  <p>
+                    Dirección: <br />
+                    {editMode ? (
+                      <input
+                        type="text"
+                        name="Empresa.direccion"
+                        className="input_updateData"
+                        value={perfil?.Empresa?.direccion || ""}
+                        onChange={handleInputChange}
+                      />
+                    ) : (
+                      perfil?.Empresa?.direccion || ""
+                    )}
+                  </p>
+                  <p>
+                    Teléfono: <br />
+                    {editMode ? (
+                      <input
+                        type="text"
+                        name="Empresa.telefono"
+                        className="input_updateData"
+                        value={perfil?.Empresa?.telefono || ""}
+                        onChange={handleInputChange}
+                      />
+                    ) : (
+                      perfil?.Empresa?.telefono || ""
+                    )}
+                  </p>
+                  <p>
+                    Email: <br />
+                    {editMode ? (
+                      <input
+                        type="text"
+                        name="Empresa.email_empresa"
+                        className="input_updateData"
+                        value={perfil?.Empresa?.email_empresa || ""}
+                        onChange={handleInputChange}
+                      />
+                    ) : (
+                      perfil?.Empresa?.email_empresa || ""
+                    )}
+                  </p>
+                  <p>
+                    Ciudad: <br />
+                    {perfil?.Empresa?.Ciudad?.nombre || "-"}
+                  </p>
+
+                  <p>
+                    Departamento <br />
+                    {perfil?.Empresa?.Ciudad?.Departamento?.nombre || "-"}
+                  </p>
+                </div>
+
+                <div className="data_courses_instructor">
+                  <div className="data_courses">
+                    {/* Aquí puedes colocar cursos si los tienes disponibles */}
+                  </div>
+                  <div className="data_instructor">
+                    {/* Aquí puedes colocar datos adicionales del instructor si aplica */}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </Main>
+      <Footer />
+    </>
+  );
 };

@@ -1,160 +1,322 @@
 .container_mainSeeMyProfile {
-    width: 100%;
-    height: auto;
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-top: 1rem;
+  width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  /* background-color: red; */
 }
 
-.container_profile {
-    width: 17rem;
+/* .container_profile {
+    width: 80vw;
     height: 30rem;
+    background: red;
     background-color: #00843e3f;
     border-radius: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
-    text-align: center;
+    text-align: center; 
     flex-wrap: wrap;
     gap: 0.5rem;
+} */
+
+.container_profile {
+  width: 80%;
+  height: 30rem;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: center;
+  /* padding: 2rem; */
+  gap: 2rem;
 }
 
-.container_profile>h3, .container_profile>h4{
-    width: 100%;
-    height: auto;
-    font-size: 18px;
+.container_profile > picture {
+  width: 40%;
+  height: 60%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin: 2rem;
 }
 
-.container_profile>img{
-    width: 8rem;
-    height: 8rem;
-    object-fit: cover;
-    border-radius: 25%;
+.container_profile > picture > .imagenRoj {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: relative;
+  z-index: 3;
+  border-radius: 10%;
 }
 
-.container_profile>p{
-    width: 100%;
-    height: auto;
-    font-size: 16px;
-    text-align: center;
+.container_profile > picture > .fondo1,
+.container_profile > picture > .fondo2 {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: white;
+  border-radius: 10%;
+  z-index: 1;
 }
 
+.container_profile > picture > .fondo1 {
+  transform: rotate(-10deg);
+  opacity: 0.7;
+}
 
+.container_profile > picture > .fondo2 {
+  transform: rotate(-20deg);
+  opacity: 0.6;
+}
 
+/* .container_profile > picture > img::before {
+  content: "";
+  width: 10rem;
+  height: 10rem;
+  background-color: purple;
+  transform: rotate(-10deg);
+  position: absolute;
+  top: 18rem;
+  right: 15rem;
+  z-index: -1;
+  opacity: 60%;
+} */
 
+.container_profile > .profileInformation {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  /* background-color: green; */
+  padding: 8rem 0 0 1rem;
+}
 
+.container_profile > .profileInformation > h3,
+.container_profile > .profileInformation > h4 {
+  width: 100%;
+  text-align: left;
+  margin: 0;
+  color: #ddd;
+}
+
+.container_profile > .profileInformation > h4 > span {
+  color: #00843e;
+}
+
+.container_profile > .profileInformation > h3 {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.container_profile > .profileInformation > h4 {
+  font-size: 36px;
+  margin-bottom: 1rem;
+  font-weight: lighter;
+  margin-bottom: 3rem;
+}
+
+.container_profile > .profileInformation > p {
+  width: 100%;
+  text-align: left;
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.container_profile > .profileInformation > p > br {
+  margin-bottom: 0.5rem;
+}
+
+.container_profile > .profileInformation > .input_updateData {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.container_profile > .profileInformation > .btnsForm {
+  display: flex;
+  gap: 1rem;
+  width: 20rem;
+  height: 2rem;
+  justify-content: start;
+}
+
+.container_profile > .profileInformation > .btnsForm > .updateProfile1 {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #00843e;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  width: 10rem;
+  height: 2rem;
+  justify-content: center;
+}
+
+.container_profile > .profileInformation > .btnsForm > .updateProfile {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #00843e;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  width: 10rem;
+  height: 2rem;
+  justify-content: center;
+}
+
+/* .updateProfile {
+  width: 20rem;
+  height: 2rem;
+  background-color: #b0b0b0;
+  border-radius: 10px;
+  border-style: none;
+} */
+
+.container_profile > .profileInformation > button:hover {
+  background-color: #006b32;
+}
+
+.container_profile > h3,
+.container_profile > h4 {
+  width: 100%;
+  height: auto;
+  font-size: 18px;
+}
+
+.container_profile > p {
+  width: 100%;
+  height: auto;
+  font-size: 16px;
+  text-align: center;
+
+  display: flex;
+  flex-direction: row;
+  /* flex-direction: column; */
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.container_profile > .profileInformation > p > span {
+  margin-right: 1rem;
+}
 .container_data_company {
-    width: 60%;
-    height: 30rem;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
+  width: 60%;
+  height: 30rem;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .name_company {
-    width: 100%;
-    height: 7rem;
-    background-color: #00843e3f;
-    border-radius: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;    
-    gap: 1.5rem;
-
+  width: 100%;
+  height: 7rem;
+  background-color: #00843e3f;
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .container_data {
-    width: 100%;
-    height: 30rem;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
+  width: 100%;
+  height: 30rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  background-color: green;
 }
-
 
 .data_company {
-    width: 30%;
-    height: 100%;
-    display: flex;
-    border-radius: 20px;
-    justify-content: center;
-    flex-wrap: wrap;
-    align-items: center;
-    background-color: #00843e3f;
-    gap: 1rem;
+  width: 30%;
+  height: 100%;
+  display: flex;
+  border-radius: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: center;
+  background-color: #00843e3f;
+  gap: 1rem;
 }
 
-.data_company>p{
-    width: 100%;
-    height: auto;
-    font-size: 16px;
-    text-align: center;
+.data_company > p {
+  width: 100%;
+  height: auto;
+  font-size: 16px;
+  text-align: center;
 }
-
 
 .data_courses_instructor {
-    width: 70%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    border-radius: 20px;
-    align-items: center;
-    gap: 1.5rem;
+  width: 70%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  align-items: center;
+  gap: 1.5rem;
 }
 
-.data_courses,
+/* .data_courses, */
 .data_instructor {
-    width: 100%;
-    height: 50%;
-    display: flex;
-    flex-direction: column;
-    border-radius: 20px;
-    align-items: center;
-    background-color: #00843e3f;
+  width: 100%;
+  height: 50%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  align-items: center;
+  background-color: #00843e3f;
 }
 
-.name_company>img{
-    width: 4rem;
-    height: 4rem;
-    object-fit: cover;
-    border-radius: 25%;
-    margin-left: 2rem;
+.name_company > img {
+  width: 4rem;
+  height: 4rem;
+  object-fit: cover;
+  border-radius: 25%;
+  margin-left: 2rem;
 }
 
-.name_company>div {
-    width: 100%;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-}   
-.name_company>div>h3, .name_company>div>p{
-    width: auto;
-    height: auto;
-    font-size: 24px;
+.name_company > div {
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+}
+.name_company > div > h3,
+.name_company > div > p {
+  width: auto;
+  height: auto;
+  font-size: 24px;
 }
 
-.name_company>div>p{
-    font-size: 14px;
+.name_company > div > p {
+  font-size: 14px;
 }
 
-.updateProfile{
-    width: 4rem;
-    height: 4rem;
-    background-color: #b0b0b0;
-    border-radius: 10px;
-    border-style: none;
-}
-
-.input_updateData{
-    width: 9rem;
-    height: auto;
-    background-color: transparent;
-    border-radius: 10px;
-    border-style: none;
-    border: 1px solid #b0b0b0;
+.input_updateData {
+  width: 9rem;
+  height: auto;
+  background-color: transparent;
+  border-radius: 10px;
+  border-style: none;
+  border: 1px solid #b0b0b0;
 }
