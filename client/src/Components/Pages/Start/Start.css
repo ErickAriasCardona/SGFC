@@ -23,7 +23,7 @@
 }
 
 .container_description {
-    width: 30%;
+    width: 45%;
     height: auto;
     display: flex;
     flex-direction: column;
@@ -32,7 +32,7 @@
 }
 
 .container_description>h1 {
-    width: 80%;
+    width: 100%;
     height: auto;
     color: #fff;
     font-size: 48px;
