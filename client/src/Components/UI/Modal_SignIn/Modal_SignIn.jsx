@@ -81,8 +81,7 @@ export const Modal_SignIn = ({ showSignIn,
 
   const handleGoogleResponse = async (response) => {
     const idToken = response.credential;
-    console.log("ID token de google:", idToken);
-
+  
     try {
       const response = await fetch("http://localhost:3001/auth", {
         method: "POST",
