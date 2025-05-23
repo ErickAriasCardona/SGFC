@@ -7,11 +7,13 @@ import { Main } from '../../../Layouts/Main/Main';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../../../../config/axiosInstance';
 import calendar from '../../../../assets/Icons/calendar.png';
+import { ViewCalendar } from '../../../UI/Modal_Calendar/ViewCalendar/Calendar';
 
 export const SeeCourse = () => {
    
     const { id } = useParams(); // Obtener el ID del curso desde la URL
     const [curso, setCurso] = useState(null); // Estado para almacenar los datos del curso
+    const [isViewCalendarOpen, setIsViewCalendarOpen] = useState(false);
     const navigate = useNavigate(); // Hook para redirigir
   
     // Obtener los datos del curso al cargar la página
@@ -31,6 +33,13 @@ export const SeeCourse = () => {
     if (!curso) {
         return <p>Cargando...</p>; // Mostrar un mensaje mientras se cargan los datos
     }
+
+    // Prepare calendar data for ViewCalendar component
+    const calendarData = {
+      startDate: curso.fecha_inicio ? curso.fecha_inicio.split('T')[0] : '',
+      endDate: curso.fecha_fin ? curso.fecha_fin.split('T')[0] : '',
+      selectedSlots: curso.dias_formacion ? JSON.parse(curso.dias_formacion) : [],
+    };
 
     return (
         <>
@@ -74,35 +83,20 @@ export const SeeCourse = () => {
                                         <span>Estado: {curso.estado} </span>
 
                                     </div>
-
-                                    {/* <div className='containerInput_company'>
-                                        <label htmlFor="nit_company">Empresa</label>
-                                        <input
-                                            id='nit_company'
-                                            type="text"
-                                            value={curso.empresa_NIT || "No especificado"}
-                                            disabled
-                                        />
-                                    </div> */}
                                 </div>
 
                                 <div>
                                     <p id='p_addInstructor'> Instructor: Sin asignar
-                                        {/* <button className='addInstructor'>
-                                            <img src={buttonEdit} alt="" />
-                                        </button> */}
                                     </p>
 
                                     {/* Botón para abrir el modal general */}
-                                    <button className='addDate' >
+                                    <button className='addDate' onClick={() => setIsViewCalendarOpen(true)}>
                                         <img src={calendar} alt="" />
                                         Ver fechas y horarios
                                     </button>
                                 </div>
                             </div>
                         </div>
-
-
                     </div>
 
                     <button
@@ -110,9 +104,18 @@ export const SeeCourse = () => {
                         onClick={() => navigate(`/Cursos/ActualizarCurso/${id}`)} // Redirigir a la página de actualización
                     >
                         Editar Curso
-                    </button>                </div>
+                    </button>                
+                </div>
             </Main>
             <Footer />
+
+            {/* View Calendar Modal */}
+            {isViewCalendarOpen && (
+              <ViewCalendar
+                calendarData={calendarData}
+                closeModal={() => setIsViewCalendarOpen(false)}
+              />
+            )}
         </>
     );
 };
