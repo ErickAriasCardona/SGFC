@@ -39,10 +39,10 @@ async function startServer() {
   const db = await initializeDatabase(); // Inicializar base de datos
   authGoogleController.setDb(db);
   // Crear el usuario administrador por defecto
-  await db.Usuario.createDefaultAdmin(); // Accede al método a través de la instancia db
   await db.Departamento.createDefaultDeparment();
   await db.Ciudad.createDefaultCiudad();
   await db.Sena.createDefaultSENA();
+  await db.Usuario.createDefaultAdmin(); // Accede al método a través de la instancia db
 
 
   const PORT = process.env.PORT || 3001;
