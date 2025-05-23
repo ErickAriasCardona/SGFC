@@ -5,7 +5,7 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.579);
-    display: none;
+    display: flex;
     justify-content: center;
     align-items: center;
     transform: translate(-50%, -50%);

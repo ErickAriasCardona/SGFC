@@ -1,11 +1,13 @@
 const express = require("express");
-const { registerUser, verifyEmail, loginUser,requestPasswordReset,resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile,updateProfilePicture,createInstructor, createGestor } = require("../controllers/userController");
+const { registerUser, verifyEmail, loginUser,requestPasswordReset,resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile,updateProfilePicture,createInstructor, createGestor,logoutUser } = require("../controllers/userController");
+const { googleSignIn } = require("../controllers/authGoogleController"); // Importar controlador de autenticación de Google
 const router = express.Router();
 const upload = require("../config/multer"); // Importar configuración de multer
 
 router.post("/createUser", registerUser); // Ruta para registrar usuario
 router.get("/verificarCorreo", verifyEmail); // Ruta para verificar correo
 router.post("/login", loginUser); // Ruta para iniciar sesión
+router.post("/auth", googleSignIn); // Ruta para iniciar sesión con Google
 router.post("/requestPasswordReset", requestPasswordReset); // Solicitar recuperación de contraseña
 router.post("/resetPassword", resetPassword); // Restablecer contraseña
 router.get("/users",getAllUsers); // Obtener todos los usuarios
@@ -18,6 +20,8 @@ router.put('/perfil/actualizar/:id', upload.single('foto_perfil'), updateUserPro
 router.put('/perfil/actualizarFoto/:id', updateProfilePicture); // Actualizar foto de perfil de usuario por ID
 router.post('/crearInstructor', upload.single('foto_perfil'), createInstructor);
 router.post('/crearGestor', upload.single('foto_perfil'), createGestor);
+router.post("/logout", logoutUser);
+
 
 router.get("/", (req, res) => {
     res.send("🚀 API funcionando correctamente");

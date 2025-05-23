@@ -18,6 +18,7 @@ const DB_URL = process.env.DB_URL;
 // Alternativamente, datos individuales (útiles en desarrollo local)
 const DB_NAME = process.env.DB_NAME || "formacion_complementaria";
 const DB_USER = process.env.DB_USER || "root";
+const DB_PORT = process.env.DB_PORT || 3306; // Puerto por defecto de MySQL
 const DB_PASSWORD = process.env.DB_PASSWORD || "";
 const DB_HOST = process.env.DB_HOST || "localhost";
 
@@ -42,6 +43,7 @@ async function initializeDatabase() {
     sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
       host: DB_HOST,
       dialect: "mysql",
+      port: DB_PORT,
       logging: false,
     });
   }

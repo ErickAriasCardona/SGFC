@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const crypto = require("crypto");
-const { sendVerificationEmail, sendPasswordResetEmail } = require("../services/emailService");
+const { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirmationEmail } = require("../services/emailService");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
@@ -42,6 +42,21 @@ const registerUser = async (req, res) => {
         // Hashear la contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Procesar imagen de perfil si se sube
+        let foto_perfil = null;
+        if (req.file) {
+            const path = require('path');
+            const fs = require('fs');
+            const base64Data = req.file.buffer.toString('base64');
+            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+            const savePath = path.join(__dirname, '../base64storage', uniqueName);
+            if (!fs.existsSync(path.dirname(savePath))) {
+                fs.mkdirSync(path.dirname(savePath), { recursive: true });
+            }
+            fs.writeFileSync(savePath, base64Data);
+            foto_perfil = `/base64storage/${uniqueName}`;
+        }
+
         // Crear nuevo usuario
         const newUser = await User.create({
             email,
@@ -54,6 +69,7 @@ const registerUser = async (req, res) => {
             titulo_profesional: titulo_profesional || null,
             verificacion_email: false,
             token,
+            foto_perfil: image, // Guardar la ruta del archivo base64 si existe
         });
 
         // Si el tipo de cuenta es Empresa, crear un registro en la tabla Empresa y relacionarlo con el usuario
@@ -93,12 +109,14 @@ const verifyEmail = async (req, res) => {
         if (!token) {
             return res.status(400).json({ message: "Token no proporcionado" });
         }
-
+        console.log('Token recibido:', token);
         // Buscar usuario por token
         const user = await User.findOne({ where: { token } });
+
         if (!user) {
             return res.status(400).json({ message: "Token inválido o expirado" });
         }
+        console.log('Token en la base de datos:', user.token);
 
         // Actualizar estado de verificación
         user.verificacion_email = true;
@@ -216,10 +234,20 @@ const resetPassword = async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
         user.password = hashedPassword;
+        // Limpiar el token usado
         user.resetPasswordToken = null;
         user.resetPasswordExpires = null;
 
+        // Generar un nuevo token de recuperación por si el usuario no hizo el cambio
+        const newResetToken = crypto.randomBytes(32).toString("hex");
+        user.resetPasswordToken = newResetToken;
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hora más
+
         await user.save();
+
+        // Enlace para volver a cambiar la contraseña
+        const resetLink = `http://localhost:5173/resetPassword?token=${newResetToken}`;
+        await sendPasswordChangeConfirmationEmail(user.email, resetLink);
 
         res.status(200).json({ message: "Contraseña restablecida con éxito" });
     } catch (error) {
@@ -227,6 +255,25 @@ const resetPassword = async (req, res) => {
         res.status(500).json({ message: "Error al restablecer la contraseña" });
     }
 };
+
+//limpiar tokens expirados
+const cleanExpiredTokens = async () => {
+    try {
+        // Limpia los tokens de recuperación de contraseña expirados
+        await User.update(
+            { resetPasswordToken: null, resetPasswordExpires: null },
+            {
+                where: {
+                    resetPasswordExpires: { [Op.lt]: Date.now() }
+                }
+            }
+        );
+        console.log("Tokens de recuperación expirados limpiados correctamente.");
+    } catch (error) {
+        console.error("Error al limpiar tokens expirados:", error);
+    }
+};
+
 
 // Obtener todos los usuarios
 const getAllUsers = async (req, res) => {
@@ -244,45 +291,45 @@ const getAllUsers = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
     try {
-      const userId = req.params.id;
-  
-      const usuario = await User.findByPk(userId, {
-        include: [
-          {
-            model: Sena,
-            as: 'Sena',
+        const userId = req.params.id;
+
+        const usuario = await User.findByPk(userId, {
             include: [
-              {
-                model: Ciudad,
-                as: 'Ciudad',
-                attributes: ['ID', 'nombre'],
-                include: [
-                  {
-                    model: Departamento,
-                    as: 'Departamento',
-                    attributes: ['ID', 'nombre'],
-                  },
-                ],
-              },
+                {
+                    model: Sena,
+                    as: 'Sena',
+                    include: [
+                        {
+                            model: Ciudad,
+                            as: 'Ciudad',
+                            attributes: ['ID', 'nombre'],
+                            include: [
+                                {
+                                    model: Departamento,
+                                    as: 'Departamento',
+                                    attributes: ['ID', 'nombre'],
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    model: Empresa,
+                    as: 'Empresa',
+                },
             ],
-          },
-          {
-            model: Empresa,
-            as: 'Empresa',
-          },
-        ],
-      });
-  
-      if (!usuario) {
-        return res.status(404).json({ error: 'Usuario no encontrado' });
-      }
-  
-      res.json(usuario);
+        });
+
+        if (!usuario) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        res.json(usuario);
     } catch (error) {
-      console.error('Error al obtener el perfil del usuario:', error);
-      res.status(500).json({ error: 'Error al obtener el perfil del usuario' });
+        console.error('Error al obtener el perfil del usuario:', error);
+        res.status(500).json({ error: 'Error al obtener el perfil del usuario' });
     }
-  };    
+};
 
 //Consultar lista de aprendices
 const getAprendices = async (req, res) => {
@@ -387,10 +434,22 @@ const updateUserProfile = async (req, res) => {
             password,
         } = req.body;
 
-        // Ruta de la imagen si se envió
+        // Procesar imagen de perfil si se sube
         let foto_perfil = null;
-        if (req.file && req.file.path) {
-            foto_perfil = req.file.path; // Guardar ruta del archivo en disco
+        if (req.file) {
+            const path = require('path');
+            const fs = require('fs');
+            const base64Data = req.file.buffer.toString('base64');
+            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+            const savePath = path.join(__dirname, '../base64storage', uniqueName);
+            if (!fs.existsSync(path.dirname(savePath))) {
+                fs.mkdirSync(path.dirname(savePath), { recursive: true });
+            }
+            fs.writeFileSync(savePath, base64Data);
+            foto_perfil = `/base64storage/${uniqueName}`;
+        } else if (req.file && req.file.path) {
+            // Compatibilidad con imágenes subidas como archivo normal
+            foto_perfil = req.file.path;
         }
 
         const token = req.cookies.token;
@@ -418,7 +477,7 @@ const updateUserProfile = async (req, res) => {
 
         // ADMINISTRADOR
         if (loggedInUser.accountType === "Administrador") {
-            if (["Instructor", "Gestor", "Administrador"].includes(user.accountType)) {
+            if (["Instructor", "Gestor", "Administrador", "Empresa", "Aprendiz"].includes(user.accountType)) {
 
                 // Validaciones únicas
                 if (email && email !== user.email) {
@@ -515,6 +574,24 @@ const updateUserProfile = async (req, res) => {
             return res.status(200).json({ message: "Perfil de empresa actualizado con éxito." });
         }
 
+        // APRENDIZ
+        if (loggedInUser.accountType === "Aprendiz" && user.accountType === "Aprendiz") {
+            if (email) user.email = email;
+            if (nombres) user.nombres = nombres;
+            if (apellidos) user.apellidos = apellidos;
+            if (celular) user.celular = celular;
+            if (cedula) user.cedula = cedula;
+            if (estado) user.estado = estado;
+            if (titulo_profesional) user.titulo_profesional = titulo_profesional;
+            if (password) {
+                const hashedPassword = await bcrypt.hash(password, 10);
+                user.password = hashedPassword;
+            }
+            if (foto_perfil) user.foto_perfil = foto_perfil;
+            await user.save();
+            return res.status(200).json({ message: "Perfil de aprendiz actualizado con éxito." });
+        }
+
         return res.status(403).json({ message: "No tienes permiso para actualizar este perfil." });
     } catch (error) {
         console.error("Error al actualizar el perfil del usuario:", error);
@@ -535,7 +612,16 @@ const updateProfilePicture = async (req, res) => {
 
         console.log("Archivo recibido:", req.file); // Verificar qué archivo se recibió
 
-        const filePath = `uploads/${req.file.filename}`; // Ruta de la imagen subida
+        const path = require('path');
+        const fs = require('fs');
+        const base64Data = req.file.buffer.toString('base64');
+        const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+        const savePath = path.join(__dirname, '../base64storage', uniqueName);
+        if (!fs.existsSync(path.dirname(savePath))) {
+            fs.mkdirSync(path.dirname(savePath), { recursive: true });
+        }
+        fs.writeFileSync(savePath, base64Data);
+        const filePath = `/base64storage/${uniqueName}`; // Ruta de la imagen subida
 
         // Buscar el usuario por ID
         const user = await User.findByPk(id);
@@ -563,10 +649,19 @@ const createInstructor = async (req, res) => {
 
         const { nombres, apellidos, titulo_profesional, celular, email, cedula, estado } = req.body;
 
-        // Verificar si se subió un archivo
+        // Procesar imagen de perfil si se sube
         let foto_perfil = null;
         if (req.file) {
-            foto_perfil = `uploads/${req.file.filename}`; // Ruta de la imagen subida
+            const path = require('path');
+            const fs = require('fs');
+            const base64Data = req.file.buffer.toString('base64');
+            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+            const savePath = path.join(__dirname, '../base64storage', uniqueName);
+            if (!fs.existsSync(path.dirname(savePath))) {
+                fs.mkdirSync(path.dirname(savePath), { recursive: true });
+            }
+            fs.writeFileSync(savePath, base64Data);
+            foto_perfil = `/base64storage/${uniqueName}`;
         }
 
         // Validar datos obligatorios
@@ -602,6 +697,7 @@ const createInstructor = async (req, res) => {
             cedula,
             estado,
             foto_perfil,
+            sena_ID: 1, //ID Sena 
             accountType: "Instructor", // Tipo de cuenta
             password: hashedPassword, // Contraseña encriptada
             verificacion_email: false, // Estado de verificación
@@ -611,7 +707,11 @@ const createInstructor = async (req, res) => {
         // Enviar correo de verificación
         await sendVerificationEmail(email, token);
 
-        res.status(201).json({ message: "Instructor creado con éxito. Por favor verifica tu correo.", instructor: newInstructor });
+
+        res.status(201).json({
+            message: "Instructor creado con éxito. Por favor verifica tu correo.",
+            instructor: newInstructor
+        });
     } catch (error) {
         console.error("Error al crear el instructor:", error);
         res.status(500).json({ message: "Error al crear el instructor." });
@@ -626,10 +726,19 @@ const createGestor = async (req, res) => {
 
         const { nombres, apellidos, celular, email, cedula, estado } = req.body;
 
-        // Verificar si se subió un archivo
+        // Procesar imagen de perfil si se sube
         let foto_perfil = null;
         if (req.file) {
-            foto_perfil = `uploads/${req.file.filename}`; // Ruta de la imagen subida
+            const path = require('path');
+            const fs = require('fs');
+            const base64Data = req.file.buffer.toString('base64');
+            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+            const savePath = path.join(__dirname, '../base64storage', uniqueName);
+            if (!fs.existsSync(path.dirname(savePath))) {
+                fs.mkdirSync(path.dirname(savePath), { recursive: true });
+            }
+            fs.writeFileSync(savePath, base64Data);
+            foto_perfil = `/base64storage/${uniqueName}`;
         }
 
         // Validar datos obligatorios
@@ -667,7 +776,8 @@ const createGestor = async (req, res) => {
             sena_ID: 1, // Asignar la sede por defecto
             accountType: "Gestor", // Tipo de cuenta
             password: hashedPassword, // Contraseña encriptada
-            verificacion_email: false, // Estado de verificación
+            verificacion_email: false, // Estado de verificació
+            sena_ID: 1,
             token, // Token de verificación
         });
 
@@ -681,4 +791,4 @@ const createGestor = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor };
+module.exports = { registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor, logoutUser, cleanExpiredTokens };
