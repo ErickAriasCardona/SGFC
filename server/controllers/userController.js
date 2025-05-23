@@ -11,6 +11,10 @@ const Sena = require('../models/sena'); // Importar el modelo Sena
 const Departamento = require('../models/departamento'); // Importar el modelo Departamento
 const Ciudad = require('../models/ciudad'); // Importar el modelo Ciudad
 
+
+
+
+
 const registerUser = async (req, res) => {
     try {
         const { email, password, accountType, cedula, nombres, apellidos, celular, titulo_profesional } = req.body;
@@ -174,16 +178,6 @@ const loginUser = async (req, res) => {
     }
 };
 
-const logoutUser = (req, res) => {
-    res.clearCookie("token", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-    });
-    res.status(200).json({ message: "Sesión cerrada correctamente" });
-};
-
-
 // Solicitud de restablecimiento de contraseña
 const requestPasswordReset = async (req, res) => {
     const { email } = req.body;
@@ -337,7 +331,7 @@ const getUserProfile = async (req, res) => {
     }
 };
 
-//Consultar lista de aprendices 
+//Consultar lista de aprendices
 const getAprendices = async (req, res) => {
     try {
         const aprendices = await User.findAll({
@@ -650,8 +644,8 @@ const updateProfilePicture = async (req, res) => {
 // Crear Instructor
 const createInstructor = async (req, res) => {
     try {
-        console.log("Cuerpo de la solicitud:", req.body);
-        console.log("Archivo recibido:", req.file);
+        console.log("Cuerpo de la solicitud:", req.body); // Verifica los datos enviados
+        console.log("Archivo recibido:", req.file); // Verifica si el archivo fue recibido
 
         const { nombres, apellidos, titulo_profesional, celular, email, cedula, estado } = req.body;
 
@@ -670,23 +664,30 @@ const createInstructor = async (req, res) => {
             foto_perfil = `/base64storage/${uniqueName}`;
         }
 
+        // Validar datos obligatorios
         if (!nombres || !apellidos || !titulo_profesional || !celular || !email || !cedula || !estado) {
             return res.status(400).json({ message: "Todos los campos son obligatorios." });
         }
 
+        // Verificar si el correo ya está registrado
         const existingEmail = await User.findOne({ where: { email } });
         if (existingEmail) {
             return res.status(400).json({ message: "El correo ya está registrado." });
         }
 
+        // Verificar si la cédula ya está registrada
         const existingCedula = await User.findOne({ where: { cedula } });
         if (existingCedula) {
             return res.status(400).json({ message: "La cédula ya está registrada." });
         }
 
+        // Generar token de verificación
         const token = crypto.randomBytes(32).toString("hex");
+
+        // Encriptar la contraseña
         const hashedPassword = await bcrypt.hash("defaultPassword123", 10);
 
+        // Crear el instructor
         const newInstructor = await User.create({
             nombres,
             apellidos,
@@ -696,14 +697,16 @@ const createInstructor = async (req, res) => {
             cedula,
             estado,
             foto_perfil,
-            accountType: "Instructor",
-            password: hashedPassword,
-            verificacion_email: false,
-            token,
-            sena_Id: 1 // ✅ Se asigna la sede fija
+            sena_ID: 1, //ID Sena 
+            accountType: "Instructor", // Tipo de cuenta
+            password: hashedPassword, // Contraseña encriptada
+            verificacion_email: false, // Estado de verificación
+            token, // Token de verificación
         });
 
+        // Enviar correo de verificación
         await sendVerificationEmail(email, token);
+
 
         res.status(201).json({
             message: "Instructor creado con éxito. Por favor verifica tu correo.",
@@ -714,7 +717,6 @@ const createInstructor = async (req, res) => {
         res.status(500).json({ message: "Error al crear el instructor." });
     }
 };
-
 
 // Crear Gestor
 const createGestor = async (req, res) => {
@@ -773,7 +775,7 @@ const createGestor = async (req, res) => {
             foto_perfil,
             accountType: "Gestor", // Tipo de cuenta
             password: hashedPassword, // Contraseña encriptada
-            verificacion_email: false, // Estado de verificación
+            verificacion_email: false, // Estado de verificació
             sena_ID: 1,
             token, // Token de verificación
         });

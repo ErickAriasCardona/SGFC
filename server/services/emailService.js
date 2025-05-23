@@ -212,5 +212,32 @@ const sendPasswordChangeConfirmationEmail = (email, resetLink) => {
     });
 };
 
+//Funcion para enviar correo de notificacion de curso creado
+const sendCourseCreatedEmail = (emails, nombre_curso, courseLink) => {
+
+    const mailOptions = {
+        from: 'eariassena19@gmail.com',
+        to: emails,
+        subject: "Nuevo curso en linea",
+        html: ` <h2>El nuevo curso: ${nombre_curso} ha creado</h2>
+            <p>Haz clic en el siguiente enlace para mas informacion del curso: </p>
+               <a href="${courseLink}">Nuevo curso</a>`,
+    }
+    console.log(emails, nombre_curso, courseLink)
+    return new Promise((resolve, reject) => {
+        transporter.sendMail(mailOptions, (err, info) => {
+            if (err) {
+                console.error("Error al enviar el correo:", err);
+                reject(err);
+            }else {
+                console.log("Correo enviado:", info.response);
+                resolve(info);
+                console.log('se ejecuto la funcion')
+            }
+        })
+    })
+}
+
+
 // Exportar ambas funciones
-module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirmationEmail };
+module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirmationEmail, sendCourseCreatedEmail };

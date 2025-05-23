@@ -3,7 +3,9 @@ const User = require("../models/User");
 
 const path = require("path");
 
-const  AsignacionCursoInstructor = require('../models/AsignacionCursoInstructor');
+const { Op } = require('sequelize')
+const AsignacionCursoInstructor = require('../models/AsignacionCursoInstructor');
+const { sendCourseCreatedEmail } = require("../services/emailService");
 const { Router } = require("express");
 const upload = require("../config/multer");
 
@@ -124,7 +126,7 @@ const createCurso = async (req, res) => {
     } = req.body;
 
     // Validar campos obligatorios
-    if (!nombre_curso || !tipo_oferta || !ficha || !descripcion || !estado) {
+    if (!ficha || !nombre_curso || !descripcion || !tipo_oferta  || !estado) {
       return res.status(400).json({
         message: "Los campos nombre_curso, tipo_oferta, ficha, descripcion y estado son obligatorios.",
       });
@@ -165,7 +167,23 @@ const createCurso = async (req, res) => {
       imagen: image,
     });
 
-    res.status(201).json({ message: "Curso creado con éxito.", curso: nuevoCurso });
+    res.status(201).json({ message: "Curso creado con éxito."});
+
+    // Obtener usuarios con correos verificados
+    const usuarios = await User.findAll({ where: { verificacion_email: true , accountType: { [Op.or]: ['Empresa', 'Aprendiz'] }}, attributes: ['email'] });
+    const emails = usuarios.map(user => user.email);
+    
+    if(emails.length === 0){
+      console.warn('No hay usuarios aceptados para mandar Email')
+    }else{
+      // Enviar notificación general
+      const courseLink = `http://localhost:5173/cursos/${nuevoCurso.id}`;
+      await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
+    }
+
+    
+
+    
   } catch (error) {
     console.error("Error al crear el curso:", error);
 
