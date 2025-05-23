@@ -12,7 +12,7 @@ export const ForgotPassword = () => {
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        Axios.post("https://lucid-reverence-production.up.railway.app/requestPasswordReset", { email })
+        Axios.post("http://localhost:3001/requestPasswordReset", { email })
             .then((response) => {
                 setMessage(response.data.message);
                 setIsSuccess(true); // Indicar que el mensaje es exitoso
