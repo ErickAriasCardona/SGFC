@@ -143,6 +143,33 @@ const sendPasswordResetEmail = (email, resetLink) => {
     });
 };
 
+// Función para notificar la actualización del curso
+const sendCursoUpdatedNotification = (email, curso) => {
+    const mailOptions = {
+        from: "eariassena19@gmail.com",
+        to: email,
+        subject: `El curso "${curso.nombre_curso}" ha sido actualizado`,
+        html: `
+            <p>Hola,</p>
+            <p>Te informamos que el curso <strong>${curso.nombre_curso}</strong> ha sido actualizado.</p>
+            <p><strong>Descripción:</strong> ${curso.descripcion}</p>
+            <p><strong>Fecha de inicio:</strong> ${curso.fecha_inicio}</p>
+            <p><strong>Fecha de fin:</strong> ${curso.fecha_fin}</p>
+            <p><strong>Lugar:</strong> ${curso.lugar_formacion}</p>
+            <p>Saludos,<br/>SGFC</p>
+        `,
+    };
+
+    transporter.sendMail(mailOptions, (err, info) => {
+        if (err) {
+            console.log("Error al enviar notificación de actualización:", err);
+        } else {
+            console.log("📨 Notificación enviada:", info.response);
+        }
+    });
+};
+
+
 // Función para enviar el correo de confirmación de cambio de contraseña
 const sendPasswordChangeConfirmationEmail = (email, resetLink) => {
     const mailOptions = {
@@ -240,4 +267,4 @@ const sendCourseCreatedEmail = (emails, nombre_curso, courseLink) => {
 
 
 // Exportar ambas funciones
-module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirmationEmail, sendCourseCreatedEmail };
+module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirmationEmail, sendCourseCreatedEmail, sendCursoUpdatedNotification };

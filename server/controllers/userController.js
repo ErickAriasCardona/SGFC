@@ -773,6 +773,7 @@ const createGestor = async (req, res) => {
             cedula,
             estado,
             foto_perfil,
+            sena_ID: 1, // Asignar la sede por defecto
             accountType: "Gestor", // Tipo de cuenta
             password: hashedPassword, // Contraseña encriptada
             verificacion_email: false, // Estado de verificació
