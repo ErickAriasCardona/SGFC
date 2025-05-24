@@ -3,6 +3,12 @@ import { useEffect } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import React, { useState } from "react";
 
+// Importación de iconos
+import companyGreen from './assets/Icons/companyGreen.png';
+import companyGrey from './assets/Icons/companyGrey.png';
+import userGreen from './assets/Icons/userGreen.png';
+import userGrey from './assets/Icons/userGrey.png';
+
 // Importación de páginas
 import { Start } from './Components/Pages/Start/Start';
 import { Who_we_are } from './Components/Pages/Who_we_are/Who_we_are';
@@ -39,11 +45,11 @@ function App() {
   const navigate = useNavigate();
   const [showSignIn, setShowSignIn] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
-  const [showAccountType, setShowAccountType] = useState(true);
+  const [showAccountType, setShowAccountType] = useState(false);
   const [selectedAccountType, setSelectedAccountType] = useState("");
+  const [hoveredButton, setHoveredButton] = useState("");
 
   useEffect(() => {
-    // Inicializar el cliente de Google
     if (window.gapi) {
       window.gapi.load('auth2', () => {
         window.gapi.auth2.init({
@@ -54,40 +60,98 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Verifica si hay una sesión guardada en localStorage
     const userSession = localStorage.getItem('userSession');
     if (userSession) {
       const { accountType } = JSON.parse(userSession);
-      // Redirige automáticamente a /Inicio con el tipo de cuenta
       navigate('/Inicio', { state: { accountType } });
     }
   }, [navigate]);
 
-  return (
+  const handleShowSignUp = (accountType) => {
+    setSelectedAccountType(accountType);
+    setShowSignUp(true);
+    setShowAccountType(false);
+    setShowSignIn(false);
+    setHoveredButton("");
+  };
 
-    // Envuelve tu aplicación con GoogleOAuthProvider
+  return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <>
-        {/* Modales globales */}
-        <Modal_SignIn showSignIn={showSignIn} setShowSignIn={setShowSignIn} />
-        <Modal_SignUp
-          accountType={selectedAccountType}
-          setSelectedAccountType={setSelectedAccountType}
-          setShowSignUp={setShowSignUp}
-          setShowSignIn={setShowSignIn}
-          setShowAccountType={setShowAccountType}
-        />
+        {showSignIn && (
+          <Modal_SignIn 
+            showSignIn={showSignIn} 
+            setShowSignIn={setShowSignIn}
+            setShowSignUp={setShowSignUp}
+            setShowAccountType={setShowAccountType}
+            setSelectedAccountType={setSelectedAccountType}
+          />
+        )}
+
+        {showAccountType && !showSignUp && (
+          <Modal_General closeModal={() => setShowAccountType(false)}>
+            <p>Por favor seleccione el tipo de cuenta que desea crear</p>
+            <div className="option_1Account">
+              <p>Empresa</p>
+              <button
+                className="container_AccountTypeEmpresa"
+                onClick={() => handleShowSignUp("Empresa")}
+                onMouseEnter={() => setHoveredButton("Empresa")}
+                onMouseLeave={() => setHoveredButton("")}
+              >
+                <img
+                  src={hoveredButton === "Empresa" ? companyGrey : companyGreen}
+                  alt="Empresa"
+                />
+              </button>
+            </div>
+
+            <div className="option_2Account">
+              <p>Aprendiz</p>
+              <button
+                className="container_AccountTypeAprendiz"
+                onClick={() => handleShowSignUp("Aprendiz")}
+                onMouseEnter={() => setHoveredButton("Aprendiz")}
+                onMouseLeave={() => setHoveredButton("")}
+              >
+                <img
+                  src={hoveredButton === "Aprendiz" ? userGrey : userGreen}
+                  alt="Aprendiz"
+                  style={{ opacity: 1 }}
+                />
+              </button>
+            </div>
+          </Modal_General>
+        )}
+
+        {showSignUp && selectedAccountType && (
+          <Modal_SignUp
+            accountType={selectedAccountType}
+            setShowSignUp={setShowSignUp}
+            setShowSignIn={setShowSignIn}
+            setShowAccountType={setShowAccountType}
+          />
+        )}
+
         <Modal_Successful />
         <Modal_Failed />
         <CreateInstructor />
         <CreateGestor />
 
-
-        {/* Rutas */}
         <Routes>
-          <Route path="/" element={<Start />} />
+          <Route path="/" element={
+            <Start 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            />
+          } />
           <Route path="/QuienesSomos" element={<Who_we_are />} />
-          <Route path="/Inicio" element={<Home />} />
+          <Route path="/Inicio" element={
+            <Home 
+              handleShowSignUp={handleShowSignUp}
+            />
+          } />
           <Route path="/verificarCorreo" element={<EmailVerification />} />
           <Route path="/forgotPassword" element={<ForgotPassword />} />
           <Route path="/resetPassword" element={<ResetPassword />} />
@@ -102,7 +166,6 @@ function App() {
           <Route path="/Empleados/MisEmpleados" element={<GestionsEmployes />} />
           <Route path="/Empleados/CrearEmpleado" element={<CreateEmploye />} />
           <Route path="/Empleados/ActualizarEmpleado/:id" element={<UpdateEmploye />} />
-
         </Routes>
       </>
     </GoogleOAuthProvider>

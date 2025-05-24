@@ -7,8 +7,12 @@ import profile from '../../../assets/Icons/userGrey.png';
 import logout from '../../../assets/Icons/cerrar-sesion.png'
 import axiosInstance from '../../../config/axiosInstance'
 
-
-export const NavBar = ({ children, setShowSignIn }) => {
+export const NavBar = ({ 
+  children, 
+  setShowSignIn, 
+  setShowSignUp, 
+  setShowAccountType 
+}) => {
   const navigate = useNavigate();
 
   // Obtener la sesión del usuario desde localStorage o sessionStorage
@@ -16,30 +20,29 @@ export const NavBar = ({ children, setShowSignIn }) => {
     JSON.parse(localStorage.getItem('userSession')) ||
     JSON.parse(sessionStorage.getItem('userSession'));
 
-  const isLoggedIn = !!userSession; // Verificar si el usuario está logueado
+  const isLoggedIn = !!userSession;
 
-  // ✅ Manejador para el click en perfil
   const handleProfileClick = () => {
     console.log('ID del usuario logueado:', userSession?.id);
     if (userSession?.id) {
       navigate('/MiPerfil', { state: { userId: userSession.id } });
     }
   };
-  //cerrar sesion
+
   const handleLogout = async () => {
     try {
       await axiosInstance.post("/logout", {}, { withCredentials: true });
-
-      // Eliminar también cualquier información en localStorage o sessionStorage
       localStorage.removeItem("userSession");
       sessionStorage.removeItem("userSession");
-
-      // Redirigir al usuario
       navigate("/");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
       alert("Hubo un problema al cerrar sesión.");
     }
+  };
+
+  const handleSignIn = () => {
+    setShowSignIn(true);
   };
 
   return (
@@ -51,7 +54,7 @@ export const NavBar = ({ children, setShowSignIn }) => {
 
       {/* Mostrar el botón de "Iniciar sesión" solo si el usuario no está logueado */}
       {!isLoggedIn && (
-        <button className="button_signIn" onClick={() => setShowSignIn(true)}>
+        <button className="button_signIn" onClick={handleSignIn}>
           Iniciar sesión
         </button>
       )}

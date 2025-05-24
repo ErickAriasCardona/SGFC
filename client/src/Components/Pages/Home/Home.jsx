@@ -3,11 +3,14 @@ import { useLocation, useNavigate } from "react-router-dom"; // Importar useNavi
 import "./Home.css";
 import { Modal_SignUp } from "../../UI/Modal_SignUp/Modal_SignUp";
 
-export const Home = () => {
+export const Home = ({ handleShowSignUp }) => {
   const location = useLocation();
   const navigate = useNavigate(); // Hook para redirigir al usuario
   const accountType = location.state?.accountType || "Desconocido"; // Obtén el tipo de cuenta
   const accountTypeInstructor = "Instructor"; // Define el tipo de cuenta del instructor
+  const [showSignUp, setShowSignUp] = useState(false);
+  const [showAccountType, setShowAccountType] = useState(false);
+
   const handleLogout = () => {
     // Eliminar la información de la sesión del usuario
     localStorage.removeItem("userSession"); // Si usas localStorage
@@ -18,11 +21,7 @@ export const Home = () => {
   };
 
   const showModalSignUp = () => {
-    const modalGeneral = document.getElementById("container_signUp");
-    if (modalGeneral) {
-
-      modalGeneral.style.display = "flex"; // Cambia el display a flex para mostrar el modal
-    }
+    setShowSignUp(true);
   };
 
   return (
@@ -35,13 +34,19 @@ export const Home = () => {
       <button
         className="createInstructor"
         style={{ display: accountType === "Administrador" ? "block" : "none" }}
-        onClick={showModalSignUp}
+        onClick={() => handleShowSignUp(accountTypeInstructor)}
       >
         Crear Instructor
       </button>
 
-      <Modal_SignUp accountType={accountTypeInstructor} />
-
+      {showSignUp && (
+        <Modal_SignUp 
+          accountType={accountTypeInstructor}
+          setShowSignUp={setShowSignUp}
+          setShowAccountType={setShowAccountType}
+          setShowSignIn={() => {}}
+        />
+      )}
     </div>
   );
 };
