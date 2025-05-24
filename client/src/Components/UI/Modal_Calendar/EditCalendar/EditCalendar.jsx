@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Calendar.css';
+import './ECalendar.css';
 
 const times = [
   '6:00', '8:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'
@@ -80,7 +80,8 @@ export const EditCalendar = ({ closeModal, onSave, initialData }) => {
             <div className="calendar-card layered-card card2"></div>
             <div className="calendar-card layered-card card3"></div>
           </div>
-          <table className="calendar-table">
+          <div className="calendar-container">          
+            <table className="calendar-table">
             <thead>
               <tr>
                 <th></th>
@@ -109,10 +110,13 @@ export const EditCalendar = ({ closeModal, onSave, initialData }) => {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
+
           <button className="save-button organized-save-button" onClick={handleSave}>Guardar</button>
         </div>
       </div>
     </div>
   );
 };
+
+export default EditCalendar;

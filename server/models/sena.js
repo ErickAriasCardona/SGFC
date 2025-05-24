@@ -2,16 +2,16 @@ const { DataTypes, Model } = require('sequelize');
 
 class Sena extends Model {
   static init(sequelize) {
-    super.init(
+    super.init( 
       {
         ID: {
           type: DataTypes.INTEGER,
           primaryKey: true,
           allowNull: false,
           autoIncrement: true, 
-        },
+        }, 
         NIT: {
-          type: DataTypes.INTEGER,
+          type: DataTypes.STRING,
           allowNull: true,
         },
         img_sena: {
@@ -62,7 +62,7 @@ class Sena extends Model {
         // Verificar si el email sena existe
         const existingEmailSena = await this.findOne({ where: { email_sena: senaEmail } });
         if (existingEmailSena) {
-          console.log('El email sena ya existe.');
+          console.log('La sede sena ya existe.');
           return; 
         }
   

@@ -11,7 +11,7 @@ class Empresa extends Model {
           autoIncrement: true, // Agregar autoincremento
         },
         NIT: {
-          type: DataTypes.INTEGER,
+          type: DataTypes.STRING,
           allowNull: true,
         },
         img_empresa: {

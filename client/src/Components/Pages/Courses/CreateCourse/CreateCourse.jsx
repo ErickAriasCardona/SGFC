@@ -4,7 +4,7 @@ import { Header } from '../../../Layouts/Header/Header';
 import { Footer } from '../../../Layouts/Footer/Footer';
 import { Main } from '../../../Layouts/Main/Main';
 import { Modal_General } from '../../../UI/Modal_General/Modal_General';
-import { EditCalendar } from '../../../UI/Modal_Calendar/EditCalendar/EditCalendar';
+import EditCalendar from '../../../UI/Modal_Calendar/EditCalendar/EditCalendar';
 import addIMG from '../../../../assets/Icons/addImg.png';
 import buttonEdit from '../../../../assets/Icons/buttonEdit.png';
 import calendar from '../../../../assets/Icons/calendar.png';
@@ -18,6 +18,13 @@ export const CreateCourse = () => {
     const [ficha, setFicha] = useState('');
     const [nombreCurso, setNombreCurso] = useState('');
     const [descripcion, setDescripcion] = useState('');
+
+    // New state for calendar data
+    const [calendarData, setCalendarData] = useState({
+      startDate: '',
+      endDate: '',
+      selectedSlots: [],
+    });
 
     // New state for calendar data
     const [calendarData, setCalendarData] = useState({
@@ -40,7 +47,15 @@ export const CreateCourse = () => {
     // Función para abrir el modal general
     const [isEditCalendarOpen, setIsEditCalendarOpen] = React.useState(false);
 
+    const [isEditCalendarOpen, setIsEditCalendarOpen] = React.useState(false);
+
     const showModalGeneral = () => {
+        setIsEditCalendarOpen(true);
+    };
+
+    // Callback to receive calendar data from EditCalendar
+    const handleCalendarSave = (data) => {
+      setCalendarData(data);
         setIsEditCalendarOpen(true);
     };
 
@@ -50,6 +65,11 @@ export const CreateCourse = () => {
     };
 
     // Función para manejar la creación del curso
+    const handleCreateCourse = async () => {
+      if (!ficha || !nombreCurso || !descripcion || !selected || !selectedStatus) {
+        alert("Por favor, completa todos los campos requeridos.");
+        return;
+      }
     const handleCreateCourse = async () => {
       if (!ficha || !nombreCurso || !descripcion || !selected || !selectedStatus) {
         alert("Por favor, completa todos los campos requeridos.");
@@ -75,7 +95,29 @@ export const CreateCourse = () => {
           // For simplicity, send selectedSlots as JSON string
           formData.append("dias_formacion", JSON.stringify(calendarData.selectedSlots));
         }
+      try {
+        const formData = new FormData();
+        formData.append("ficha", ficha);
+        formData.append("nombre_curso", nombreCurso);
+        formData.append("descripcion", descripcion);
+        formData.append("tipo_oferta", selected);
+        formData.append("estado", selectedStatus);
 
+        // Append calendar data fields if available
+        if (calendarData.startDate) {
+          formData.append("fecha_inicio", calendarData.startDate);
+        }
+        if (calendarData.endDate) {
+          formData.append("fecha_fin", calendarData.endDate);
+        }
+        if (calendarData.selectedSlots.length > 0) {
+          // For simplicity, send selectedSlots as JSON string
+          formData.append("dias_formacion", JSON.stringify(calendarData.selectedSlots));
+        }
+
+        if (fileInputRef.current.files[0]) {
+          formData.append("imagen", fileInputRef.current.files[0]);
+        }
         if (fileInputRef.current.files[0]) {
           formData.append("imagen", fileInputRef.current.files[0]);
         }
@@ -85,10 +127,24 @@ export const CreateCourse = () => {
             "Content-Type": "multipart/form-data",
           },
         });
+        const response = await axiosInstance.post("/cursos", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
 
         alert("Curso creado con éxito");
         console.log(response.data);
+        alert("Curso creado con éxito");
+        console.log(response.data);
 
+        // Recargar la página o limpiar el formulario
+        window.location.reload();
+      } catch (error) {
+        console.error("Error al crear el curso:", error);
+        alert("Ocurrió un error al crear el curso");
+      }
+    };
         // Recargar la página o limpiar el formulario
         window.location.reload();
       } catch (error) {
@@ -225,11 +281,19 @@ export const CreateCourse = () => {
             {/* Edit Calendar Modal */}
             {isEditCalendarOpen && (
                 <EditCalendar
-                  closeModal={() => setIsEditCalendarOpen(false)}
+                  show={isEditCalendarOpen}
+                  closeModal={() => setIsEditCalendarOpen(false)} // Corrected prop name
                   onSave={handleCalendarSave}
                   initialData={calendarData}
                 />
             )}
+            <div>
+                {/* Add a button to open the modal */}
+                <button onClick={showModalGeneral}>
+                    Open Calendar Modal
+                </button>
+            </div>
         </>
     );
 };
+

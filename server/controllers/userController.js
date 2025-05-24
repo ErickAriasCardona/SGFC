@@ -23,7 +23,7 @@ const registerUser = async (req, res) => {
         }
 
         // Validar el tipo de cuenta
-        const validAccountTypes = ['Aprendiz', 'Empresa', 'Instructor', 'Administrador', 'Gestor'];
+        const validAccountTypes = ['Aprendiz', 'Empresa'];
         if (!validAccountTypes.includes(accountType)) {
             return res.status(400).json({ message: 'El tipo de cuenta no es válido' });
         }
