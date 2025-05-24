@@ -189,6 +189,19 @@ export const SeeCourse = () => {
                     calendarData={calendarData}
                     closeModal={() => setIsViewCalendarOpen(false)}
                 />
+
+            )}
+            {isViewCalendarOpen && (
+                <ViewCalendar
+                    calendarData={calendarData}
+                    closeModal={() => setIsViewCalendarOpen(false)}
+                />
+            )}
+            {isViewCalendarOpen && (
+                <ViewCalendar
+                    calendarData={calendarData}
+                    closeModal={() => setIsViewCalendarOpen(false)}
+                />
             )}
 
         </>

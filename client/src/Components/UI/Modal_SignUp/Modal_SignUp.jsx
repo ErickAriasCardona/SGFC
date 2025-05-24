@@ -15,10 +15,18 @@ export const Modal_SignUp = ({
   setShowAccountType 
 }) => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+export const Modal_SignUp = ({ 
+  accountType, 
+  setShowSignUp,
+  setShowSignIn,
+  setShowAccountType 
+}) => {
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [passwordRequirements, setPasswordRequirements] = useState({
@@ -27,6 +35,8 @@ export const Modal_SignUp = ({
     number: false,
     specialChar: false
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -53,6 +63,7 @@ export const Modal_SignUp = ({
     event.preventDefault();
 
 
+
     // Validar que todos los requisitos de la contraseña se cumplan
     if (
       !passwordRequirements.length ||
@@ -67,6 +78,7 @@ export const Modal_SignUp = ({
     }
 
 
+
     // Validar que las contraseñas coincidan
     if (password !== confirmPassword) {
       alert("Las contraseñas no coinciden");
@@ -76,12 +88,25 @@ export const Modal_SignUp = ({
     }
 
 
+
     // Enviar datos al backend
     try {
       const response = await axiosInstance.post("/createUser", {
       const response = await axiosInstance.post("/createUser", {
         email,
         password,
+        accountType,
+      });
+
+      setShowSignUp(false);
+      setShowAccountType(false);
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        navigate('/', { state: { accountType } });
+      }, 3000);
+
         accountType,
       });
 
@@ -112,10 +137,22 @@ export const Modal_SignUp = ({
       }
     } else {
       console.error('setShowSignUp is not a function:', setShowSignUp);
+    console.log('Closing SignUp Modal'); // Para debugging
+    if (typeof setShowSignUp === 'function') {
+      setShowSignUp(false);
+      if (typeof setShowAccountType === 'function') {
+        setShowAccountType(true);
+      }
+    } else {
+      console.error('setShowSignUp is not a function:', setShowSignUp);
     }
   };
 
   const showModalSignIn = () => {
+    if (typeof setShowSignUp === 'function' && typeof setShowSignIn === 'function') {
+      setShowSignUp(false);
+      setShowAccountType(false);
+      setShowSignIn(true);
     if (typeof setShowSignUp === 'function' && typeof setShowSignIn === 'function') {
       setShowSignUp(false);
       setShowAccountType(false);
@@ -127,7 +164,9 @@ export const Modal_SignUp = ({
     const idToken = response.credential;
 
 
+
     try {
+      const res = await fetch("http://localhost:3001/auth/googleSignUp", { // Cambia la ruta a googleSignUp
       const res = await fetch("http://localhost:3001/auth/googleSignUp", { // Cambia la ruta a googleSignUp
       const res = await fetch("http://localhost:3001/auth/googleSignUp", { // Cambia la ruta a googleSignUp
         method: "POST",
@@ -136,11 +175,14 @@ export const Modal_SignUp = ({
         },
         body: JSON.stringify({ idToken }), // Asegúrate de enviar el idToken
         body: JSON.stringify({ idToken }), // Asegúrate de enviar el idToken
+        body: JSON.stringify({ idToken }), // Asegúrate de enviar el idToken
       });
 
       const data = await res.json();
       const data = await res.json();
+      const data = await res.json();
 
+      if (res.ok && data.success) {
       if (res.ok && data.success) {
       if (res.ok && data.success) {
         // Guardar información del usuario en sessionStorage
@@ -154,8 +196,10 @@ export const Modal_SignUp = ({
         const modalSuccefull = document.getElementById("container_modalSucessfull");
         const modalSignUp = document.getElementById("container_signUp");
 
+
         if (modalSuccefull && modalSignUp) {
           modalSignUp.style.display = "none";
+
 
           modalSuccefull.style.display = "flex";
 
@@ -165,6 +209,8 @@ export const Modal_SignUp = ({
             navigate('/', { state: { accountType: data.user.accountType } });
           }, 3000);
         }
+      } else if (data.message === "El correo ya está registrado") { // Verifica si el correo ya está registrado
+        alert("El correo ya está registrado. Por favor, inicie sesión.");
       } else if (data.message === "El correo ya está registrado") { // Verifica si el correo ya está registrado
         alert("El correo ya está registrado. Por favor, inicie sesión.");
       } else if (data.message === "El correo ya está registrado") { // Verifica si el correo ya está registrado
@@ -187,7 +233,14 @@ export const Modal_SignUp = ({
           <p>"Hemos enviado un enlace de verificación a tu correo. Haz click en él para activar tu cuenta"</p>
         </Modal_Successful>
       )}
+      {showSuccessModal && (
+        <Modal_Successful closeModal={() => setShowSuccessModal(false)}>
+          <h2>Registro exitoso</h2>
+          <p>"Hemos enviado un enlace de verificación a tu correo. Haz click en él para activar tu cuenta"</p>
+        </Modal_Successful>
+      )}
 
+      <div id="container_signUp" style={{ display: 'flex' }}>
       <div id="container_signUp" style={{ display: 'flex' }}>
       <div id="container_signUp" style={{ display: 'flex' }}>
         <div className="modalSignUp">
@@ -326,6 +379,7 @@ export const Modal_SignUp = ({
           </div>
 
           <div className="container_return_signUp">
+            <h5 onClick={closeModalSignUp} style={{ cursor: "pointer" }}>Volver</h5>
             <h5 onClick={closeModalSignUp} style={{ cursor: "pointer" }}>Volver</h5>
             <h5 onClick={closeModalSignUp} style={{ cursor: "pointer" }}>Volver</h5>
             <button onClick={closeModalSignUp} className="closeModal"></button>

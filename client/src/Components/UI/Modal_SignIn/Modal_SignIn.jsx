@@ -13,8 +13,13 @@ import axiosInstance from "../../../config/axiosInstance";
 
 export const Modal_SignIn = ({ 
   showSignIn,
+export const Modal_SignIn = ({ 
+  showSignIn,
   setShowSignIn,
   setShowSignUp,
+  setShowAccountType,
+  setSelectedAccountType 
+}) => {
   setShowAccountType,
   setSelectedAccountType 
 }) => {
@@ -24,14 +29,21 @@ export const Modal_SignIn = ({
   const [rememberSession, setRememberSession] = useState(false);
   const navigate = useNavigate();
   
+  
   const closeModalSignIn = () => setShowSignIn(false);
 
   const showModalAccountType = () => {
     setShowSignIn(false);
     setShowAccountType(true);
+    setShowSignIn(false);
+    setShowAccountType(true);
   };
 
   const handleAccountTypeSelection = (accountType) => {
+    setSelectedAccountType(accountType);
+    setShowSignUp(true);
+    setShowSignIn(false);
+    setShowAccountType(false);
     setSelectedAccountType(accountType);
     setShowSignUp(true);
     setShowSignIn(false);
@@ -77,6 +89,7 @@ export const Modal_SignIn = ({
 
     try {
       const res = await fetch("http://localhost:3001/auth/googleSignIn", {
+      const res = await fetch("http://localhost:3001/auth/googleSignIn", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -91,6 +104,7 @@ export const Modal_SignIn = ({
       if (res.ok && data.success) {
         console.log("Respuesta del backend Google", data);
         const accountType = data.user.accountType;
+        const accountType = data.user.accountType;
 
         sessionStorage.setItem("userSession", JSON.stringify({
           googleId: data.user.googleId,
@@ -100,6 +114,8 @@ export const Modal_SignIn = ({
         }));
         closeModalSignIn();
         navigate('/', { state: { accountType } });
+      } else if (data.message === "Correo no registrado") {
+        alert("El correo no está registrado. Por favor, regístrese primero.");
       } else if (data.message === "Correo no registrado") {
         alert("El correo no está registrado. Por favor, regístrese primero.");
       } else {
@@ -116,7 +132,26 @@ export const Modal_SignIn = ({
 
   if (!showSignIn) return null;
 
+  if (!showSignIn) return null;
+
   return (
+    <div id="container_signIn">
+      <div className="modalSignIn">
+        <div className="option_signUp">
+          <div className="logo">Logo</div>
+          <h3>Lorem Ipsum es simplemente el texto</h3>
+          <p>Lorem Ipsum es simplemente</p>
+          <button className="goTo_register" onClick={showModalAccountType}>
+            Registrarse
+          </button>
+          <img src={ilustration_03} alt="" />
+        </div>
+        <div className="container_form_signIn">
+          <div className="container_triangles_01_login">
+            <div className="triangle_01"></div>
+            <div className="triangle_02"></div>
+            <div className="triangle_03"></div>
+          </div>
     <div id="container_signIn">
       <div className="modalSignIn">
         <div className="option_signUp">
@@ -160,7 +195,41 @@ export const Modal_SignIn = ({
                   onClick={() => setShowPassword(!showPassword)}
                 />
               </div>
+          <div className="content_createAccount">
+            <h2 className="title_signIn">
+              Iniciar<span className="title2_signIn"> Sesión</span>
+            </h2>
+            <form className="form_register">
+              <input
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                type="email"
+                placeholder="Correo electrónico"
+              />
+              <div className="password-container">
+                <input
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Contraseña"
+                />
+                <img
+                  src={showPassword ? seePassword : hidePassword}
+                  alt="Toggle Password"
+                  className="password-icon"
+                  onClick={() => setShowPassword(!showPassword)}
+                />
+              </div>
 
+              <div className="remember-session">
+                <input
+                  type="checkbox"
+                  id="rememberSession"
+                  checked={rememberSession}
+                  onChange={(event) => setRememberSession(event.target.checked)}
+                />
+                <label htmlFor="rememberSession">Recordar sesión</label>
+              </div>
               <div className="remember-session">
                 <input
                   type="checkbox"
@@ -192,7 +261,40 @@ export const Modal_SignIn = ({
               ¿Olvidó su contraseña?
             </NavLink>
           </div>
+              <button className="button_register" onClick={login}>
+                Iniciar sesión
+              </button>
+              <p className="otherOption">o</p>
+              <div className="google-login-container">
+                <GoogleLogin
+                  onSuccess={handleGoogleResponse}
+                  onError={() => alert('Error al iniciar sesión con Google')}
+                  theme="filled_black"
+                  size="large"
+                  text="signin_with"
+                  shape="rectangular"
+                  width="270"
+                  locale="es"
+                />
+              </div>
+            </form>
+            <NavLink to={"/forgotPassword"} className={"forgetPassword"}>
+              ¿Olvidó su contraseña?
+            </NavLink>
+          </div>
 
+          <div className="container_triangles_02_login">
+            <div className="triangle_01"></div>
+            <div className="triangle_02"></div>
+            <div className="triangle_03"></div>
+          </div>
+        </div>
+        <div className="container_return_signIn">
+          <h5 onClick={closeModalSignIn} style={{ cursor: "pointer" }}>Volver</h5>
+          <button onClick={closeModalSignIn} className="closeModal"></button>
+        </div>
+      </div>
+    </div>
           <div className="container_triangles_02_login">
             <div className="triangle_01"></div>
             <div className="triangle_02"></div>
