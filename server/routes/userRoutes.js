@@ -24,6 +24,9 @@ router.post('/crearGestor', upload.single('foto_perfil'), createGestor);
 router.post("/logout", logoutUser);
 router.get("/empresa/empleados/:id", getAprendicesByEmpresa); // Obtener aprendices por ID de empresa
 
+router.post("/logout", logoutUser);
+router.get("/empresa/empleados/:id", getAprendicesByEmpresa); // Obtener aprendices por ID de empresa
+
 
 router.get("/", (req, res) => {
     res.send("🚀 API funcionando correctamente");

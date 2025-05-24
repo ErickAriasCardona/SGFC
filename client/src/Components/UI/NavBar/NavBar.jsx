@@ -71,7 +71,12 @@ export const NavBar = ({
           </button>
 
           <button id='btn_profile' onClick={handleProfileClick}>
+          <button id='btn_profile' onClick={handleProfileClick}>
             <img src={profile} alt="Perfil" />
+          </button>
+
+          <button onClick={handleLogout}>
+            <img src={logout} alt="" />
           </button>
 
           <button onClick={handleLogout}>

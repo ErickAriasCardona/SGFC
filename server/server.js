@@ -4,8 +4,17 @@ const cookieParser = require("cookie-parser"); // Importar cookie-parser
 const initializeDatabase = require("./models/index");
 const generalConfig = require('./config/general');
 const authGoogleController = require('./controllers/authGoogleController'); // Importar controlador de autenticación de Google
+const generalConfig = require('./config/general');
+const authGoogleController = require('./controllers/authGoogleController'); // Importar controlador de autenticación de Google
 const userRoutes = require("./routes/userRoutes"); // Importar rutas de usuario
 const cursoRoutes = require("./routes/cursoRoutes"); // Importar rutas de cursos
+// libreria para programar tareas
+const cron = require('node-cron');
+const { cleanExpiredTokens } = require('./controllers/userController');
+
+
+// Ejecuta la limpieza de tokens expirados cada hora
+cron.schedule('0 * * * *', cleanExpiredTokens);
 // libreria para programar tareas
 const cron = require('node-cron');
 const { cleanExpiredTokens } = require('./controllers/userController');
@@ -36,6 +45,8 @@ const path = require("path");
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 async function startServer() {
+  const db = await initializeDatabase(); // Inicializar base de datos
+  authGoogleController.setDb(db);
   const db = await initializeDatabase(); // Inicializar base de datos
   authGoogleController.setDb(db);
   // Crear el usuario administrador por defecto

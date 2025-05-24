@@ -26,6 +26,13 @@ export const CreateCourse = () => {
       selectedSlots: [],
     });
 
+    // New state for calendar data
+    const [calendarData, setCalendarData] = useState({
+      startDate: '',
+      endDate: '',
+      selectedSlots: [],
+    });
+
     const handleChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -40,7 +47,15 @@ export const CreateCourse = () => {
     // Función para abrir el modal general
     const [isEditCalendarOpen, setIsEditCalendarOpen] = React.useState(false);
 
+    const [isEditCalendarOpen, setIsEditCalendarOpen] = React.useState(false);
+
     const showModalGeneral = () => {
+        setIsEditCalendarOpen(true);
+    };
+
+    // Callback to receive calendar data from EditCalendar
+    const handleCalendarSave = (data) => {
+      setCalendarData(data);
         setIsEditCalendarOpen(true);
     };
 
@@ -50,6 +65,11 @@ export const CreateCourse = () => {
     };
 
     // Función para manejar la creación del curso
+    const handleCreateCourse = async () => {
+      if (!ficha || !nombreCurso || !descripcion || !selected || !selectedStatus) {
+        alert("Por favor, completa todos los campos requeridos.");
+        return;
+      }
     const handleCreateCourse = async () => {
       if (!ficha || !nombreCurso || !descripcion || !selected || !selectedStatus) {
         alert("Por favor, completa todos los campos requeridos.");
@@ -75,7 +95,29 @@ export const CreateCourse = () => {
           // For simplicity, send selectedSlots as JSON string
           formData.append("dias_formacion", JSON.stringify(calendarData.selectedSlots));
         }
+      try {
+        const formData = new FormData();
+        formData.append("ficha", ficha);
+        formData.append("nombre_curso", nombreCurso);
+        formData.append("descripcion", descripcion);
+        formData.append("tipo_oferta", selected);
+        formData.append("estado", selectedStatus);
 
+        // Append calendar data fields if available
+        if (calendarData.startDate) {
+          formData.append("fecha_inicio", calendarData.startDate);
+        }
+        if (calendarData.endDate) {
+          formData.append("fecha_fin", calendarData.endDate);
+        }
+        if (calendarData.selectedSlots.length > 0) {
+          // For simplicity, send selectedSlots as JSON string
+          formData.append("dias_formacion", JSON.stringify(calendarData.selectedSlots));
+        }
+
+        if (fileInputRef.current.files[0]) {
+          formData.append("imagen", fileInputRef.current.files[0]);
+        }
         if (fileInputRef.current.files[0]) {
           formData.append("imagen", fileInputRef.current.files[0]);
         }
@@ -85,10 +127,24 @@ export const CreateCourse = () => {
             "Content-Type": "multipart/form-data",
           },
         });
+        const response = await axiosInstance.post("/cursos", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
 
         alert("Curso creado con éxito");
         console.log(response.data);
+        alert("Curso creado con éxito");
+        console.log(response.data);
 
+        // Recargar la página o limpiar el formulario
+        window.location.reload();
+      } catch (error) {
+        console.error("Error al crear el curso:", error);
+        alert("Ocurrió un error al crear el curso");
+      }
+    };
         // Recargar la página o limpiar el formulario
         window.location.reload();
       } catch (error) {
@@ -240,3 +296,4 @@ export const CreateCourse = () => {
         </>
     );
 };
+

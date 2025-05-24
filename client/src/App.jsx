@@ -20,6 +20,7 @@ import { CreateCourse } from './Components/Pages/Courses/CreateCourse/CreateCour
 import { ConsultCourses } from './Components/Pages/Courses/Consult/ConsultCourses';
 import { SeeCourse } from './Components/Pages/Courses/SeeCourse/SeeCourse';
 import { UpdateCourse } from './Components/Pages/Courses/UpdateCourse/UpdateCourse';
+import { UpdateCourse } from './Components/Pages/Courses/UpdateCourse/UpdateCourse';
 import { GestionsInstructor } from './Components/Pages/GestionsInstructor/GestionsInstructor';
 import { GestionsGestor } from './Components/Pages/GestionsGestor/GestionsGestor';
 import { SeeMyProfile } from './Components/Pages/SeeMyProfile/SeeMyProfile';
@@ -28,7 +29,13 @@ import { CreateEmploye } from './Components/Pages/GestionsEmployes/CreateEmploye
 import { UpdateEmploye } from './Components/Pages/GestionsEmployes/UpdateEmploye/UpdateEmploye';
 import { SeachEmployes } from './Components/Pages/GestionsEmployes/SeachEmployes/SeachEmployes';
 import { GestionsEmployes } from './Components/Pages/GestionsEmployes/GestionsEmployes';
+import { GestionsCompany } from './Components/Pages/GestionsCompany/GestionsCompany';
+import { CreateEmploye } from './Components/Pages/GestionsEmployes/CreateEmploye/CreateEmploye';
+import { UpdateEmploye } from './Components/Pages/GestionsEmployes/UpdateEmploye/UpdateEmploye';
+import { SeachEmployes } from './Components/Pages/GestionsEmployes/SeachEmployes/SeachEmployes';
+import { GestionsEmployes } from './Components/Pages/GestionsEmployes/GestionsEmployes';
 // Importación de modales
+import { NavBar } from './Components/UI/NavBar/NavBar';
 import { NavBar } from './Components/UI/NavBar/NavBar';
 import { Modal_SignIn } from './Components/UI/Modal_SignIn/Modal_SignIn';
 import { Modal_General } from './Components/UI/Modal_General/Modal_General';
