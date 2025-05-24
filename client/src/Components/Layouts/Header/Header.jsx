@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { NavBar } from '../../UI/NavBar/NavBar';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import './Header.css';
-import { Modal_SignIn } from '../../UI/Modal_SignIn/Modal_SignIn';
 
 export const Header = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => {
   const [showCoursesMenu, setShowCoursesMenu] = useState(false);
@@ -273,9 +272,6 @@ export const Header = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => 
           </div>
         )}
       </NavBar>
-      {showSignIn && (
-        <Modal_SignIn showSignIn={showSignIn} setShowSignIn={setShowSignIn} />
-      )}
     </div>
   );
 };

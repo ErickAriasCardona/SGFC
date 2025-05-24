@@ -1,7 +1,7 @@
 import React from "react";
 import "./Modal_General.css";
 
-const Modal_General = ({ children, closeModal }) => {
+export const Modal_General = ({ children, closeModal }) => {
   return (
     <div id="container_modalGeneral" style={{ display: 'flex' }}>
       <div className="modalGeneral">
@@ -17,9 +17,9 @@ const Modal_General = ({ children, closeModal }) => {
           <div className="triangle_03"></div>
         </div>
 
-        <div className="container_return">
-        <h5 onClick={closeModal} style={{ cursor: "pointer" }}>Volver</h5>
-        <button onClick={closeModal} className="closeModal"></button>
+        <div className="container_return_general">
+          <h5 onClick={closeModal} style={{ cursor: "pointer" }}>Volver</h5>
+          <button onClick={closeModal} className="closeModal"></button>
         </div>
 
         <div className="container_informationGeneral">
@@ -29,5 +29,3 @@ const Modal_General = ({ children, closeModal }) => {
     </div>
   );
 };
-
-export default Modal_General;

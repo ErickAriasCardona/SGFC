@@ -76,12 +76,12 @@ export const Modal_SignIn = ({
 
 
     try {
-      const res = await fetch("http://localhost:3001/auth/googleSignIn", { // Cambia la ruta a googleSignIn
+      const res = await fetch("http://localhost:3001/auth/googleSignIn", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ idToken }), // Asegúrate de enviar el idToken
+        body: JSON.stringify({ idToken }),
       });
 
       const data = await res.json();
@@ -90,7 +90,7 @@ export const Modal_SignIn = ({
       if (res.ok && data.success) {
       if (res.ok && data.success) {
         console.log("Respuesta del backend Google", data);
-        const accountType = data.user.accountType; // Asegúrate de acceder a la propiedad correcta
+        const accountType = data.user.accountType;
 
         sessionStorage.setItem("userSession", JSON.stringify({
           googleId: data.user.googleId,
@@ -100,7 +100,7 @@ export const Modal_SignIn = ({
         }));
         closeModalSignIn();
         navigate('/', { state: { accountType } });
-      } else if (data.message === "Correo no registrado") { // Verifica si el correo no está registrado
+      } else if (data.message === "Correo no registrado") {
         alert("El correo no está registrado. Por favor, regístrese primero.");
       } else {
         console.error('Error en el inicio de sesión con Google (backend):', data.message);
