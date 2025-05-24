@@ -3,13 +3,14 @@ const User = require("../models/User");
 
 const path = require("path");
 
+
 const AsignacionCursoInstructor = require('../models/AsignacionCursoInstructor');
 const { sendCourseCreatedEmail } = require("../services/emailService");
 const { Router } = require("express");
 const upload = require("../config/multer");
 
 const { sendCursoUpdatedNotification } = require('../services/emailService');
-const { Usuario, InscripcionCurso } = require('../models');
+const { InscripcionCurso } = require('../models');
 const { Op } = require('sequelize'); 
 
 //Asignar cursos
@@ -262,47 +263,18 @@ const updateCurso = async (req, res) => {
       imagen: image, // Actualizar la imagen si se envió una nueva
     });
 
-    // Obtener inscripciones con usuarios tipo Aprendiz y email verificado
-    const inscripciones = await InscripcionCurso.findAll({
-      where: { curso_ID: curso.ID },
-      include: [
-        {
-          model: Usuario,
-          as: 'usuario',
-          attributes: ['email', 'accountType', 'verificacion_email']
-        }
-      ]
-    });
+     const usuarios = await User.findAll({ where: { verificacion_email: true , accountType: { [Op.or]: ['Empresa', 'Aprendiz'] }}, attributes: ['email'] });
+    const emails = usuarios.map(user => user.email);
+    
+    if(emails.length === 0){
+      console.warn('No hay usuarios aceptados para mandar Email')
+    }else{
 
-    // Filtrar emails de aprendices inscritos y verificados
-    const emailsAprendices = inscripciones
-      .filter(inscripcion => {
-        const user = inscripcion.usuario;
-        return user && user.accountType === 'Aprendiz' && user.verificacion_email;
-      })
-      .map(inscripcion => inscripcion.usuario.email);
-
-    // Obtener usuarios tipo Empresa con email verificado
-    const usuariosEmpresa = await Usuario.findAll({
-      where: {
-        accountType: 'Empresa',
-        verificacion_email: true,
-      },
-      attributes: ['email']
-    });
-
-    const emailsEmpresa = usuariosEmpresa.map(user => user.email);
-
-    // Unir listas y eliminar duplicados
-    const emailsFinales = [...new Set([...emailsAprendices, ...emailsEmpresa])];
-
-    // Enviar notificaciones a todos los emails finales
-    emailsFinales.forEach(email => {
-      sendCursoUpdatedNotification(email, curso);
-    });
+    await sendCursoUpdatedNotification(emails, curso);
+    };
 
     res.status(200).json({
-      message: `Curso actualizado con éxito. Notificaciones enviadas a ${emailsFinales.length} usuarios.`,
+      message: `Curso actualizado con éxito. Notificaciones enviadas a ${emails.length} usuarios.`,
       curso
     });
 
