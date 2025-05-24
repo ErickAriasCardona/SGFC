@@ -4,7 +4,7 @@ import { Header } from '../../../Layouts/Header/Header';
 import { Footer } from '../../../Layouts/Footer/Footer';
 import { Main } from '../../../Layouts/Main/Main';
 import { Modal_General } from '../../../UI/Modal_General/Modal_General';
-import { EditCalendar } from '../../../UI/Modal_Calendar/EditCalendar/EditCalendar';
+import EditCalendar from '../../../UI/Modal_Calendar/EditCalendar/EditCalendar';
 import addIMG from '../../../../assets/Icons/addImg.png';
 import buttonEdit from '../../../../assets/Icons/buttonEdit.png';
 import calendar from '../../../../assets/Icons/calendar.png';
@@ -225,11 +225,18 @@ export const CreateCourse = () => {
             {/* Edit Calendar Modal */}
             {isEditCalendarOpen && (
                 <EditCalendar
-                  closeModal={() => setIsEditCalendarOpen(false)}
+                  show={isEditCalendarOpen}
+                  closeModal={() => setIsEditCalendarOpen(false)} // Corrected prop name
                   onSave={handleCalendarSave}
                   initialData={calendarData}
                 />
             )}
+            <div>
+                {/* Add a button to open the modal */}
+                <button onClick={showModalGeneral}>
+                    Open Calendar Modal
+                </button>
+            </div>
         </>
     );
 };

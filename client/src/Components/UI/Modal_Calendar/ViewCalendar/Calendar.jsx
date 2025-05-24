@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Calendar.css'; // Reuse styles from EditCalendar
+import './VCalendar.css'; // Reuse styles from EditCalendar
 
 const times = [
   '6:00', '8:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'
@@ -52,7 +52,8 @@ export const ViewCalendar = ({ calendarData, closeModal }) => {
             <div className="calendar-card layered-card card2"></div>
             <div className="calendar-card layered-card card3"></div>
           </div>
-          <table className="calendar-table">
+          <div className="calendar-container">          
+            <table className="calendar-table">
             <thead>
               <tr>
                 <th></th>
@@ -80,9 +81,12 @@ export const ViewCalendar = ({ calendarData, closeModal }) => {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table> </div>
+
         </div>
       </div>
     </div>
   );
 };
+
+export default ViewCalendar;
