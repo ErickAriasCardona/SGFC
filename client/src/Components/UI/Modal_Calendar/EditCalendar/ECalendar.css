@@ -14,9 +14,8 @@
 .modal-background {
   width: 60vw;
   height: 80vh;
-  background: rgba(10, 10, 10, 0.85);
+  background: #1A1A1A;
   border-radius: 25px;
-  box-shadow: 0 0 30px rgba(0, 255, 0, 0.7);
   backdrop-filter: blur(15px);
   z-index: 998;
 }
@@ -48,7 +47,7 @@
   right: 15vh;
   background: transparent;
   border: none;
-  color: #0f0;
+  color: rgb(255, 255, 255);
   font-weight: bold;
   font-size: 16px;
   cursor: pointer;
@@ -56,7 +55,7 @@
 }
 
 .close-button:hover {
-  color: #a0ffa0;
+  color: #00843D;
 }
 
 .modal-title {
@@ -64,37 +63,41 @@
   font-weight: 600;
   font-size: 1.8rem;
   text-align: center;
-  width: 100%;
-  margin-right: 50vw;
+  width: 91%;
   position: absolute;
 }
 
 .highlight {
-  color: #00ff00;
+  color: #00843D;
 }
 
 .date-inputs {
   display: flex;
+  width: 100%;
   justify-content: space-between;
-  margin-top: 55px;
-  margin-right: -15vw;
+  margin-top: 5px;
+  margin-left: 10vw;
 }
 
 .organized-date-inputs label {
   display: flex;
+  width: 100%;
   font-size: 1rem;
   color: #ccc;
   margin-top: 13vh;
+  margin-right: 50vw;
 }
 
 .date-inputs input[type="date"] {
   border-radius: 8px;
+  width: 6vw;
+  height: 30px;
   border: 1px solid #333;
   background-color: #111;
   color: #eee;
   font-size: 1.1rem;
+  margin-left: 1vw;
 }
-
 .calendar-card-wrapper {
   position: absolute;
   width: 100%; 
@@ -106,9 +109,8 @@
   position: absolute;
   width: 320px;
   height: 350px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff0d;
   border-radius: 20px;
-  box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
   backdrop-filter: blur(10px);
   transform: rotate(0deg);
   transition: transform 0.3s ease;
@@ -135,20 +137,33 @@
   left: 0;
 }
 
-.calendar-table {
-  width: 280px;
-  border-collapse: collapse;
-  user-select: none;
+
+.calendar-container {
+  width: 20vw;
+  height: 50vh;
+  background: #ffffff0d;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
   position: absolute;
   z-index: 4;
-  margin-top: 23vh;
-  margin-left: 20vw;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  margin-left: 18vw;
+  margin-top: 20vh;
+}
+
+.calendar-table {
+  width: 300px;
+  border-collapse: collapse;
+  user-select: none;
+  z-index: 4;
 
 }
 
 .calendar-table th,
 .calendar-table td {
-  border: 1px solid #222;
+  border: 1px solid #ffffff;
   text-align: center;
   padding: 8px 5px;
   font-size: 0.85rem;
@@ -156,14 +171,14 @@
 }
 
 .calendar-table th {
-  background-color: #111;
-  color: #0f0;
+  background-color: #ffffff0d;
+  color: #00843D;
   font-weight: 600;
 }
 
 .calendar-table td.slot-cell {
   cursor: pointer;
-  background-color: #111;
+  background-color: #ffffff0d;
   transition: background-color 0.3s ease;
   position: relative;
 }

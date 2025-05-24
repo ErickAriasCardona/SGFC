@@ -138,6 +138,12 @@ export const SeeCourse = () => {
                     onClose={() => setShowModal(false)} // Para poder cerrarlo desde dentro
                 />
             )}
+            {isViewCalendarOpen && (
+                <ViewCalendar
+                    calendarData={calendarData}
+                    closeModal={() => setIsViewCalendarOpen(false)}
+                />
+            )}
 
         </>
     );
