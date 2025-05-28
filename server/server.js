@@ -29,7 +29,7 @@ const app = express();
 // Configuración de CORS
 app.use(
   cors({
-    origin: "http://localhost:5173", // Cambia esto al dominio de tu frontend
+    origin: "https://sgfc-seven.vercel.app/", // Cambia esto al dominio de tu frontend
     credentials: true, // Permitir el envío de cookies y credenciales
   })
 );

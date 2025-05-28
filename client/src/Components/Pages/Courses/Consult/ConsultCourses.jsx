@@ -128,7 +128,7 @@ export const ConsultCourses = () => {
                     onClick={() => handleCardClick(curso.ID)} // Usar el campo ID en mayúsculas
                   >
                     <img
-                      src={`http://localhost:3001${curso.imagen}` || "ruta/imagen/por/defecto.jpg"} // Construir la URL completa
+                      src={`https://sgfc-production.up.railway.app/${curso.imagen}` || "ruta/imagen/por/defecto.jpg"} // Construir la URL completa
                       alt={curso.nombre_curso}
                     />
                     <div className="card-text">

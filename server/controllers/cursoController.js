@@ -189,7 +189,7 @@ const createCurso = async (req, res) => {
     if (emails.length === 0) {
       console.warn('No hay usuarios aceptados para mandar Email');
     } else {
-      const courseLink = `http://localhost:5173/cursos/${nuevoCurso.id}`;
+      const courseLink = `https://sgfc-seven.vercel.app/cursos/${nuevoCurso.id}`;
       await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
     }
 
