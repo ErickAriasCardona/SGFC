@@ -1,0 +1,225 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-background {
+  width: 60vw;
+  height: 80vh;
+  background: #1A1A1A;
+  border-radius: 25px;
+  backdrop-filter: blur(15px);
+  z-index: 998;
+}
+
+.modal-container.calendar-modal {
+  background: transparent;
+  border-radius: 15px;
+  width: 60vw;  
+  height: 60vh;
+  max-width: 90%;
+  box-shadow: none;
+  color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  z-index: 999; 
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 100px 1fr;
+  gap: 10px 10px;
+} 
+
+
+.centered-modal {
+  margin: 0 auto;
+}
+
+.close-button {
+  position: absolute;
+  top: 5vh;
+  right: 15vh;
+  background: transparent;
+  border: none;
+  color: rgb(255, 255, 255);
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.close-button:hover {
+  color: #00843D;
+}
+
+.modal-title {
+  margin-top: 10vh;
+  font-weight: 600;
+  font-size: 1.8rem;
+  text-align: center;
+  width: 91%;
+  position: absolute;
+}
+
+.highlight {
+  color: #00843D;
+}
+
+.date-inputs {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  margin-top: 5px;
+  margin-left: 10vw;
+}
+
+.organized-date-inputs label {
+  display: flex;
+  width: 100%;
+  font-size: 1rem;
+  color: #ccc;
+  margin-top: 13vh;
+  margin-right: 50vw;
+}
+
+.date-inputs input[type="date"] {
+  border-radius: 8px;
+  width: 6vw;
+  height: 30px;
+  border: 1px solid #333;
+  background-color: #111;
+  color: #eee;
+  font-size: 1.1rem;
+  margin-left: 1vw;
+}
+.calendar-card-wrapper {
+  position: absolute;
+  width: 100%; 
+  margin-left: 19vw;
+  margin-top: 25vh;
+}
+
+.calendar-card {
+  position: absolute;
+  width: 320px;
+  height: 350px;
+  background: #ffffff0d;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  transform: rotate(0deg);
+  transition: transform 0.3s ease;
+}
+
+.layered-card.card1 {
+  transform: rotate(-10deg);
+  z-index: 1;
+  top: 10px;
+  left: 10px;
+}
+
+.layered-card.card2 {
+  transform: rotate(10deg);
+  z-index: 2;
+  top: 5px;
+  left: 5px;
+}
+
+.layered-card.card3 {
+  transform: rotate(-5deg);
+  z-index: 3;
+  top: 0;
+  left: 0;
+}
+
+
+.calendar-container {
+  width: 20vw;
+  height: 50vh;
+  background: #ffffff0d;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  position: absolute;
+  z-index: 4;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  margin-left: 18vw;
+  margin-top: 20vh;
+}
+
+.calendar-table {
+  width: 300px;
+  border-collapse: collapse;
+  user-select: none;
+  z-index: 4;
+
+}
+
+.calendar-table th,
+.calendar-table td {
+  border: 1px solid #ffffff;
+  text-align: center;
+  padding: 8px 5px;
+  font-size: 0.85rem;
+  color: #ccc;
+}
+
+.calendar-table th {
+  background-color: #ffffff0d;
+  color: #00843D;
+  font-weight: 600;
+}
+
+.calendar-table td.slot-cell {
+  cursor: pointer;
+  background-color: #ffffff0d;
+  transition: background-color 0.3s ease;
+  position: relative;
+}
+
+.calendar-table td.slot-cell:hover {
+  background-color: #004400;
+}
+
+.calendar-table td.slot-cell.selected {
+  background-color: #007700;
+}
+
+.plus-icon {
+  color: #0f0;
+  font-weight: bold;
+  font-size: 1.2rem;
+  user-select: none;
+}
+
+.save-button {
+  background-color: #007700;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-left: 45vw;
+  margin-bottom: 10vh;
+  position: absolute;;
+}
+
+.organized-save-button {
+  margin-top: 0;
+  align-self: flex-end;
+  padding: 10px 25px;
+  font-size: 1.1rem;
+  border-radius: 15px;
+}
+
+.save-button:hover {
+  background-color: #00aa00;
+}

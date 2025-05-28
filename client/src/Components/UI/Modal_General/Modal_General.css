@@ -82,7 +82,7 @@
     cursor: pointer;
 }
 
-.container_return>h5 {
+.container_return_general>h5 {
     width: auto;
     height: auto;
     position: relative;
@@ -95,7 +95,7 @@
     cursor: pointer;
 }
 
-.container_return {
+.container_return_general {
     width: 142px;
     height: 142px;
     display: flex;
@@ -103,7 +103,7 @@
     align-items: center;
     position: relative;
     bottom: 24.5rem;
-    left: 19.9rem;
+    left: 16rem;
 }
 
 .container_informationGeneral {

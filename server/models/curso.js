@@ -37,17 +37,9 @@ class Curso extends Model {
           type: DataTypes.DATE,
           allowNull: true,
         },
-        hora_inicio: {
-          type: DataTypes.TIME,
-          allowNull: true,
-        },
-        hora_fin: {
-          type: DataTypes.TIME,
-          allowNull: true,
-        },
         dias_formacion: {
-          type: DataTypes.STRING(45),
-          allowNull: true,
+          type: DataTypes.JSON,
+          allowNull: true, 
         },
         lugar_formacion: {
           type: DataTypes.STRING(45),
@@ -72,4 +64,4 @@ class Curso extends Model {
   }
 }
 
-module.exports = Curso; 
+module.exports = Curso;  
