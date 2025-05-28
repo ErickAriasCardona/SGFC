@@ -5,10 +5,12 @@ import { Footer } from '../../../Components/Layouts/Footer/Footer';
 import { Main } from '../../../Components/Layouts/Main/Main';
 import { UpdateEmploye } from './UpdateEmploye/UpdateEmploye';
 import axiosInstance from '../../../config/axiosInstance';
+import { useModal } from "../../../Context/ModalContext"; // Importa el contexto de los modales
 
 export const GestionsEmployes = () => {
   const [employes, setEmployes] = useState([]); // Estado para almacenar los empleados
       const [filteredEmployes, setFilteredEmployes] = useState([]); // Estado para los empleados filtrados
+      const { setShowModalCreateEmployee } = useModal(); // Hook del contexto de los modales
       const [filter, setFilter] = useState(''); // Estado para el valor del filtro
       const [current, setCurrent] = useState(0); // Estado para el carrusel
       const [selectedState, setSelectedState] = useState({
@@ -114,12 +116,6 @@ const fetchEmployes = async () => {
     const next = () => setCurrent((prev) => (prev + 1) % filteredEmployes.length);
     const prev = () => setCurrent((prev) => (prev - 1 + filteredEmployes.length) % filteredEmployes.length);
 
-    const showModalCreateEmploye = () => {
-        const modalCreateEmploye = document.getElementById("modal-overlayCreateEmploye");
-        if (modalCreateEmploye) {
-            modalCreateEmploye.style.display = "flex"; // Cambia el display a flex para mostrar el modal
-        }
-    };
 
 
   return (
@@ -172,7 +168,7 @@ const fetchEmployes = async () => {
                                     </button>
                                 </div>
                             </div>
-                            <button className="btn_createEmploye" onClick={showModalCreateEmploye}>Agregar Empleado</button>
+                            <button className="btn_createEmploye" onClick={() => setShowModalCreateEmployee(true)}>Agregar Empleado</button>
 
                         </div>
 

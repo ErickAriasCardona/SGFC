@@ -7,13 +7,15 @@ import { Modal_Successful } from "../Modal_Successful/Modal_Successful";
 import axiosInstance from "../../../config/axiosInstance";
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from "react-router-dom";
+import { useModal } from "../../../Context/ModalContext"; // 👈 importa el hook del contexto
 
-export const Modal_SignUp = ({ 
-  accountType, 
-  setShowSignUp,
-  setShowSignIn,
-  setShowAccountType 
-}) => {
+export const Modal_SignUp = ({ accountType }) => {
+  const {
+    setShowSignUp,
+    setShowSignIn,
+    setShowAccountType
+  } = useModal(); // 👈 usa el contexto
+
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -29,14 +31,12 @@ export const Modal_SignUp = ({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // 🔄 Limpia los campos cada vez que se seleccione un nuevo tipo de cuenta
   useEffect(() => {
     setEmail("");
     setPassword("");
     setConfirmPassword("");
   }, [accountType]);
 
-  // Actualiza los requisitos de la contraseña en tiempo real
   useEffect(() => {
     setPasswordRequirements({
       length: password.length >= 8,
@@ -49,20 +49,16 @@ export const Modal_SignUp = ({
   const registerUser = async (event) => {
     event.preventDefault();
 
-    // Validar que todos los requisitos de la contraseña se cumplan
     if (
       !passwordRequirements.length ||
       !passwordRequirements.uppercase ||
       !passwordRequirements.number ||
       !passwordRequirements.specialChar
     ) {
-      alert(
-        "La contraseña debe cumplir con todos los requisitos: al menos 8 caracteres, una letra mayúscula, un número y un carácter especial."
-      );
+      alert("La contraseña debe cumplir con todos los requisitos.");
       return;
     }
 
-    // Validar que las contraseñas coincidan
     if (password !== confirmPassword) {
       alert("Las contraseñas no coinciden");
       setPassword("");
@@ -70,9 +66,8 @@ export const Modal_SignUp = ({
       return;
     }
 
-    // Enviar datos al backend
     try {
-      const response = await axiosInstance.post("/createUser", {
+      await axiosInstance.post("/createUser", {
         email,
         password,
         accountType,
@@ -88,79 +83,51 @@ export const Modal_SignUp = ({
       }, 3000);
 
     } catch (error) {
-      if (error.response && error.response.data) {
-        alert(error.response.data.message || "Ocurrió un error al registrar el usuario");
-      } else {
-        alert("Error al conectar con el servidor");
-      }
+      const msg = error.response?.data?.message || "Ocurrió un error al registrar el usuario";
+      alert(msg);
     }
   };
 
   const closeModalSignUp = () => {
-    console.log('Closing SignUp Modal'); // Para debugging
-    if (typeof setShowSignUp === 'function') {
-      setShowSignUp(false);
-      if (typeof setShowAccountType === 'function') {
-        setShowAccountType(true);
-      }
-    } else {
-      console.error('setShowSignUp is not a function:', setShowSignUp);
-    }
+    setShowSignUp(false);
+    setShowAccountType(true);
   };
 
   const showModalSignIn = () => {
-    if (typeof setShowSignUp === 'function' && typeof setShowSignIn === 'function') {
-      setShowSignUp(false);
-      setShowAccountType(false);
-      setShowSignIn(true);
-    }
+    setShowSignUp(false);
+    setShowAccountType(false);
+    setShowSignIn(true);
   };
 
   const handleGoogleResponse = async (response) => {
     const idToken = response.credential;
 
     try {
-      const res = await fetch("http://localhost:3001/auth/googleSignUp", { // Cambia la ruta a googleSignUp
+      const res = await fetch("http://localhost:3001/auth/googleSignUp", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ idToken }), // Asegúrate de enviar el idToken
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
       });
 
       const data = await res.json();
 
       if (res.ok && data.success) {
-        // Guardar información del usuario en sessionStorage
         sessionStorage.setItem("userSession", JSON.stringify({
           googleId: data.user.googleId,
           accountType: data.user.accountType,
           email: data.user.email,
         }));
 
-        // Mostrar el Modal_Successful
-        const modalSuccefull = document.getElementById("container_modalSucessfull");
-        const modalSignUp = document.getElementById("container_signUp");
-
-        if (modalSuccefull && modalSignUp) {
-          modalSignUp.style.display = "none";
-
-          modalSuccefull.style.display = "flex";
-
-          // Usar navigate en lugar de window.location.reload
-          setTimeout(() => {
-            modalSuccefull.style.display = "none";
-            navigate('/', { state: { accountType: data.user.accountType } });
-          }, 3000);
-        }
-      } else if (data.message === "El correo ya está registrado") { // Verifica si el correo ya está registrado
-        alert("El correo ya está registrado. Por favor, inicie sesión.");
+        setShowSignUp(false);
+        setShowSuccessModal(true);
+        setTimeout(() => {
+          setShowSuccessModal(false);
+          navigate('/', { state: { accountType: data.user.accountType } });
+        }, 3000);
       } else {
-        console.error('Error en el registro con Google (backend):', data.message);
         alert(data.message || 'Error en el registro con Google');
       }
     } catch (error) {
-      console.error('Error de red al enviar el token de Google:', error);
       alert('Error al conectar con el servidor');
     }
   };
@@ -173,7 +140,6 @@ export const Modal_SignUp = ({
           <p>"Hemos enviado un enlace de verificación a tu correo. Haz click en él para activar tu cuenta"</p>
         </Modal_Successful>
       )}
-
       <div id="container_signUp" style={{ display: 'flex' }}>
         <div className="modalSignUp">
           <div className="container_form_register">

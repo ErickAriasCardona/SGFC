@@ -4,18 +4,19 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import settings from '../../../assets/Icons/settings.png';
 import notifications from '../../../assets/Icons/notifications.png';
 import profile from '../../../assets/Icons/userGrey.png';
-import logout from '../../../assets/Icons/cerrar-sesion.png'
-import axiosInstance from '../../../config/axiosInstance'
+import logout from '../../../assets/Icons/cerrar-sesion.png';
+import axiosInstance from '../../../config/axiosInstance';
 
-export const NavBar = ({ 
-  children, 
-  setShowSignIn, 
-  setShowSignUp, 
-  setShowAccountType 
-}) => {
+// Importamos el hook del contexto de los modales
+import { useModal } from '../../../Context/ModalContext'; 
+
+export const NavBar = ({ children }) => {
   const navigate = useNavigate();
 
-  // Obtener la sesión del usuario desde localStorage o sessionStorage
+  // Obtenemos las funciones del contexto
+  const { setShowSignIn } = useModal();
+
+  // Obtenemos sesión del usuario
   const userSession =
     JSON.parse(localStorage.getItem('userSession')) ||
     JSON.parse(sessionStorage.getItem('userSession'));
@@ -41,6 +42,7 @@ export const NavBar = ({
     }
   };
 
+  // Función para abrir el modal de inicio de sesión
   const handleSignIn = () => {
     setShowSignIn(true);
   };
@@ -48,18 +50,15 @@ export const NavBar = ({
   return (
     <div className="navBar">
       <div className="logo">Logo</div>
-      {/* <img className='logo' src="" alt="Logo"/> */}
 
       <div className="container_options">{children}</div>
 
-      {/* Mostrar el botón de "Iniciar sesión" solo si el usuario no está logueado */}
       {!isLoggedIn && (
         <button className="button_signIn" onClick={handleSignIn}>
           Iniciar sesión
         </button>
       )}
 
-      {/* Mostrar el contenedor de opciones de perfil solo si el usuario está logueado */}
       {isLoggedIn && (
         <div className="container_options_profile">
           <button>
@@ -75,9 +74,8 @@ export const NavBar = ({
           </button>
 
           <button onClick={handleLogout}>
-            <img src={logout} alt="" />
+            <img src={logout} alt="Cerrar sesión" />
           </button>
-
         </div>
       )}
     </div>
