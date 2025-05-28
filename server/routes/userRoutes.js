@@ -3,7 +3,12 @@ const { registerUser, verifyEmail, loginUser,requestPasswordReset,resetPassword,
 const router = express.Router();
 const upload = require("../config/multer"); // Importar configuración de multer
 
-router.post("/createUser", registerUser); // Ruta para registrar usuario
+router.post("/createUser", 
+  upload.fields([
+    { name: 'foto_perfil', maxCount: 1},
+    { name: 'documento_pdf', maxCount: 1}
+  ]), 
+  registerUser); // Ruta para registrar usuario
 router.get("/verificarCorreo", verifyEmail); // Ruta para verificar correo
 router.post("/login", loginUser); // Ruta para iniciar sesión
 router.post("/requestPasswordReset", requestPasswordReset); // Solicitar recuperación de contraseña

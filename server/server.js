@@ -13,6 +13,7 @@ app.use(
     origin: "http://localhost:5173", // Cambia esto al dominio de tu frontend
     credentials: true, // Permitir el envío de cookies y credenciales
   })
+  
 );
 
 app.use(express.json());
