@@ -11,7 +11,7 @@ const setDb = (databaseInstance) => {
  */
 const getScheduledSessions = async (req, res) => {
     try {
-        const instructorId = req.user.ID; // Obtenido del token JWT
+        const instructorId = req.user.id; // Obtenido del token JWT
 
         const sessions = await dbInstance.Sesion.findAll({
             where: {
@@ -44,7 +44,7 @@ const getScheduledSessions = async (req, res) => {
 const getSessionParticipants = async (req, res) => {
     try {
         const { sessionId } = req.params;
-        const instructorId = req.user.ID;
+        const instructorId = req.user.id;
 
         // Verificar que la sesión pertenezca al instructor
         const session = await dbInstance.Sesion.findOne({
@@ -90,8 +90,9 @@ const getSessionParticipants = async (req, res) => {
  */
 const registerAttendance = async (req, res) => {
     try {
-        const { sessionId, attendanceData } = req.body;
-        const instructorId = req.user.ID;
+        const sessionId = req.params.sessionId;//parametro de la ruta
+        const { attendanceData } = req.body;
+        const instructorId = req.user.id;
 
         // Verificar que la sesión pertenezca al instructor
         const session = await dbInstance.Sesion.findOne({
@@ -139,7 +140,7 @@ const updateAttendance = async (req, res) => {
     try {
         const { attendanceId } = req.params;
         const { status } = req.body;
-        const instructorId = req.user.ID;
+        const instructorId = req.user.id;
 
         const attendance = await dbInstance.Asistencia.findOne({
             where: {

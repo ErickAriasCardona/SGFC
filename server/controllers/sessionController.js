@@ -12,7 +12,8 @@ const setDb = (databaseInstance) => {
 const createSession = async (req, res) => {
     try {
         const { curso_ID, fecha, hora_inicio, hora_fin } = req.body;
-        const instructor_ID = req.user.ID;
+        const instructor_ID = req.user.id;
+        console.log('Instructor ID:', instructor_ID);
 
         // Validar que el instructor esté asignado al curso
         const asignacion = await dbInstance.AsignacionCursoInstructor.findOne({
@@ -59,7 +60,7 @@ const createSession = async (req, res) => {
  */
 const getInstructorSessions = async (req, res) => {
     try {
-        const instructor_ID = req.user.ID;
+        const instructor_ID = req.user.id;
         
         const sessions = await dbInstance.Sesion.findAll({
             where: {
@@ -94,7 +95,7 @@ const getInstructorSessions = async (req, res) => {
 const getSessionById = async (req, res) => {
     try {
         const { sessionId } = req.params;
-        const instructor_ID = req.user.ID;
+        const instructor_ID = req.user.id;
 
         const session = await dbInstance.Sesion.findOne({
             where: {
@@ -145,7 +146,7 @@ const updateSession = async (req, res) => {
     try {
         const { sessionId } = req.params;
         const { fecha, hora_inicio, hora_fin, estado } = req.body;
-        const instructor_ID = req.user.ID;
+        const instructor_ID = req.user.id;
 
         const session = await dbInstance.Sesion.findOne({
             where: {
@@ -197,7 +198,7 @@ const updateSession = async (req, res) => {
 const deleteSession = async (req, res) => {
     try {
         const { sessionId } = req.params;
-        const instructor_ID = req.user.ID;
+        const instructor_ID = req.user.id;
 
         const session = await dbInstance.Sesion.findOne({
             where: {

@@ -72,7 +72,7 @@ export const Modal_SignUp = ({
 
     // Enviar datos al backend
     try {
-      const response = await axiosInstance.post("/createUser", {
+      const response = await axiosInstance.post("/api/users/createUser", {
         email,
         password,
         accountType,
@@ -120,7 +120,7 @@ export const Modal_SignUp = ({
     const idToken = response.credential;
 
     try {
-      const res = await fetch("http://localhost:3001/auth/googleSignUp", { // Cambia la ruta a googleSignUp
+      const res = await fetch("http://localhost:3001/api/users/auth/googleSignUp", { // Cambia la ruta a googleSignUp
         method: "POST",
         headers: {
           "Content-Type": "application/json",

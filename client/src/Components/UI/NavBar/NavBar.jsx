@@ -31,7 +31,7 @@ export const NavBar = ({
 
   const handleLogout = async () => {
     try {
-      await axiosInstance.post("/logout", {}, { withCredentials: true });
+      await axiosInstance.post("/api/users/logout", {}, { withCredentials: true });
       localStorage.removeItem("userSession");
       sessionStorage.removeItem("userSession");
       navigate("/");

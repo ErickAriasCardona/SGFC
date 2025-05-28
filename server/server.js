@@ -46,7 +46,7 @@ app.use("/base64storage", express.static(path.join(__dirname, "base64storage")))
 
 // Registrar rutas
 app.use("/api/users", userRoutes);
-app.use("/api/cursos", cursoRoutes);
+app.use("/api/course", cursoRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/attendance", attendanceRoutes);
 
