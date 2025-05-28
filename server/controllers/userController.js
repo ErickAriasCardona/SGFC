@@ -376,7 +376,7 @@ const getInstructores = async (req, res) => {
             return {
                 ...instructor.toJSON(),
                 foto_perfil: instructor.foto_perfil
-                    ? `https://sgfc-production.up.railway.app//${instructor.foto_perfil}` // Construir la URL completa
+                    ? `https://sgfc-production.up.railway.app/${instructor.foto_perfil}` // Construir la URL completa
                     : null, // Si no hay foto, devolver null
             };
         });
