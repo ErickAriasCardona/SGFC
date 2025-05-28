@@ -73,7 +73,7 @@ export const Modal_SignIn = ({
     const idToken = response.credential;
 
     try {
-      const res = await fetch("sgfc.railway.internal/auth/googleSignIn", {
+      const res = await fetch("https://sgfc-production.up.railway.app/auth/googleSignIn", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
