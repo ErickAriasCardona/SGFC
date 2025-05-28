@@ -3,7 +3,7 @@ const { DataTypes, Model } = require('sequelize');
 class Sena extends Model {
   static init(sequelize) {
     super.init( 
-      {
+      {  
         ID: {
           type: DataTypes.INTEGER,
           primaryKey: true,

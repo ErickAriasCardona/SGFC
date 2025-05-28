@@ -1,17 +1,14 @@
 const Curso = require("../models/curso");
 const User = require("../models/User");
-
 const path = require("path");
-
-
 const AsignacionCursoInstructor = require('../models/AsignacionCursoInstructor');
 const { sendCourseCreatedEmail } = require("../services/emailService");
 const { Router } = require("express");
 const upload = require("../config/multer");
-
 const { sendCursoUpdatedNotification } = require('../services/emailService');
 const { InscripcionCurso } = require('../models');
-const { Op } = require('sequelize'); 
+const { Op } = require('sequelize');
+const fs = require('fs');
 
 //Asignar cursos
 const asignarCursoAInstructor = async (req, res) => {
@@ -79,8 +76,6 @@ const asignarCursoAInstructor = async (req, res) => {
   }
 };
 
-
-
 //consultar cursos asignador a un instructor  
 const obtenerCursosAsignadosAInstructor = async (req, res) => {
   const { instructor_ID } = req.params;
@@ -110,7 +105,7 @@ const obtenerCursosAsignadosAInstructor = async (req, res) => {
 // Crear un curso (solo para administradores)
 const createCurso = async (req, res) => {
   try {
-    const { accountType } = req.user; // Asegúrate de que el middleware de autenticación pase el usuario
+    const { accountType } = req.user;
     if (accountType !== "Administrador") {
       return res.status(403).json({ message: "No tienes permisos para crear cursos." });
     }
@@ -130,31 +125,37 @@ const createCurso = async (req, res) => {
     } = req.body;
 
     // Validar campos obligatorios
-    if (!ficha || !nombre_curso || !descripcion || !tipo_oferta  || !estado) {
+    if (!ficha || !nombre_curso || !descripcion || !tipo_oferta || !estado) {
       return res.status(400).json({
         message: "Los campos nombre_curso, tipo_oferta, ficha, descripcion y estado son obligatorios.",
       });
     }
 
+    // Procesar imagen y convertir a Base64 si se envió
     let image = null;
-        if (req.file) {
-          const base64Data = req.file.buffer.toString('base64');
-          const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-          const savePath = path.join(__dirname, '../base64storage', uniqueName);
-    
-          if (!fs.existsSync(path.dirname(savePath))) {
-            fs.mkdirSync(path.dirname(savePath), { recursive: true});
-          }
-          fs.writeFileSync(savePath, base64Data);
-    
-          image = `/base64storage/${uniqueName}`;
-        } 
-        
-    /*
-    // Obtener la ruta de la imagen subida
-    const imagen = req.file ? `/uploads/${req.file.filename}` : null;
-    */
-    
+    if (req.file) {
+      const base64Data = req.file.buffer.toString('base64');
+      const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+      const savePath = path.join(__dirname, '../base64storage', uniqueName);
+
+      if (!fs.existsSync(path.dirname(savePath))) {
+        fs.mkdirSync(path.dirname(savePath), { recursive: true });
+      }
+      fs.writeFileSync(savePath, base64Data);
+
+      image = `/base64storage/${uniqueName}`;
+    }
+
+    // Procesar días de formación
+    let diasFormacionParsed = dias_formacion;
+    if (typeof dias_formacion === 'string') {
+      try {
+        diasFormacionParsed = JSON.parse(dias_formacion);
+      } catch (e) {
+        return res.status(400).json({ message: "El formato de los días de formación no es válido." });
+      }
+    }
+
     // Crear el curso
     const nuevoCurso = await Curso.create({
       nombre_curso,
@@ -166,32 +167,35 @@ const createCurso = async (req, res) => {
       fecha_fin,
       hora_inicio,
       hora_fin,
-      dias_formacion,
+      dias_formacion: diasFormacionParsed,
       lugar_formacion,
       imagen: image,
     });
 
-    res.status(201).json({ message: "Curso creado con éxito."});
+    // Responder con éxito
+    res.status(201).json({ message: "Curso creado con éxito." });
 
-    // Obtener usuarios con correos verificados
-    const usuarios = await User.findAll({ where: { verificacion_email: true , accountType: { [Op.or]: ['Empresa', 'Aprendiz'] }}, attributes: ['email'] });
+    // Buscar usuarios verificados
+    const usuarios = await User.findAll({
+      where: {
+        verificacion_email: true,
+        accountType: { [Op.or]: ['Empresa', 'Aprendiz'] },
+      },
+      attributes: ['email'],
+    });
+
     const emails = usuarios.map(user => user.email);
-    
-    if(emails.length === 0){
-      console.warn('No hay usuarios aceptados para mandar Email')
-    }else{
-      // Enviar notificación general
+
+    if (emails.length === 0) {
+      console.warn('No hay usuarios aceptados para mandar Email');
+    } else {
       const courseLink = `http://localhost:5173/cursos/${nuevoCurso.id}`;
       await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
     }
 
-    
-
-    
   } catch (error) {
     console.error("Error al crear el curso:", error);
 
-    // Manejo de errores específicos
     if (error.name === "SequelizeValidationError") {
       return res.status(400).json({ message: "Error de validación.", errors: error.errors });
     }
@@ -233,18 +237,18 @@ const updateCurso = async (req, res) => {
     // Verificar si se envió una nueva imagen
     //const imagen = req.file ? `/uploads/${req.file.filename}` : curso.imagen;
     let image = null;
-        if (req.file) {
-          const base64Data = req.file.buffer.toString('base64');
-          const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-          const savePath = path.join(__dirname, '../base64storage', uniqueName);
-    
-          if (!fs.existsSync(path.dirname(savePath))) {
-            fs.mkdirSync(path.dirname(savePath), { recursive: true});
-          }
-          fs.writeFileSync(savePath, base64Data);
-    
-          image = `/base64storage/${uniqueName}`;
-        }
+    if (req.file) {
+      const base64Data = req.file.buffer.toString('base64');
+      const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+      const savePath = path.join(__dirname, '../base64storage', uniqueName);
+
+      if (!fs.existsSync(path.dirname(savePath))) {
+        fs.mkdirSync(path.dirname(savePath), { recursive: true });
+      }
+      fs.writeFileSync(savePath, base64Data);
+
+      image = `/base64storage/${uniqueName}`;
+    }
 
     // Actualizar el curso en la base de datos
     await curso.update({
@@ -263,14 +267,14 @@ const updateCurso = async (req, res) => {
       imagen: image, // Actualizar la imagen si se envió una nueva
     });
 
-     const usuarios = await User.findAll({ where: { verificacion_email: true , accountType: { [Op.or]: ['Empresa', 'Aprendiz'] }}, attributes: ['email'] });
+    const usuarios = await User.findAll({ where: { verificacion_email: true, accountType: { [Op.or]: ['Empresa', 'Aprendiz'] } }, attributes: ['email'] });
     const emails = usuarios.map(user => user.email);
-    
-    if(emails.length === 0){
-      console.warn('No hay usuarios aceptados para mandar Email')
-    }else{
 
-    await sendCursoUpdatedNotification(emails, curso);
+    if (emails.length === 0) {
+      console.warn('No hay usuarios aceptados para mandar Email')
+    } else {
+
+      await sendCursoUpdatedNotification(emails, curso);
     };
 
     res.status(200).json({
@@ -283,7 +287,6 @@ const updateCurso = async (req, res) => {
     res.status(500).json({ message: "Error al actualizar el curso." });
   }
 };
-
 
 // Obtener todos los cursos
 const getAllCursos = async (req, res) => {
@@ -335,43 +338,40 @@ const getCursoByFicha = async (req, res) => {
 };
 
 // Nuevo controlador para transformacion
+const uploadImagesBase64 = async (req, res) => {
+  try {
+    const file = req.file;
+    if (!file) return res.status(400).json({ message: 'No se recibio ningun archivo' });
 
-    const fs = require('fs');
-    
-    const uploadImagesBase64 = async (req, res) => {
-      try{
-          const file = req.file;
-          if (!file) return res.status(400).json({message: 'No se recibio ningun archivo'});
+    const base64Data = file.buffer.toString('base64');
+    const uniqueName = `${file.fieldname}-${Date.now()}.txt`;
+    const savePath = path.join(__dirname, '../base64storage', uniqueName);
 
-          const base64Data = file.buffer.toString('base64');
-          const uniqueName = `${file.fieldname}-${Date.now()}.txt`;
-          const savePath = path.join(__dirname, '../base64storage', uniqueName);
+    if (!fs.existsSync(path.dirname(savePath))) {
+      fs.mkdirSync(path.dirname(savePath), { recursive: true });
+    }
 
-          if (!fs.existsSync(path.dirname(savePath))) {
-            fs.mkdirSync(path.dirname(savePath), {recursive: true});
-          }
+    fs.writeFileSync(savePath, base64Data);
 
-          fs.writeFileSync(savePath, base64Data);
+    return res.status(200).json({
+      message: 'Imagen convertida y guardada.',
+      filename: uniqueName,
+      path: savePath
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Error al guardar la imagen.' });
+  }
 
-          return res.status(200).json({
-            message: 'Imagen convertida y guardada.',
-            filename: uniqueName,
-            path: savePath
-          });
-      } catch (error) {
-        console.error(error);
-        return res.status(500).json({message:'Error al guardar la imagen.'});
-      }
-      
-    };
+};
 
-module.exports = { 
-  createCurso, 
-  updateCurso, 
-  getAllCursos, 
-  getCursoById, 
-  getCursoByFicha, 
-  asignarCursoAInstructor, 
+module.exports = {
+  createCurso,
+  updateCurso,
+  getAllCursos,
+  getCursoById,
+  getCursoByFicha,
+  asignarCursoAInstructor,
   obtenerCursosAsignadosAInstructor,
   uploadImagesBase64
 };

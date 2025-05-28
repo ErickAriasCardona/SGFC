@@ -12,7 +12,17 @@ const { cleanExpiredTokens } = require('./controllers/userController');
 
 
 // Ejecuta la limpieza de tokens expirados cada hora
-cron.schedule('0 * * * *', cleanExpiredTokens);
+cron.schedule('0 * * * *', async () => {
+  try {
+    await cleanExpiredTokens();
+  } catch (error) {
+    console.error('Error al limpiar tokens expirados:', error);
+  }
+}, {
+  timezone: "America/Bogota" // Usa tu zona horaria real
+});
+
+
 
 const app = express();
 
