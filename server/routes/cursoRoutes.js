@@ -1,40 +1,31 @@
 const express = require("express");
-const { createCurso, updateCurso, getAllCursos, getCursoById, getCursoByFicha, asignarCursoAInstructor,obtenerCursosAsignadosAInstructor } = require("../controllers/cursoController");
-const { authenticateUser } = require("../middlewares/authMiddleware"); // Middleware para autenticar al usuario
+const router = express.Router();
+const cursoController = require("../controllers/cursoController");
+const authMiddleware = require("../middlewares/authMiddleware");
 const upload = require("../config/multer");
 
-const router = express.Router();
+// Rutas que requieren autenticación
+router.use(authMiddleware);
 
-/*
-// Ruta para crear un curso (con subida de imagen)
-router.post("/cursos", authenticateUser, upload.single("imagen"), createCurso);
-*/
+// Crear un curso (con subida de imagen)
+router.post("/cursos", upload.single("imagen"), cursoController.createCurso);
 
+// Actualizar un curso
+router.put("/cursos/:id", upload.single("imagen"), cursoController.updateCurso);
 
+// Obtener todos los cursos (no requiere autenticación)
+router.get("/cursos", cursoController.getAllCursos);
 
-// ruta para carga de imagenes en base64
-router.post("/cursos", authenticateUser, upload.single("imagen"), createCurso);
+// Obtener un curso por ID (no requiere autenticación)
+router.get("/cursos/:id", cursoController.getCursoById);
 
+// Buscar curso por ficha (no requiere autenticación)
+router.get("/cursos/ficha/:ficha", cursoController.getCursoByFicha);
 
-// Ruta para actualizar un curso (solo administradores)
-router.put("/cursos/:id", authenticateUser, upload.single("imagen"), updateCurso);
-/*
-router.put("/cursos/:id", authenticateUser, updateCurso);
-*/
+// Asignar curso a instructor
+router.post('/asignaciones', cursoController.asignarCursoAInstructor);
 
-// Ruta para obtener todos los cursos
-router.get("/cursos", getAllCursos);
-
-// Ruta para obtener un curso por ID
-router.get("/cursos/:id", getCursoById);
-
-// ruta para buscar curso por id o ficha
-router.get("/cursos/:ficha", getCursoByFicha);
-
-// POST /asignaciones
-router.post('/asignaciones', asignarCursoAInstructor);
-
-//cursos asignados a un isntructor
-router.get('/cursos-asignados/:instructor_ID', obtenerCursosAsignadosAInstructor);
+// Obtener cursos asignados a un instructor
+router.get('/cursos-asignados/:instructor_ID', cursoController.obtenerCursosAsignadosAInstructor);
 
 module.exports = router;
