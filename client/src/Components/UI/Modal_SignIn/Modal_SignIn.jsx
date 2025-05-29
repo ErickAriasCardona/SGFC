@@ -41,17 +41,24 @@ export const Modal_SignIn = ({
   const login = (event) => {
     event.preventDefault();
 
-    axiosInstance.post("/login", {
+    axiosInstance.post("/api/users/login", {
       email,
       password,
     })
       .then((response) => {
         alert(response.data.message);
-        sessionStorage.setItem("userSession", JSON.stringify({
+        const sessionData = {
           accountType: response.data.accountType,
           email: email,
-          id: response.data.id
-        }));
+          id: response.data.id,
+          token: response.data.token
+        };
+        
+        if (rememberSession) {
+          localStorage.setItem("userSession", JSON.stringify(sessionData));
+        } else {
+          sessionStorage.setItem("userSession", JSON.stringify(sessionData));
+        }
 
         closeModalSignIn();
         navigate("/", {

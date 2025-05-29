@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser"); // Importar cookie-parser
 const initializeDatabase = require("./models/index");
 const generalConfig = require('./config/general');
 const path = require("path");
+const { Op } = require('sequelize');
 
 // Importar controladores y rutas
 const authGoogleController = require('./controllers/authGoogleController');
@@ -11,6 +12,10 @@ const userRoutes = require("./routes/userRoutes");
 const cursoRoutes = require("./routes/cursoRoutes");
 const sessionRoutes = require("./routes/sessionRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+
+// Importar servicios
+const { scheduleAbsenceNotifications } = require('./services/notificationService');
 
 // libreria para programar tareas
 const cron = require('node-cron');
@@ -25,6 +30,19 @@ cron.schedule('0 * * * *', async () => {
   }
 }, {
   timezone: "America/Bogota" // Usa tu zona horaria real
+});
+
+// Ejecuta el envío de notificaciones de inasistencia cada día a las 8:00 PM
+cron.schedule('0 20 * * *', async () => {
+  try {
+    console.log('🕒 Iniciando envío de notificaciones de inasistencia...');
+    const result = await scheduleAbsenceNotifications();
+    console.log(`✅ Notificaciones enviadas: ${result.sessionsProcessed} sesiones procesadas`);
+  } catch (error) {
+    console.error('❌ Error al enviar notificaciones de inasistencia:', error);
+  }
+}, {
+  timezone: "America/Bogota"
 });
 
 const app = express();
@@ -45,10 +63,12 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/base64storage", express.static(path.join(__dirname, "base64storage")));
 
 // Registrar rutas
+app.use("/api/auth", authGoogleController);
 app.use("/api/users", userRoutes);
-app.use("/api/course", cursoRoutes);
+app.use("/api/courses", cursoRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 async function startServer() {
   try {

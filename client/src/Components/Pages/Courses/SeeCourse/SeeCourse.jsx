@@ -10,12 +10,19 @@ import calendar from '../../../../assets/Icons/calendar.png';
 import buttonEdit from '../../../../assets/Icons/buttonEdit.png';
 import { AssignInstructorCourse } from '../AssignInstructorCourse/AssignInstructorCourse';
 import { ViewCalendar } from '../../../UI/Modal_Calendar/ViewCalendar/Calendar';
+import { AttendanceManagement } from './AttendanceManagement';
+import { Modal_General } from '../../../UI/Modal_General/Modal_General';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 export const SeeCourse = () => {
 
     const { id } = useParams(); // Obtener el ID del curso desde la URL
     const [curso, setCurso] = useState(null); // Estado para almacenar los datos del curso
     const [isViewCalendarOpen, setIsViewCalendarOpen] = useState(false);
+    const [showAttendanceDatePicker, setShowAttendanceDatePicker] = useState(false);
+    const [selectedDate, setSelectedDate] = useState('');
+    const [showAttendanceManagement, setShowAttendanceManagement] = useState(false);
     const navigate = useNavigate(); // Hook para redirigir
     const [showModal, setShowModal] = useState(false);
 
@@ -35,7 +42,7 @@ export const SeeCourse = () => {
     useEffect(() => {
         const fetchCurso = async () => {
             try {
-                const response = await axiosInstance.get(`/cursos/${id}`); // Solicitud al endpoint de obtener curso por ID
+                const response = await axiosInstance.get(`/api/course/cursos/${id}`); // Solicitud al endpoint de obtener curso por ID
                 setCurso(response.data); // Guardar los datos del curso en el estado
             } catch (error) {
                 console.error("Error al obtener el curso:", error);
@@ -57,6 +64,24 @@ export const SeeCourse = () => {
         endDate: curso.fecha_fin ? curso.fecha_fin.split('T')[0] : '',
         
         selectedSlots: curso.dias_formacion ? JSON.parse(curso.dias_formacion) : []
+    };
+
+    const handleAttendanceClick = () => {
+        setShowAttendanceDatePicker(true);
+    };
+
+    const handleDateSelect = (e) => {
+        const date = e.target.value;
+        if (date) {
+            setSelectedDate(date);
+            setShowAttendanceDatePicker(false);
+            setShowAttendanceManagement(true);
+        }
+    };
+
+    const handleCloseAttendanceManagement = () => {
+        setShowAttendanceManagement(false);
+        setSelectedDate('');
     };
 
     return (
@@ -117,6 +142,15 @@ export const SeeCourse = () => {
                                         <img src={calendar} alt="" />
                                         Ver fechas y horarios
                                     </button>
+
+                                    {/* Botón de gestión de asistencia (solo para instructores) */}
+                                    <button 
+                                        className="manageAttendance"
+                                        onClick={handleAttendanceClick}
+                                        style={{ display: userSession?.accountType === 'Instructor' ? 'flex' : 'none' }}
+                                    >
+                                        Gestionar Asistencia
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -155,6 +189,43 @@ export const SeeCourse = () => {
                 />
             )}
 
+            {/* Modal de selección de fecha para asistencia */}
+            {showAttendanceDatePicker && (
+                <Modal_General closeModal={() => setShowAttendanceDatePicker(false)}>
+                    <div className="attendance-date-picker">
+                        <h3>Seleccionar Fecha para Gestionar Asistencia</h3>
+                        <div className="date-input-container">
+                            <label htmlFor="attendanceDate">Fecha:</label>
+                            <input
+                                type="date"
+                                id="attendanceDate"
+                                value={selectedDate}
+                                onChange={handleDateSelect}
+                                min={curso?.fecha_inicio?.split('T')[0]}
+                                max={curso?.fecha_fin?.split('T')[0]}
+                            />
+                        </div>
+                        <div className="modal-buttons">
+                            <button 
+                                className="cancel-button"
+                                onClick={() => setShowAttendanceDatePicker(false)}
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </Modal_General>
+            )}
+
+            {/* Modal de gestión de asistencia */}
+            {selectedDate && (
+                <AttendanceManagement
+                    open={showAttendanceManagement}
+                    onClose={handleCloseAttendanceManagement}
+                    courseId={curso.ID}
+                    selectedDate={selectedDate}
+                />
+            )}
         </>
     );
 };

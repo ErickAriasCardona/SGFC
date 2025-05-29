@@ -20,6 +20,7 @@ import { CreateCourse } from './Components/Pages/Courses/CreateCourse/CreateCour
 import { ConsultCourses } from './Components/Pages/Courses/Consult/ConsultCourses';
 import { SeeCourse } from './Components/Pages/Courses/SeeCourse/SeeCourse';
 import { UpdateCourse } from './Components/Pages/Courses/UpdateCourse/UpdateCourse';
+import { MisCursos } from './Components/Pages/Courses/MisCursos/MisCursos';
 import { GestionsInstructor } from './Components/Pages/GestionsInstructor/GestionsInstructor';
 import { GestionsGestor } from './Components/Pages/GestionsGestor/GestionsGestor';
 import { SeeMyProfile } from './Components/Pages/SeeMyProfile/SeeMyProfile';
@@ -28,6 +29,7 @@ import { CreateEmploye } from './Components/Pages/GestionsEmployes/CreateEmploye
 import { UpdateEmploye } from './Components/Pages/GestionsEmployes/UpdateEmploye/UpdateEmploye';
 import { SeachEmployes } from './Components/Pages/GestionsEmployes/SeachEmployes/SeachEmployes';
 import { GestionsEmployes } from './Components/Pages/GestionsEmployes/GestionsEmployes';
+import { AttendanceRecords } from './components/Pages/AttendanceRecords/AttendanceRecords';
 // Importación de modales
 import { NavBar } from './Components/UI/NavBar/NavBar';
 import { Modal_SignIn } from './Components/UI/Modal_SignIn/Modal_SignIn';
@@ -157,6 +159,7 @@ function App() {
           <Route path="/resetPassword" element={<ResetPassword />} />
           <Route path="/Cursos/CrearCurso" element={<CreateCourse />} />
           <Route path="/Cursos/BuscarCursos" element={<ConsultCourses />} />
+          <Route path="/Cursos/MisCursos" element={<MisCursos />} />
           <Route path="/Cursos/:id" element={<SeeCourse />} />
           <Route path="/Cursos/ActualizarCurso/:id" element={<UpdateCourse />} />
           <Route path="/Gestiones/Instructor" element={<GestionsInstructor />} />
@@ -166,6 +169,7 @@ function App() {
           <Route path="/Empleados/MisEmpleados" element={<GestionsEmployes />} />
           <Route path="/Empleados/CrearEmpleado" element={<CreateEmploye />} />
           <Route path="/Empleados/ActualizarEmpleado/:id" element={<UpdateEmploye />} />
+          <Route path="/Asistencias" element={<AttendanceRecords />} />
         </Routes>
       </>
     </GoogleOAuthProvider>

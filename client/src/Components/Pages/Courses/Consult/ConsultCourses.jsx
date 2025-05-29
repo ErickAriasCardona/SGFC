@@ -20,7 +20,7 @@ export const ConsultCourses = () => {
   useEffect(() => {
     const fetchCursos = async () => {
       try {
-        const response = await axiosInstance.get("/cursos"); // Solicitud al endpoint de cursos
+        const response = await axiosInstance.get("/api/course/cursos"); // Solicitud al endpoint de cursos
         console.log("Datos recibidos del backend:", response.data); // Log para depuración
         setCursos(response.data); // Guardar los cursos en el estado
       } catch (error) {
@@ -60,7 +60,7 @@ export const ConsultCourses = () => {
     }
 
     try {
-      const response = await axiosInstance.get(`/cursos/${searchTerm}`); // Solicitud al endpoint de búsqueda por ID
+      const response = await axiosInstance.get(`/api/course/cursos/${searchTerm}`); // Solicitud al endpoint de búsqueda por ID
       setCursos([response.data]); // Mostrar solo el curso encontrado
       setErrorMessage(""); // Limpiar el mensaje de error
     } catch (error) {

@@ -8,4 +8,21 @@ const axiosInstance = Axios.create({
     },
 });
 
+// Interceptor para agregar el token a las peticiones
+axiosInstance.interceptors.request.use(
+    (config) => {
+        // Obtener la sesión del usuario
+        const userSession = JSON.parse(localStorage.getItem('userSession')) || 
+                          JSON.parse(sessionStorage.getItem('userSession'));
+        
+        if (userSession?.token) {
+            config.headers.Authorization = `Bearer ${userSession.token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 export default axiosInstance;

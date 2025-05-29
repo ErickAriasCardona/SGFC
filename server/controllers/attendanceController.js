@@ -180,10 +180,182 @@ const updateAttendance = async (req, res) => {
     }
 };
 
+/**
+ * Obtiene los registros de asistencia con filtros
+ * Permite filtrar por usuario, curso, sesión, fecha y estado
+ */
+const getAttendanceRecords = async (req, res) => {
+    try {
+        const {
+            userId,
+            courseId,
+            sessionId,
+            date,
+            startDate,
+            endDate,
+            status,
+            page = 1,
+            limit = 10
+        } = req.query;
+
+        const user = req.user;
+        let whereClause = {};
+        let includeClause = [
+            {
+                model: dbInstance.Usuario,
+                as: 'aprendiz',
+                attributes: ['ID', 'nombres', 'apellidos', 'email']
+            },
+            {
+                model: dbInstance.Sesion,
+                attributes: ['ID', 'fecha', 'hora_inicio', 'hora_fin'],
+                include: [{
+                    model: dbInstance.Curso,
+                    attributes: ['ID', 'nombre_curso', 'ficha']
+                }]
+            }
+        ];
+
+        // Aplicar filtros según el tipo de usuario
+        if (user.accountType === 'Empresa') {
+            const empresaUser = await dbInstance.Usuario.findByPk(user.id, {
+                include: [{ model: dbInstance.Empresa, as: 'Empresa' }]
+            });
+            
+            if (!empresaUser || !empresaUser.empresa_ID) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Empresa no encontrada'
+                });
+            }
+
+            // Modificar la consulta para filtrar por empresa
+            includeClause[0].where = {
+                empresa_ID: empresaUser.empresa_ID
+            };
+        } else if (user.accountType === 'Instructor') {
+            // Modificar la consulta para filtrar por instructor
+            includeClause[1].where = {
+                instructor_ID: user.id
+            };
+        }
+
+        // Aplicar filtros adicionales
+        if (userId) whereClause.usuario_ID = userId;
+        if (sessionId) whereClause.sesion_ID = sessionId;
+        if (status) whereClause.estado = status;
+        
+        // Manejar filtro de curso
+        if (courseId) {
+            includeClause[1].include[0].where = {
+                ID: courseId
+            };
+        }
+
+        // Manejar filtros de fecha
+        if (date) {
+            const startOfDay = new Date(date);
+            startOfDay.setHours(0, 0, 0, 0);
+            
+            const endOfDay = new Date(date);
+            endOfDay.setHours(23, 59, 59, 999);
+
+            whereClause.fecha = {
+                [dbInstance.Sequelize.Op.between]: [startOfDay, endOfDay]
+            };
+        } else if (startDate || endDate) {
+            whereClause.fecha = {};
+            if (startDate) {
+                const start = new Date(startDate);
+                start.setHours(0, 0, 0, 0);
+                whereClause.fecha[dbInstance.Sequelize.Op.gte] = start;
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                whereClause.fecha[dbInstance.Sequelize.Op.lte] = end;
+            }
+        }
+
+        // Validar que la fecha no sea futura
+        if (whereClause.fecha) {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            
+            if (whereClause.fecha[dbInstance.Sequelize.Op.between]?.[0] > now) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'No se pueden consultar registros de fechas futuras'
+                });
+            }
+        }
+
+        // Calcular offset para paginación
+        const offset = (page - 1) * limit;
+
+        try {
+            // Obtener registros con paginación
+            const { count, rows: records } = await dbInstance.Asistencia.findAndCountAll({
+                where: whereClause,
+                include: includeClause,
+                order: [['fecha', 'DESC'], ['createdAt', 'DESC']],
+                limit: parseInt(limit),
+                offset: offset,
+                distinct: true,
+                subQuery: false // Evitar subconsultas innecesarias
+            });
+
+            // Calcular total de páginas
+            const totalPages = Math.ceil(count / limit);
+
+            res.status(200).json({
+                success: true,
+                records,
+                pagination: {
+                    total: count,
+                    totalPages,
+                    currentPage: parseInt(page),
+                    limit: parseInt(limit)
+                }
+            });
+        } catch (dbError) {
+            console.error('Error en la consulta a la base de datos:', dbError);
+            return res.status(500).json({
+                success: false,
+                message: 'Error al consultar los registros de asistencia',
+                error: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+            });
+        }
+    } catch (error) {
+        console.error('Error al obtener los registros de asistencia:', error);
+        
+        if (error.name === 'SequelizeDatabaseError') {
+            return res.status(500).json({
+                success: false,
+                message: 'Error en la base de datos al obtener los registros'
+            });
+        }
+        
+        if (error.name === 'SequelizeValidationError') {
+            return res.status(400).json({
+                success: false,
+                message: 'Error de validación en los datos proporcionados'
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener los registros de asistencia',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
 module.exports = {
     setDb,
     getScheduledSessions,
     getSessionParticipants,
     registerAttendance,
-    updateAttendance
+    updateAttendance,
+    getAttendanceRecords
 }; 

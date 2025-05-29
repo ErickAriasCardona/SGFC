@@ -18,4 +18,7 @@ router.post('/sessions/:sessionId/register', attendanceController.registerAttend
 // Actualizar un registro de asistencia específico
 router.put('/attendance/:attendanceId', attendanceController.updateAttendance);
 
+// Obtener registros de asistencia con filtros
+router.get('/records', attendanceController.getAttendanceRecords);
+
 module.exports = router; 

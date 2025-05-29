@@ -149,7 +149,7 @@ const loginUser = async (req, res) => {
         // Enviar el token como una cookie HTTP-only
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // Solo en HTTPS en producción
+            secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
             maxAge: 3600000, // 1 hora
         });
@@ -158,6 +158,7 @@ const loginUser = async (req, res) => {
             message: "Inicio de sesión exitoso",
             id: user.ID,
             accountType: user.accountType,
+            token: token // Enviar el token en la respuesta
         });
     } catch (error) {
         console.error(error);
