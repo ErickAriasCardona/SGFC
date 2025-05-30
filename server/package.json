@@ -15,7 +15,8 @@
     "nodemailer": "^6.10.0",
     "passport-google-oauth2": "^0.2.0",
     "sequelize": "^6.37.7",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

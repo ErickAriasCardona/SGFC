@@ -4,12 +4,15 @@ const { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirm
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
+const xlsx = require("xlsx")
+const fs = require('fs')
 
 // Registrar usuario
 const Empresa = require('../models/empresa'); // Importar el modelo Empresa
 const Sena = require('../models/sena'); // Importar el modelo Sena
 const Departamento = require('../models/departamento'); // Importar el modelo Departamento 
 const Ciudad = require('../models/ciudad'); // Importar el modelo Ciudad
+
 
 
 
@@ -201,7 +204,7 @@ const requestPasswordReset = async (req, res) => {
     } catch (error) {
         console.error("Error al solicitar recuperación de contraseña:", error);
         res.status(500).json({ message: "Error al procesar la solicitud de recuperación de contraseña." });
-    } 
+    }
 };
 
 // Cambiar contraseña con token
@@ -825,5 +828,82 @@ const getAprendicesByEmpresa = async (req, res) => {
     }
 };
 
+const createMasiveUsers = async (req, res) => {
+    try {
+        const rutaArchivo = req.file.path;
 
-module.exports = {getAprendicesByEmpresa,  registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor, logoutUser, cleanExpiredTokens };
+        // Leer el archivo con xlsx
+        const workbook = xlsx.readFile(rutaArchivo);
+
+        // Obtener la primera hoja
+        const nombrePrimeraHoja = workbook.SheetNames[0];
+        const hoja = workbook.Sheets[nombrePrimeraHoja];
+
+        // Obtener el rango de celdas
+        const rango = xlsx.utils.decode_range(hoja['!ref']);
+
+        // Verificar si la celda C2 existe
+        const celdaTitulo = hoja['C2'];
+        if (!celdaTitulo) {
+            fs.unlinkSync(rutaArchivo); // Asegurarse de eliminar el archivo
+            return res.status(400).json({ message: 'La celda C2 no contiene un título válido.' });
+        }
+
+        // Extraer los valores de la columna C desde la fila 3 hacia abajo
+        const valoresColumna = [];
+        for (let fila = 2; fila <= rango.e.r; fila++) { // Comienza desde la fila 2 (índice 1 en base 0)
+            const celda = hoja[`C${fila + 1}`]; // Celdas C3, C4, etc.
+            if (celda) {
+                valoresColumna.push(celda.v);
+            }
+        }
+
+        // Eliminar el archivo después de procesarlo
+        fs.unlinkSync(rutaArchivo);
+
+        // Crear usuarios con los datos extraídos
+        for (const identificacion of valoresColumna) {
+            if (!identificacion || identificacion === '') {
+                console.warn(`Número de identificación inválido: ${identificacion}`);
+                continue; // Saltar si el Número de Identificación no es válido
+            }
+
+            const email = `${identificacion}@example.com`;
+            const password = identificacion.toString();
+
+            // Verificar si el usuario ya existe
+            const existingUser = await User.findOne({ where: { email } });
+            if (existingUser) {
+                console.log('usuarios repetidos');
+                return res.status(409).json({
+                    message: `usuario ${identificacion} repetidos`,
+                });
+            }
+            // Crear el usuario
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await User.create({
+                email,
+                password: hashedPassword,
+                accountType: 'Aprendiz', // Tipo de cuenta por defecto
+                cedula: identificacion,
+                verificacion_email: true,
+            });
+        }
+        return res.json({
+            message: "Usuarios creados exitosamente.",
+        })
+    } catch (error) {
+        console.error("Error al procesar el archivo:", error);
+
+        // Asegurarse de eliminar el archivo en caso de error
+        if (req.file && req.file.path) {
+            fs.unlinkSync(req.file.path);
+        }
+
+        return res.status(500).json({ error: 'Error al procesar el archivo' });
+    }
+}
+
+
+
+module.exports = { getAprendicesByEmpresa, registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers };
