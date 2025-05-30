@@ -1,43 +1,49 @@
 const Curso = require("../models/curso");
 const User = require("../models/User");
 const path = require("path");
-const AsignacionCursoInstructor = require('../models/AsignacionCursoInstructor');
+const AsignacionCursoInstructor = require("../models/AsignacionCursoInstructor");
 const { sendCourseCreatedEmail } = require("../services/emailService");
 const { Router } = require("express");
 const upload = require("../config/multer");
-const { sendCursoUpdatedNotification } = require('../services/emailService');
-const { InscripcionCurso } = require('../models');
-const { Op } = require('sequelize');
-const fs = require('fs');
+const { sendCursoUpdatedNotification } = require("../services/emailService");
+const { InscripcionCurso } = require("../models");
+const { Op } = require("sequelize");
+const fs = require("fs");
 
 //Asignar cursos
 const asignarCursoAInstructor = async (req, res) => {
-  const { gestor_ID, instructor_ID, curso_ID, fecha_asignacion, estado } = req.body;
+  const { gestor_ID, instructor_ID, curso_ID, fecha_asignacion, estado } =
+    req.body;
 
   try {
     // Validación básica
     if (!gestor_ID || !instructor_ID || !curso_ID) {
       return res.status(400).json({
-        mensaje: 'Todos los campos (gestor_ID, instructor_ID, curso_ID) son obligatorios',
+        mensaje:
+          "Todos los campos (gestor_ID, instructor_ID, curso_ID) son obligatorios",
       });
     }
 
     // Validar existencia del gestor
     const gestor = await User.findByPk(gestor_ID);
-    if (!gestor || gestor.accountType !== 'Gestor') {
-      return res.status(404).json({ mensaje: 'Gestor no encontrado o no válido' });
+    if (!gestor || gestor.accountType !== "Gestor") {
+      return res
+        .status(404)
+        .json({ mensaje: "Gestor no encontrado o no válido" });
     }
 
     // Validar existencia del instructor
     const instructor = await User.findByPk(instructor_ID);
-    if (!instructor || instructor.accountType !== 'Instructor') {
-      return res.status(404).json({ mensaje: 'Instructor no encontrado o no válido' });
+    if (!instructor || instructor.accountType !== "Instructor") {
+      return res
+        .status(404)
+        .json({ mensaje: "Instructor no encontrado o no válido" });
     }
 
     // Validar existencia del curso
     const curso = await Curso.findByPk(curso_ID);
     if (!curso) {
-      return res.status(404).json({ mensaje: 'Curso no encontrado' });
+      return res.status(404).json({ mensaje: "Curso no encontrado" });
     }
 
     // Validar que no se haya asignado ya este curso al instructor
@@ -51,7 +57,7 @@ const asignarCursoAInstructor = async (req, res) => {
 
     if (asignacionExistente) {
       return res.status(409).json({
-        mensaje: 'Este curso ya ha sido asignado a este instructor previamente',
+        mensaje: "Este curso ya ha sido asignado a este instructor previamente",
       });
     }
 
@@ -61,28 +67,30 @@ const asignarCursoAInstructor = async (req, res) => {
       instructor_ID,
       curso_ID,
       fecha_asignacion: fecha_asignacion || new Date(),
-      estado: estado || 'aceptada',
+      estado: estado || "aceptada",
     });
 
     res.status(201).json({
-      mensaje: 'Curso asignado correctamente',
+      mensaje: "Curso asignado correctamente",
       asignacion: nuevaAsignacion,
     });
   } catch (error) {
-    console.error('Error al asignar curso:', error);
+    console.error("Error al asignar curso:", error);
     res.status(500).json({
-      mensaje: 'Error interno al asignar el curso',
+      mensaje: "Error interno al asignar el curso",
     });
   }
 };
 
-//consultar cursos asignador a un instructor  
+//consultar cursos asignador a un instructor
 const obtenerCursosAsignadosAInstructor = async (req, res) => {
   const { instructor_ID } = req.params;
 
   try {
     if (!instructor_ID) {
-      return res.status(400).json({ mensaje: 'El ID del instructor es obligatorio' });
+      return res
+        .status(400)
+        .json({ mensaje: "El ID del instructor es obligatorio" });
     }
 
     const asignaciones = await AsignacionCursoInstructor.findAll({
@@ -90,15 +98,17 @@ const obtenerCursosAsignadosAInstructor = async (req, res) => {
       include: [
         {
           model: Curso,
-          attributes: ['id', 'nombre_curso', 'descripcion', 'imagen'], // ajusta campos según tu modelo
-        }
-      ]
+          attributes: ["id", "nombre_curso", "descripcion", "imagen"], // ajusta campos según tu modelo
+        },
+      ],
     });
 
     res.status(200).json(asignaciones);
   } catch (error) {
-    console.error('Error al obtener los cursos asignados:', error);
-    res.status(500).json({ mensaje: 'Error interno al obtener los cursos asignados' });
+    console.error("Error al obtener los cursos asignados:", error);
+    res
+      .status(500)
+      .json({ mensaje: "Error interno al obtener los cursos asignados" });
   }
 };
 
@@ -107,7 +117,9 @@ const createCurso = async (req, res) => {
   try {
     const { accountType } = req.user;
     if (accountType !== "Administrador") {
-      return res.status(403).json({ message: "No tienes permisos para crear cursos." });
+      return res
+        .status(403)
+        .json({ message: "No tienes permisos para crear cursos." });
     }
 
     const {
@@ -127,16 +139,17 @@ const createCurso = async (req, res) => {
     // Validar campos obligatorios
     if (!ficha || !nombre_curso || !descripcion || !tipo_oferta || !estado) {
       return res.status(400).json({
-        message: "Los campos nombre_curso, tipo_oferta, ficha, descripcion y estado son obligatorios.",
+        message:
+          "Los campos nombre_curso, tipo_oferta, ficha, descripcion y estado son obligatorios.",
       });
     }
 
     // Procesar imagen y convertir a Base64 si se envió
     let image = null;
     if (req.file) {
-      const base64Data = req.file.buffer.toString('base64');
+      const base64Data = req.file.buffer.toString("base64");
       const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-      const savePath = path.join(__dirname, '../base64storage', uniqueName);
+      const savePath = path.join(__dirname, "../base64storage", uniqueName);
 
       if (!fs.existsSync(path.dirname(savePath))) {
         fs.mkdirSync(path.dirname(savePath), { recursive: true });
@@ -148,11 +161,13 @@ const createCurso = async (req, res) => {
 
     // Procesar días de formación
     let diasFormacionParsed = dias_formacion;
-    if (typeof dias_formacion === 'string') {
+    if (typeof dias_formacion === "string") {
       try {
         diasFormacionParsed = JSON.parse(dias_formacion);
       } catch (e) {
-        return res.status(400).json({ message: "El formato de los días de formación no es válido." });
+        return res.status(400).json({
+          message: "El formato de los días de formación no es válido.",
+        });
       }
     }
 
@@ -179,25 +194,26 @@ const createCurso = async (req, res) => {
     const usuarios = await User.findAll({
       where: {
         verificacion_email: true,
-        accountType: { [Op.or]: ['Empresa', 'Aprendiz'] },
+        accountType: { [Op.or]: ["Empresa", "Aprendiz"] },
       },
-      attributes: ['email'],
+      attributes: ["email"],
     });
 
-    const emails = usuarios.map(user => user.email);
+    const emails = usuarios.map((user) => user.email);
 
     if (emails.length === 0) {
-      console.warn('No hay usuarios aceptados para mandar Email');
+      console.warn("No hay usuarios aceptados para mandar Email");
     } else {
       const courseLink = `http://localhost:5173/cursos/${nuevoCurso.id}`;
       await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
     }
-
   } catch (error) {
     console.error("Error al crear el curso:", error);
 
     if (error.name === "SequelizeValidationError") {
-      return res.status(400).json({ message: "Error de validación.", errors: error.errors });
+      return res
+        .status(400)
+        .json({ message: "Error de validación.", errors: error.errors });
     }
 
     res.status(500).json({ message: "Error al crear el curso." });
@@ -209,7 +225,9 @@ const updateCurso = async (req, res) => {
   try {
     const { accountType } = req.user;
     if (accountType !== "Administrador") {
-      return res.status(403).json({ message: "No tienes permisos para actualizar cursos." });
+      return res
+        .status(403)
+        .json({ message: "No tienes permisos para actualizar cursos." });
     }
 
     const { id } = req.params;
@@ -233,14 +251,13 @@ const updateCurso = async (req, res) => {
       return res.status(404).json({ message: "Curso no encontrado." });
     }
 
-
     // Verificar si se envió una nueva imagen
     //const imagen = req.file ? `/uploads/${req.file.filename}` : curso.imagen;
     let image = null;
     if (req.file) {
-      const base64Data = req.file.buffer.toString('base64');
+      const base64Data = req.file.buffer.toString("base64");
       const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-      const savePath = path.join(__dirname, '../base64storage', uniqueName);
+      const savePath = path.join(__dirname, "../base64storage", uniqueName);
 
       if (!fs.existsSync(path.dirname(savePath))) {
         fs.mkdirSync(path.dirname(savePath), { recursive: true });
@@ -267,21 +284,25 @@ const updateCurso = async (req, res) => {
       imagen: image, // Actualizar la imagen si se envió una nueva
     });
 
-    const usuarios = await User.findAll({ where: { verificacion_email: true, accountType: { [Op.or]: ['Empresa', 'Aprendiz'] } }, attributes: ['email'] });
-    const emails = usuarios.map(user => user.email);
+    const usuarios = await User.findAll({
+      where: {
+        verificacion_email: true,
+        accountType: { [Op.or]: ["Empresa", "Aprendiz"] },
+      },
+      attributes: ["email"],
+    });
+    const emails = usuarios.map((user) => user.email);
 
     if (emails.length === 0) {
-      console.warn('No hay usuarios aceptados para mandar Email')
+      console.warn("No hay usuarios aceptados para mandar Email");
     } else {
-
       await sendCursoUpdatedNotification(emails, curso);
-    };
+    }
 
     res.status(200).json({
       message: `Curso actualizado con éxito. Notificaciones enviadas a ${emails.length} usuarios.`,
-      curso
+      curso,
     });
-
   } catch (error) {
     console.error("Error al actualizar el curso:", error);
     res.status(500).json({ message: "Error al actualizar el curso." });
@@ -341,11 +362,12 @@ const getCursoByFicha = async (req, res) => {
 const uploadImagesBase64 = async (req, res) => {
   try {
     const file = req.file;
-    if (!file) return res.status(400).json({ message: 'No se recibio ningun archivo' });
+    if (!file)
+      return res.status(400).json({ message: "No se recibio ningun archivo" });
 
-    const base64Data = file.buffer.toString('base64');
+    const base64Data = file.buffer.toString("base64");
     const uniqueName = `${file.fieldname}-${Date.now()}.txt`;
-    const savePath = path.join(__dirname, '../base64storage', uniqueName);
+    const savePath = path.join(__dirname, "../base64storage", uniqueName);
 
     if (!fs.existsSync(path.dirname(savePath))) {
       fs.mkdirSync(path.dirname(savePath), { recursive: true });
@@ -354,15 +376,58 @@ const uploadImagesBase64 = async (req, res) => {
     fs.writeFileSync(savePath, base64Data);
 
     return res.status(200).json({
-      message: 'Imagen convertida y guardada.',
+      message: "Imagen convertida y guardada.",
       filename: uniqueName,
-      path: savePath
+      path: savePath,
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Error al guardar la imagen.' });
+    return res.status(500).json({ message: "Error al guardar la imagen." });
   }
+};
 
+const actualizarProgramacion = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { fecha_inicio, fecha_fin, hora_inicio, hora_fin, dias_formacion } =
+      req.body;
+
+    // Validación de datos
+    if (!fecha_inicio || !fecha_fin || !hora_inicio || !hora_fin) {
+      return res
+        .status(400)
+        .json({ error: "Todos los campos temporales son requeridos" });
+    }
+
+    // Validar que fecha_fin sea posterior a fecha_inicio
+    if (new Date(fecha_fin) <= new Date(fecha_inicio)) {
+      return res.status(400).json({
+        error: "La fecha de fin debe ser posterior a la fecha de inicio",
+      });
+    }
+
+    // Actualizar en base de datos
+    const curso = await Curso.findByPk(id);
+    if (!curso) {
+      return res.status(404).json({ error: "Curso no encontrado" });
+    }
+
+    await curso.update({
+      fecha_inicio,
+      fecha_fin,
+      hora_inicio,
+      hora_fin,
+      dias_formacion, // Cambiado: asignar 'dias' a 'dias_formacion'
+    });
+
+    res.status(200).json({
+      mensaje: "Programación actualizada con éxito",
+      curso,
+    });
+  } catch (error) {
+    console.error("Error al actualizar programación:", error);
+    res.status(500).json({ error: "Error al procesar la solicitud" });
+  }
 };
 
 module.exports = {
@@ -373,7 +438,6 @@ module.exports = {
   getCursoByFicha,
   asignarCursoAInstructor,
   obtenerCursosAsignadosAInstructor,
-  uploadImagesBase64
+  uploadImagesBase64,
+  actualizarProgramacion,
 };
-
-
