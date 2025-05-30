@@ -2,7 +2,7 @@ const express = require("express");
 const { createCurso, updateCurso, getAllCursos, getCursoById, getCursoByFicha, asignarCursoAInstructor,obtenerCursosAsignadosAInstructor } = require("../controllers/cursoController");
 const { authenticateUser } = require("../middlewares/authMiddleware"); // Middleware para autenticar al usuario
 const upload = require("../config/multer");
-const { actualizarEstadoInscripcion } = require('../controllers/inscripcionCursoController');
+const { crearOActualizarInscripcion } = require('../controllers/inscripcionCursoController');
 
 const router = express.Router();
 
@@ -38,7 +38,7 @@ router.post('/asignaciones', asignarCursoAInstructor);
 //cursos asignados a un isntructor
 router.get('/cursos-asignados/:instructor_ID', obtenerCursosAsignadosAInstructor);
 
-// Ruta para actualizar el estado de una inscripción (solo administradores)
-router.put('/inscripciones/:id/estado', authenticateUser, actualizarEstadoInscripcion);
+// Ruta para crear o actualizar el estado de una inscripción (solo administradores)
+router.put('/inscripciones', authenticateUser, crearOActualizarInscripcion);
 
 module.exports = router;
