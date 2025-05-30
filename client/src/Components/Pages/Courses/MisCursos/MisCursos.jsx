@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './MisCursos.css';
-import { Header } from '../../../Layouts/Header/Header';
 import { Footer } from '../../../Layouts/Footer/Footer';
 import { Main } from '../../../Layouts/Main/Main';
 import { useNavigate } from 'react-router-dom';
@@ -27,7 +26,7 @@ export const MisCursos = () => {
         // Obtener cursos según el tipo de cuenta
         switch (userSession?.accountType) {
           case 'Instructor':
-            response = await axiosInstance.get(`/api/course/cursos-asignados/${userSession.id}`);
+            response = await axiosInstance.get(`/api/courses/cursos-asignados/${userSession.id}`);
             // Transformar la respuesta para mantener el mismo formato que los otros endpoints
             const cursosAsignados = response.data.map(asignacion => ({
               ...asignacion.Curso,
@@ -40,7 +39,7 @@ export const MisCursos = () => {
           case 'Administrador':
           case 'Gestor':
             // Para administradores y gestores, mostrar todos los cursos
-            response = await axiosInstance.get("/api/course/cursos");
+            response = await axiosInstance.get("/api/courses/cursos");
             // Asegurar que cada curso tenga un ID único
             const todosLosCursos = response.data.map(curso => ({
               ...curso,
@@ -110,7 +109,6 @@ export const MisCursos = () => {
   if (errorMessage) {
     return (
       <>
-        <Header />
         <Main>
           <div className="container_misCursos">
             <h2>Cursos Asignados</h2>
@@ -124,7 +122,6 @@ export const MisCursos = () => {
 
   return (
     <>
-      <Header />
       <Main>
         <div className="container_misCursos">
           <h2>

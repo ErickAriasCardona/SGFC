@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './ConsultCourses.css';
-import { Header } from '../../../Layouts/Header/Header';
 import { Footer } from '../../../Layouts/Footer/Footer';
 import { Main } from '../../../Layouts/Main/Main';
-import axiosInstance from '../../../../config/axiosInstance';
+import { publicAxiosInstance } from '../../../../config/axiosInstance';
 import { useNavigate } from 'react-router-dom'; // Importar useNavigate para redirigir
 
 import arrowLeft from '../../../../assets/Icons/arrowLeft.png';
@@ -20,11 +19,12 @@ export const ConsultCourses = () => {
   useEffect(() => {
     const fetchCursos = async () => {
       try {
-        const response = await axiosInstance.get("/api/course/cursos"); // Solicitud al endpoint de cursos
-        console.log("Datos recibidos del backend:", response.data); // Log para depuración
-        setCursos(response.data); // Guardar los cursos en el estado
+        const response = await publicAxiosInstance.get("/api/courses/cursos");
+        console.log("Datos recibidos del backend:", response.data);
+        setCursos(response.data);
       } catch (error) {
         console.error("Error al obtener los cursos:", error);
+        setErrorMessage("Error al cargar los cursos. Por favor, intente más tarde.");
       }
     };
 
@@ -60,13 +60,13 @@ export const ConsultCourses = () => {
     }
 
     try {
-      const response = await axiosInstance.get(`/api/course/cursos/${searchTerm}`); // Solicitud al endpoint de búsqueda por ID
-      setCursos([response.data]); // Mostrar solo el curso encontrado
-      setErrorMessage(""); // Limpiar el mensaje de error
+      const response = await publicAxiosInstance.get(`/api/courses/cursos/${searchTerm}`);
+      setCursos([response.data]);
+      setErrorMessage("");
     } catch (error) {
       console.error("Error al buscar el curso:", error);
-      setCursos([]); // Limpiar los cursos mostrados
-      setErrorMessage("No se encontraron resultados."); // Mostrar mensaje de error
+      setCursos([]);
+      setErrorMessage("No se encontraron resultados.");
     }
   };
 
@@ -81,7 +81,6 @@ export const ConsultCourses = () => {
 
   return (
     <>
-      <Header />
       <Main>
         <div className="container_consultCourse">
           <h2>

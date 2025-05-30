@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './AttendanceRecords.css';
-import { Header } from '../../../Components/Layouts/Header/Header';
 import { Footer } from '../../../Components/Layouts/Footer/Footer';
 import { Main } from '../../../Components/Layouts/Main/Main';
 import axiosInstance from '../../../config/axiosInstance';
@@ -49,7 +48,7 @@ export const AttendanceRecords = () => {
     // Obtener cursos disponibles
     const fetchCourses = async () => {
         try {
-            const response = await axiosInstance.get('/api/cursos');
+            const response = await axiosInstance.get('/api/courses/cursos');
             setCourses(response.data);
         } catch (error) {
             console.error('Error al obtener los cursos:', error);
@@ -104,7 +103,6 @@ export const AttendanceRecords = () => {
 
     return (
         <>
-            <Header />
             <Main>
                 <div className="container_AttendanceRecords">
                     <h2>

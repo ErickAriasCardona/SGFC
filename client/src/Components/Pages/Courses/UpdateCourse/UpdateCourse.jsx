@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './UpdateCourse.css';
-import { Header } from '../../../Layouts/Header/Header';
 import { Footer } from '../../../Layouts/Footer/Footer';
 import { Main } from '../../../Layouts/Main/Main';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -18,7 +17,7 @@ export const UpdateCourse = () => {
     useEffect(() => {
         const fetchCurso = async () => {
             try {
-                const response = await axiosInstance.get(`/cursos/${id}`); // Obtener los datos del curso
+                const response = await axiosInstance.get(`/api/courses/cursos/${id}`); // Obtener los datos del curso
                 setCurso(response.data);
                 setPreview(response.data.imagen ? `http://localhost:3001${response.data.imagen}` : null);
             } catch (error) {
@@ -51,7 +50,7 @@ export const UpdateCourse = () => {
           console.log("Datos enviados al backend:", updatedCurso);
       
           // Enviar la solicitud PUT al backend
-          const response = await axiosInstance.put(`/cursos/${id}`, updatedCurso, {
+          const response = await axiosInstance.put(`/api/courses/cursos/${id}`, updatedCurso, {
             headers: {
               "Content-Type": "application/json",
             },
@@ -78,7 +77,6 @@ export const UpdateCourse = () => {
 
     return (
         <>
-            <Header />
             <Main>
                 <div className='container_createCourse'>
                     <h2>

@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom"; // Importar useNavigate para redirigir
 import "./Home.css";
 import { Modal_SignUp } from "../../UI/Modal_SignUp/Modal_SignUp";
+import { Main } from "../../Layouts/Main/Main";
+import { Footer } from "../../Layouts/Footer/Footer";
 
 export const Home = ({ handleShowSignUp }) => {
   const location = useLocation();
@@ -16,8 +18,8 @@ export const Home = ({ handleShowSignUp }) => {
     localStorage.removeItem("userSession"); // Si usas localStorage
     sessionStorage.removeItem("userSession"); // Si usas sessionStorage
 
-    // Redirigir al usuario a la página de inicio de sesión
-    navigate("/");
+    // Recargar la página para reiniciar el estado
+    window.location.reload();
   };
 
   const showModalSignUp = () => {
@@ -25,19 +27,31 @@ export const Home = ({ handleShowSignUp }) => {
   };
 
   return (
-    <div>
-      Bienvenido a tu cuenta de formación complementaria de tipo: <strong>{accountType}</strong>
-      <button className="close_session" onClick={handleLogout}>
-        Cerrar sesión
-      </button>
-      {/* Mostrar el botón solo si el usuario es Administrador */}
-      <button
-        className="createInstructor"
-        style={{ display: accountType === "Administrador" ? "block" : "none" }}
-        onClick={() => handleShowSignUp(accountTypeInstructor)}
-      >
-        Crear Instructor
-      </button>
+    <>
+      <Main>
+        <div className="container_home">
+          <h2>
+            Bienvenido a tu cuenta de <span className="complementary">formación complementaria</span>
+          </h2>
+          <p>Tipo de cuenta: <strong>{accountType}</strong></p>
+          
+          <div className="home-buttons">
+            <button className="close_session" onClick={handleLogout}>
+              Cerrar sesión
+            </button>
+            
+            {accountType === "Administrador" && (
+              <button
+                className="createInstructor"
+                onClick={() => handleShowSignUp(accountTypeInstructor)}
+              >
+                Crear Instructor
+              </button>
+            )}
+          </div>
+        </div>
+      </Main>
+      <Footer />
 
       {showSignUp && (
         <Modal_SignUp 
@@ -47,6 +61,6 @@ export const Home = ({ handleShowSignUp }) => {
           setShowSignIn={() => {}}
         />
       )}
-    </div>
+    </>
   );
 };

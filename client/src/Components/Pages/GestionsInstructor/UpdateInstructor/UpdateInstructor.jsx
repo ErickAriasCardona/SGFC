@@ -12,7 +12,7 @@ export const UpdateInstructor = ({ instructor }) => {
             try {
                 console.log('ID del instructor seleccionado:', instructor.ID); // 👈 Valida el ID aquí
 
-                const response = await axiosInstance.get(`/cursos-asignados/${instructor.ID}`);
+                const response = await axiosInstance.get(`/api/courses/cursos-asignados/${instructor.ID}`);
                 console.log('Cursos asignados:', response.data); // 👈 Aquí puedes ver lo que devuelve el backend
 
                 if (Array.isArray(response.data)) {
@@ -78,15 +78,12 @@ export const UpdateInstructor = ({ instructor }) => {
                 }
             }
 
-            const response = await axiosInstance.put(
-                `/perfil/actualizar/${formData.ID}`,
-                formDataToSend,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    }
+            const response = await axiosInstance.put(`/api/users/instructores/${instructor.ID}`, {
+                ...formDataToSend,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
                 }
-            );
+            });
 
             alert(response.data.message || 'Perfil actualizado');
             setIsEditing(false);

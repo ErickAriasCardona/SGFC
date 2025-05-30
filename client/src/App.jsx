@@ -30,6 +30,7 @@ import { UpdateEmploye } from './Components/Pages/GestionsEmployes/UpdateEmploye
 import { SeachEmployes } from './Components/Pages/GestionsEmployes/SeachEmployes/SeachEmployes';
 import { GestionsEmployes } from './Components/Pages/GestionsEmployes/GestionsEmployes';
 import { AttendanceRecords } from './components/Pages/AttendanceRecords/AttendanceRecords';
+import { ManageAttendance } from './Components/Pages/Courses/ManageAttendance/ManageAttendance';
 // Importación de modales
 import { NavBar } from './Components/UI/NavBar/NavBar';
 import { Modal_SignIn } from './Components/UI/Modal_SignIn/Modal_SignIn';
@@ -42,6 +43,21 @@ import { CreateGestor } from './Components/Pages/GestionsGestor/CreateGestor/Cre
 import { UpdateInstructor } from './Components/Pages/GestionsInstructor/UpdateInstructor/UpdateInstructor';
 // Importación de estilos
 import './App.css';
+import { Header } from './Components/Layouts/Header/Header';
+
+// Crear un componente Layout que envuelva las páginas con Header y Footer
+const Layout = ({ children, setShowSignIn, setShowSignUp, setShowAccountType }) => {
+  return (
+    <>
+      <Header 
+        setShowSignIn={setShowSignIn}
+        setShowSignUp={setShowSignUp}
+        setShowAccountType={setShowAccountType}
+      />
+      {children}
+    </>
+  );
+};
 
 function App() {
   const navigate = useNavigate();
@@ -142,34 +158,165 @@ function App() {
 
         <Routes>
           <Route path="/" element={
-            <Start 
+            <Layout 
               setShowSignIn={setShowSignIn}
               setShowSignUp={setShowSignUp}
               setShowAccountType={setShowAccountType}
-            />
+            >
+              <Start 
+                setShowSignIn={setShowSignIn}
+                setShowSignUp={setShowSignUp}
+                setShowAccountType={setShowAccountType}
+              />
+            </Layout>
           } />
-          <Route path="/QuienesSomos" element={<Who_we_are />} />
+          <Route path="/QuienesSomos" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <Who_we_are />
+            </Layout>
+          } />
           <Route path="/Inicio" element={
-            <Home 
-              handleShowSignUp={handleShowSignUp}
-            />
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <Home handleShowSignUp={handleShowSignUp} />
+            </Layout>
           } />
           <Route path="/verificarCorreo" element={<EmailVerification />} />
           <Route path="/forgotPassword" element={<ForgotPassword />} />
           <Route path="/resetPassword" element={<ResetPassword />} />
-          <Route path="/Cursos/CrearCurso" element={<CreateCourse />} />
-          <Route path="/Cursos/BuscarCursos" element={<ConsultCourses />} />
-          <Route path="/Cursos/MisCursos" element={<MisCursos />} />
-          <Route path="/Cursos/:id" element={<SeeCourse />} />
-          <Route path="/Cursos/ActualizarCurso/:id" element={<UpdateCourse />} />
-          <Route path="/Gestiones/Instructor" element={<GestionsInstructor />} />
-          <Route path="/Gestiones/Gestor" element={<GestionsGestor />} />
-          <Route path="/MiPerfil" element={<SeeMyProfile />} />
-          <Route path="/Gestiones/Empresas" element={<GestionsCompany />} />
-          <Route path="/Empleados/MisEmpleados" element={<GestionsEmployes />} />
-          <Route path="/Empleados/CrearEmpleado" element={<CreateEmploye />} />
-          <Route path="/Empleados/ActualizarEmpleado/:id" element={<UpdateEmploye />} />
-          <Route path="/Asistencias" element={<AttendanceRecords />} />
+          <Route path="/Cursos/CrearCurso" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <CreateCourse />
+            </Layout>
+          } />
+          <Route path="/Cursos/BuscarCursos" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <ConsultCourses />
+            </Layout>
+          } />
+          <Route path="/Cursos/MisCursos" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <MisCursos />
+            </Layout>
+          } />
+          <Route path="/Cursos/:id" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <SeeCourse />
+            </Layout>
+          } />
+          <Route path="/Cursos/:id/gestionar-asistencia" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <ManageAttendance />
+            </Layout>
+          } />
+          <Route path="/Cursos/ActualizarCurso/:id" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <UpdateCourse />
+            </Layout>
+          } />
+          <Route path="/Gestiones/Instructor" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <GestionsInstructor />
+            </Layout>
+          } />
+          <Route path="/Gestiones/Gestor" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <GestionsGestor />
+            </Layout>
+          } />
+          <Route path="/MiPerfil" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <SeeMyProfile />
+            </Layout>
+          } />
+          <Route path="/Gestiones/Empresas" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <GestionsCompany />
+            </Layout>
+          } />
+          <Route path="/Empleados/MisEmpleados" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <GestionsEmployes />
+            </Layout>
+          } />
+          <Route path="/Empleados/CrearEmpleado" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <CreateEmploye />
+            </Layout>
+          } />
+          <Route path="/Empleados/ActualizarEmpleado/:id" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <UpdateEmploye />
+            </Layout>
+          } />
+          <Route path="/Asistencias" element={
+            <Layout 
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <AttendanceRecords />
+            </Layout>
+          } />
         </Routes>
       </>
     </GoogleOAuthProvider>

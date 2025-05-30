@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './GestionsEmployes.css';
-import { Header } from '../../../Components/Layouts/Header/Header';
 import { Footer } from '../../../Components/Layouts/Footer/Footer';
 import { Main } from '../../../Components/Layouts/Main/Main';
 import { UpdateEmploye } from './UpdateEmploye/UpdateEmploye';
@@ -44,7 +43,7 @@ const fetchEmployes = async () => {
             return;
         }
         // Hacer la petición con el ID de la empresa
-        const response = await axiosInstance.get(`/empresa/empleados/${userSession.ID}`);
+        const response = await axiosInstance.get(`/api/users/empresa/empleados/${userSession.ID}`);
         setEmployes(response.data);
         setFilteredEmployes(response.data);
     } catch (error) {
@@ -124,7 +123,6 @@ const fetchEmployes = async () => {
 
   return (
             <>
-            <Header />
             <Main>
                 <div className="container_GestionsEmploye">
                     <h2>

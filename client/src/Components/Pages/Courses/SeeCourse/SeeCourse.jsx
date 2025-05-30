@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './SeeCourse.css';
 import { useNavigate } from 'react-router-dom'; // Importar useNavigate
-import { Header } from '../../../Layouts/Header/Header';
 import { Footer } from '../../../Layouts/Footer/Footer';
 import { Main } from '../../../Layouts/Main/Main';
 import { useParams } from 'react-router-dom';
@@ -42,7 +41,7 @@ export const SeeCourse = () => {
     useEffect(() => {
         const fetchCurso = async () => {
             try {
-                const response = await axiosInstance.get(`/api/course/cursos/${id}`); // Solicitud al endpoint de obtener curso por ID
+                const response = await axiosInstance.get(`/api/courses/cursos/${id}`); // Corregir la ruta
                 setCurso(response.data); // Guardar los datos del curso en el estado
             } catch (error) {
                 console.error("Error al obtener el curso:", error);
@@ -66,8 +65,9 @@ export const SeeCourse = () => {
         selectedSlots: curso.dias_formacion ? JSON.parse(curso.dias_formacion) : []
     };
 
+    // Función para redirigir a la página de gestión de asistencia
     const handleAttendanceClick = () => {
-        setShowAttendanceDatePicker(true);
+        navigate(`/Cursos/${id}/gestionar-asistencia`);
     };
 
     const handleDateSelect = (e) => {
@@ -86,7 +86,6 @@ export const SeeCourse = () => {
 
     return (
         <>
-            <Header />
             <Main>
                 <div className='container_createCourse'>
                     <h2>
@@ -137,20 +136,20 @@ export const SeeCourse = () => {
                                         )}
                                     </p>
 
-                                    {/* Botón para abrir el modal general */}
                                     <button className='addDate' onClick={() => setIsViewCalendarOpen(true)}>
                                         <img src={calendar} alt="" />
                                         Ver fechas y horarios
                                     </button>
 
                                     {/* Botón de gestión de asistencia (solo para instructores) */}
-                                    <button 
-                                        className="manageAttendance"
-                                        onClick={handleAttendanceClick}
-                                        style={{ display: userSession?.accountType === 'Instructor' ? 'flex' : 'none' }}
-                                    >
-                                        Gestionar Asistencia
-                                    </button>
+                                    {userSession?.accountType === 'Instructor' && (
+                                        <button 
+                                            className="manageAttendance"
+                                            onClick={handleAttendanceClick}
+                                        >
+                                            Gestionar Asistencia
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -172,14 +171,7 @@ export const SeeCourse = () => {
             {showModal && curso && (
                 <AssignInstructorCourse
                     curso_ID={curso.ID}
-                    onClose={() => setShowModal(false)} // Para poder cerrarlo desde dentro
-                />
-
-            )}
-            {isViewCalendarOpen && (
-                <ViewCalendar
-                    calendarData={calendarData}
-                    closeModal={() => setIsViewCalendarOpen(false)}
+                    onClose={() => setShowModal(false)}
                 />
             )}
             {isViewCalendarOpen && (

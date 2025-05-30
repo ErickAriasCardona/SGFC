@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
 import './CreateCourse.css';
-import { Header } from '../../../Layouts/Header/Header';
 import { Footer } from '../../../Layouts/Footer/Footer';
 import { Main } from '../../../Layouts/Main/Main';
 import { Modal_General } from '../../../UI/Modal_General/Modal_General';
@@ -80,7 +79,7 @@ export const CreateCourse = () => {
           formData.append("imagen", fileInputRef.current.files[0]);
         }
 
-        const response = await axiosInstance.post("/cursos", formData, {
+        const response = await axiosInstance.post("/api/courses/cursos", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -98,7 +97,6 @@ export const CreateCourse = () => {
     };
     return (
         <>
-            <Header />
             <Main>
                 <div className='container_createCourse'>
                     <h2>

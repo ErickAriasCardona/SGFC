@@ -16,7 +16,7 @@ export const AssignInstructorCourse = ({ curso_ID, onClose }) => {
     // Obtener instructores del backend
     const fetchInstructors = async () => {
         try {
-            const response = await axiosInstance.get('/instructores');
+            const response = await axiosInstance.get('/api/users/instructores');
             setInstructors(response.data);
             setFilteredInstructors(response.data);
         } catch (error) {
@@ -81,7 +81,7 @@ const asignarInstructor = async (instructor_ID) => {
             estado: 'aceptada'
         });
 
-        const response = await axiosInstance.post('/asignaciones', {
+        const response = await axiosInstance.post('/api/courses/asignaciones', {
             gestor_ID,
             instructor_ID,
             curso_ID,

@@ -8,6 +8,7 @@ const { Op } = require('sequelize');
 
 // Importar controladores y rutas
 const authGoogleController = require('./controllers/authGoogleController');
+const authRouter = express.Router();
 const userRoutes = require("./routes/userRoutes");
 const cursoRoutes = require("./routes/cursoRoutes");
 const sessionRoutes = require("./routes/sessionRoutes");
@@ -63,7 +64,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/base64storage", express.static(path.join(__dirname, "base64storage")));
 
 // Registrar rutas
-app.use("/api/auth", authGoogleController);
+app.use("/api/auth", authRouter);
 app.use("/api/users", userRoutes);
 app.use("/api/courses", cursoRoutes);
 app.use("/api/sessions", sessionRoutes);

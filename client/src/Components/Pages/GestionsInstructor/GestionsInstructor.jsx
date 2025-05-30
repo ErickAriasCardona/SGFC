@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './GestionsInstructor.css';
-import { Header } from '../../../Components/Layouts/Header/Header';
 import { Footer } from '../../../Components/Layouts/Footer/Footer';
 import { Main } from '../../../Components/Layouts/Main/Main';
 import { UpdateInstructor } from './UpdateInstructor/UpdateInstructor';
@@ -29,7 +28,7 @@ export const GestionsInstructor = () => {
     // Función para obtener los instructores desde el backend
     const fetchInstructors = async () => {
         try {
-            const response = await axiosInstance.get('/instructores');
+            const response = await axiosInstance.get('/api/users/instructores');
             setInstructors(response.data); // Guardar los datos en el estado
             setFilteredInstructors(response.data); // Inicialmente, los instructores filtrados son todos
         } catch (error) {
@@ -111,7 +110,6 @@ export const GestionsInstructor = () => {
 
     return (
         <>
-            <Header />
             <Main>
                 <div className="container_GestionsInstructor">
                     <h2>

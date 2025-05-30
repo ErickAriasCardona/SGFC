@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { Op } = require('sequelize');
 let dbInstance;
 
 // Función para inyectar la instancia de la base de datos
@@ -61,20 +62,31 @@ const getSessionParticipants = async (req, res) => {
             });
         }
 
-        // Obtener los participantes del curso asociado a la sesión
-        const participants = await dbInstance.Matricula.findAll({
+        // Obtener los participantes activos del curso asociado a la sesión
+        const participants = await dbInstance.InscripcionCurso.findAll({
             where: {
-                curso_ID: session.curso_ID
+                curso_ID: session.curso_ID,
+                estado_inscripcion: 'activo'
             },
             include: [{
                 model: dbInstance.Usuario,
+                as: 'aprendiz',
                 attributes: ['ID', 'nombres', 'apellidos', 'email']
             }]
         });
 
+        // Transformar los resultados para mantener la estructura esperada por el frontend
+        const formattedParticipants = participants.map(participant => ({
+            ID: participant.aprendiz.ID,
+            nombres: participant.aprendiz.nombres,
+            apellidos: participant.aprendiz.apellidos,
+            email: participant.aprendiz.email,
+            inscripcion_ID: participant.ID
+        }));
+
         res.status(200).json({
             success: true,
-            participants
+            participants: formattedParticipants
         });
     } catch (error) {
         console.error('Error al obtener los participantes:', error);
@@ -208,6 +220,7 @@ const getAttendanceRecords = async (req, res) => {
             },
             {
                 model: dbInstance.Sesion,
+                as: 'sesion',
                 attributes: ['ID', 'fecha', 'hora_inicio', 'hora_fin'],
                 include: [{
                     model: dbInstance.Curso,
@@ -261,19 +274,19 @@ const getAttendanceRecords = async (req, res) => {
             endOfDay.setHours(23, 59, 59, 999);
 
             whereClause.fecha = {
-                [dbInstance.Sequelize.Op.between]: [startOfDay, endOfDay]
+                [Op.between]: [startOfDay, endOfDay]
             };
         } else if (startDate || endDate) {
             whereClause.fecha = {};
             if (startDate) {
                 const start = new Date(startDate);
                 start.setHours(0, 0, 0, 0);
-                whereClause.fecha[dbInstance.Sequelize.Op.gte] = start;
+                whereClause.fecha[Op.gte] = start;
             }
             if (endDate) {
                 const end = new Date(endDate);
                 end.setHours(23, 59, 59, 999);
-                whereClause.fecha[dbInstance.Sequelize.Op.lte] = end;
+                whereClause.fecha[Op.lte] = end;
             }
         }
 
@@ -282,7 +295,7 @@ const getAttendanceRecords = async (req, res) => {
             const now = new Date();
             now.setHours(0, 0, 0, 0);
             
-            if (whereClause.fecha[dbInstance.Sequelize.Op.between]?.[0] > now) {
+            if (whereClause.fecha[Op.between]?.[0] > now) {
                 return res.status(400).json({
                     success: false,
                     message: 'No se pueden consultar registros de fechas futuras'

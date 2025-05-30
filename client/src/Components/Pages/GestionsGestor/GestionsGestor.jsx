@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './GestionsGestor.css';
-import { Header } from '../../Layouts/Header/Header';
 import { Footer } from '../../Layouts/Footer/Footer';
 import { Main } from '../../Layouts/Main/Main';
 import { UpdateGestor } from './UpdateGestor/UpdateGestor';
@@ -30,7 +29,7 @@ export const GestionsGestor = () => {
     // Función para obtener los gestores desde el backend
     const fetchGestor = async () => {
         try {
-            const response = await axiosInstance.get('/Gestores'); // Usa la ruta relativa
+            const response = await axiosInstance.get('/api/users/gestores');
             setGestores(response.data); // Guardar los datos en el estado
             setFilteredGestores(response.data); // Inicialmente, los gestores filtrados son todos
         } catch (error) {
@@ -111,7 +110,6 @@ export const GestionsGestor = () => {
 
     return (
         <>
-            <Header />
             <Main>
                 <div className="container_GestionsGestor">
                     <h2>

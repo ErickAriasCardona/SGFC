@@ -1,0 +1,211 @@
+.calendar-modal {
+    background: transparent;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 800px;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: relative;
+    padding-top: 3rem;
+}
+
+.calendar-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.calendar-wrapper .close-button {
+    position: absolute;
+    top: -2rem;
+    right: 0;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    z-index: 5;
+}
+
+.calendar-wrapper .close-button:hover {
+    color: #00843D;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.calendar-modal .calendar-container {
+    position: relative;
+    width: 100%;
+    height: auto;
+    background: transparent;
+    margin: 0;
+    padding: 1rem;
+}
+
+.calendar-modal .calendar-card-wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    margin: 0;
+    pointer-events: none;
+}
+
+.calendar-modal .calendar-card {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.calendar-modal .calendar-table {
+    width: 100%;
+    position: relative;
+    z-index: 4;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 1rem;
+}
+
+.calendar-modal .calendar-table th {
+    padding: 1rem;
+    font-size: 1rem;
+    color: #00843D;
+    font-weight: 600;
+    border: none;
+}
+
+.calendar-modal .calendar-table td {
+    padding: 1rem;
+    font-size: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.calendar-modal .calendar-table td.slot-cell {
+    cursor: pointer;
+    position: relative;
+    aspect-ratio: 1;
+    text-align: center;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
+
+.calendar-modal .calendar-table td.slot-cell:hover:not(.disabled) {
+    background: rgba(0, 132, 61, 0.1);
+    transform: scale(1.05);
+}
+
+.calendar-modal .calendar-table td.slot-cell.current-month {
+    color: #fff;
+}
+
+.calendar-modal .calendar-table td.slot-cell:not(.current-month) {
+    opacity: 0.5;
+}
+
+.calendar-modal .calendar-table td.slot-cell.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.calendar-modal .calendar-table td.slot-cell.today {
+    background: rgba(0, 132, 61, 0.3);
+    color: #fff;
+    font-weight: bold;
+}
+
+.calendar-modal .calendar-table td.slot-cell.selected {
+    background: rgba(0, 132, 61, 0.5);
+    color: #fff;
+    font-weight: bold;
+    box-shadow: 0 0 15px rgba(0, 132, 61, 0.3);
+}
+
+.calendar-modal .calendar-table td.slot-cell.in-range:not(.disabled) {
+    border: 2px solid rgba(0, 132, 61, 0.3);
+}
+
+.calendar-modal .calendar-header {
+    position: relative;
+    z-index: 4;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.calendar-modal .month-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+}
+
+.calendar-modal .nav-button {
+    background: transparent;
+    border: none;
+    color: #00843D;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-modal .nav-button:hover {
+    background: rgba(0, 132, 61, 0.1);
+    color: #00b34d;
+}
+
+.calendar-modal .current-month {
+    font-size: 1.5rem;
+    color: #fff;
+    margin: 0;
+    text-transform: capitalize;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .calendar-modal .calendar-table th,
+    .calendar-modal .calendar-table td {
+        padding: 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .calendar-modal .nav-button {
+        width: 35px;
+        height: 35px;
+        font-size: 1.2rem;
+    }
+
+    .calendar-modal .current-month {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .calendar-modal .calendar-table th,
+    .calendar-modal .calendar-table td {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .calendar-modal .nav-button {
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+    }
+
+    .calendar-modal .current-month {
+        font-size: 1rem;
+    }
+} 
