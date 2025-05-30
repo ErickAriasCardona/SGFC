@@ -574,7 +574,22 @@ const updateUserProfile = async (req, res) => {
 
         // APRENDIZ
         if (loggedInUser.accountType === "Aprendiz" && user.accountType === "Aprendiz") {
-            if (email) user.email = email;
+            if (email && email !== user.email) {
+                const existingEmail = await User.findOne({ where: { email } });
+                if (existingEmail) {
+                    return res.status(400).json({ message: "El correo electrónico ya está registrado." });
+                }
+
+                // Generar token de verificación
+                const verificationToken = crypto.randomBytes(32).toString('hex');
+                user.token = verificationToken;
+                user.verificacion_email = false;
+
+                // Enviar correo de verificación
+                await sendVerificationEmail(email, verificationToken);
+
+                user.email = email;
+            }
             if (nombres) user.nombres = nombres;
             if (apellidos) user.apellidos = apellidos;
             if (celular) user.celular = celular;
@@ -587,7 +602,7 @@ const updateUserProfile = async (req, res) => {
             }
             if (foto_perfil) user.foto_perfil = foto_perfil;
             await user.save();
-            return res.status(200).json({ message: "Perfil de aprendiz actualizado con éxito." });
+            return res.status(200).json({ message: "Perfil de aprendiz actualizado con éxito. Por favor verifica tu nuevo correo." });
         }
 
         return res.status(403).json({ message: "No tienes permiso para actualizar este perfil." });
