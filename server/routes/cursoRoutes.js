@@ -24,4 +24,7 @@ router.post('/asignaciones', cursoController.asignarCursoAInstructor);
 // Obtener cursos asignados a un instructor
 router.get('/cursos-asignados/:instructor_ID', cursoController.obtenerCursosAsignadosAInstructor);
 
+// Obtener participantes de un curso
+router.get('/cursos/:courseId/participants', cursoController.getCursoParticipants);
+
 module.exports = router;

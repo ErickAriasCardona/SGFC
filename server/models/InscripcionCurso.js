@@ -27,9 +27,23 @@ class InscripcionCurso extends Model {
   }
 
   static associate(models) {
-    this.belongsTo(models.Usuario, { foreignKey: 'aprendiz_ID', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' });
-    this.belongsTo(models.Curso, { foreignKey: 'curso_ID', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' });
-    this.belongsTo(models.Usuario, { foreignKey: 'gestor_ID', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' });
+    this.belongsTo(models.Usuario, { 
+      foreignKey: 'aprendiz_ID', 
+      as: 'aprendiz',
+      onDelete: 'NO ACTION', 
+      onUpdate: 'NO ACTION' 
+    });
+    this.belongsTo(models.Curso, { 
+      foreignKey: 'curso_ID', 
+      onDelete: 'NO ACTION', 
+      onUpdate: 'NO ACTION' 
+    });
+    this.belongsTo(models.Usuario, { 
+      foreignKey: 'gestor_ID', 
+      as: 'gestor',
+      onDelete: 'NO ACTION', 
+      onUpdate: 'NO ACTION' 
+    });
   }
 }
 

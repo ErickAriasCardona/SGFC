@@ -257,109 +257,60 @@ const getAttendanceRecords = async (req, res) => {
         if (userId) whereClause.usuario_ID = userId;
         if (sessionId) whereClause.sesion_ID = sessionId;
         if (status) whereClause.estado = status;
-        
-        // Manejar filtro de curso
+
+        // Filtrar por fecha
+        if (date) {
+            const startOfDay = new Date(date);
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date(date);
+            endOfDay.setHours(23, 59, 59, 999);
+            whereClause.fecha = {
+                [Op.between]: [startOfDay, endOfDay]
+            };
+        } else if (startDate && endDate) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            whereClause.fecha = {
+                [Op.between]: [start, end]
+            };
+        }
+
+        // Filtrar por curso si se proporciona
         if (courseId) {
             includeClause[1].include[0].where = {
                 ID: courseId
             };
         }
 
-        // Manejar filtros de fecha
-        if (date) {
-            const startOfDay = new Date(date);
-            startOfDay.setHours(0, 0, 0, 0);
-            
-            const endOfDay = new Date(date);
-            endOfDay.setHours(23, 59, 59, 999);
-
-            whereClause.fecha = {
-                [Op.between]: [startOfDay, endOfDay]
-            };
-        } else if (startDate || endDate) {
-            whereClause.fecha = {};
-            if (startDate) {
-                const start = new Date(startDate);
-                start.setHours(0, 0, 0, 0);
-                whereClause.fecha[Op.gte] = start;
-            }
-            if (endDate) {
-                const end = new Date(endDate);
-                end.setHours(23, 59, 59, 999);
-                whereClause.fecha[Op.lte] = end;
-            }
-        }
-
-        // Validar que la fecha no sea futura
-        if (whereClause.fecha) {
-            const now = new Date();
-            now.setHours(0, 0, 0, 0);
-            
-            if (whereClause.fecha[Op.between]?.[0] > now) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'No se pueden consultar registros de fechas futuras'
-                });
-            }
-        }
-
-        // Calcular offset para paginación
+        // Calcular el offset para la paginación
         const offset = (page - 1) * limit;
 
-        try {
-            // Obtener registros con paginación
-            const { count, rows: records } = await dbInstance.Asistencia.findAndCountAll({
-                where: whereClause,
-                include: includeClause,
-                order: [['fecha', 'DESC'], ['createdAt', 'DESC']],
-                limit: parseInt(limit),
-                offset: offset,
-                distinct: true,
-                subQuery: false // Evitar subconsultas innecesarias
-            });
+        // Realizar la consulta con paginación
+        const { count, rows: records } = await dbInstance.Asistencia.findAndCountAll({
+            where: whereClause,
+            include: includeClause,
+            order: [
+                ['fecha', 'DESC'],
+                ['ID', 'DESC']
+            ],
+            limit: parseInt(limit),
+            offset: offset
+        });
 
-            // Calcular total de páginas
-            const totalPages = Math.ceil(count / limit);
-
-            res.status(200).json({
-                success: true,
-                records,
-                pagination: {
-                    total: count,
-                    totalPages,
-                    currentPage: parseInt(page),
-                    limit: parseInt(limit)
-                }
-            });
-        } catch (dbError) {
-            console.error('Error en la consulta a la base de datos:', dbError);
-            return res.status(500).json({
-                success: false,
-                message: 'Error al consultar los registros de asistencia',
-                error: process.env.NODE_ENV === 'development' ? dbError.message : undefined
-            });
-        }
+        res.status(200).json({
+            success: true,
+            records,
+            total: count,
+            totalPages: Math.ceil(count / limit),
+            currentPage: parseInt(page)
+        });
     } catch (error) {
         console.error('Error al obtener los registros de asistencia:', error);
-        
-        if (error.name === 'SequelizeDatabaseError') {
-            return res.status(500).json({
-                success: false,
-                message: 'Error en la base de datos al obtener los registros'
-            });
-        }
-        
-        if (error.name === 'SequelizeValidationError') {
-            return res.status(400).json({
-                success: false,
-                message: 'Error de validación en los datos proporcionados'
-            });
-        }
-
         res.status(500).json({
             success: false,
-            message: 'Error al obtener los registros de asistencia',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            message: 'Error al obtener los registros de asistencia'
         });
     }
 };

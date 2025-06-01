@@ -10,6 +10,13 @@ const { InscripcionCurso } = require('../models');
 const { Op } = require('sequelize');
 const fs = require('fs');
 
+let dbInstance;
+
+// Función para inyectar la instancia de la base de datos
+const setDb = (databaseInstance) => {
+    dbInstance = databaseInstance;
+};
+
 //Asignar cursos
 const asignarCursoAInstructor = async (req, res) => {
   const { gestor_ID, instructor_ID, curso_ID, fecha_asignacion, estado } = req.body;
@@ -365,7 +372,49 @@ const uploadImagesBase64 = async (req, res) => {
 
 };
 
+// Obtener participantes de un curso
+const getCursoParticipants = async (req, res) => {
+  const { courseId } = req.params;
+
+  try {
+    const inscripciones = await dbInstance.InscripcionCurso.findAll({
+      where: { 
+        curso_ID: courseId,
+        estado_inscripcion: 'activo'
+      },
+      include: [
+        {
+          model: dbInstance.Usuario,
+          as: 'aprendiz',
+          attributes: ['ID', 'nombres', 'apellidos', 'email', 'cedula']
+        }
+      ]
+    });
+
+    const participantes = inscripciones.map(inscripcion => ({
+      ID: inscripcion.aprendiz.ID,
+      nombres: inscripcion.aprendiz.nombres,
+      apellidos: inscripcion.aprendiz.apellidos,
+      email: inscripcion.aprendiz.email,
+      documento: inscripcion.aprendiz.cedula,
+      inscripcion_ID: inscripcion.ID
+    }));
+
+    res.status(200).json({
+      success: true,
+      participants: participantes
+    });
+  } catch (error) {
+    console.error('Error al obtener los participantes del curso:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error interno al obtener los participantes del curso' 
+    });
+  }
+};
+
 module.exports = {
+  setDb,
   createCurso,
   updateCurso,
   getAllCursos,
@@ -373,7 +422,8 @@ module.exports = {
   getCursoByFicha,
   asignarCursoAInstructor,
   obtenerCursosAsignadosAInstructor,
-  uploadImagesBase64
+  uploadImagesBase64,
+  getCursoParticipants
 };
 
 

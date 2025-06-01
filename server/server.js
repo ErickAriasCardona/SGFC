@@ -80,8 +80,10 @@ async function startServer() {
     authGoogleController.setDb(db);
     const sessionController = require('./controllers/sessionController');
     const attendanceController = require('./controllers/attendanceController');
+    const cursoController = require('./controllers/cursoController');
     sessionController.setDb(db);
     attendanceController.setDb(db);
+    cursoController.setDb(db);
 
     // Crear datos por defecto
     await db.Departamento.createDefaultDeparment();
