@@ -6,6 +6,7 @@ const generalConfig = require('./config/general');
 const authGoogleController = require('./controllers/authGoogleController'); // Importar controlador de autenticación de Google
 const userRoutes = require("./routes/userRoutes"); // Importar rutas de usuario
 const cursoRoutes = require("./routes/cursoRoutes"); // Importar rutas de cursos
+const horarioRoutes = require('./routes/horarioRoutes'); // Importar rutas de horario
 // libreria para programar tareas
 const cron = require('node-cron');
 const { cleanExpiredTokens } = require('./controllers/userController');
@@ -40,6 +41,7 @@ app.use(cookieParser()); // Usar cookie-parser para manejar cookies
 // Registrar rutas
 app.use("/", userRoutes); // Rutas de usuario
 app.use("/", cursoRoutes); // Rutas de cursos
+app.use('/api', horarioRoutes); // Rutas de horario
 const path = require("path");
 
 // Servir la carpeta 'uploads' como estática
@@ -61,4 +63,4 @@ async function startServer() {
   });
 }
 
-startServer(); 
+startServer();

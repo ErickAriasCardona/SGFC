@@ -1,4 +1,4 @@
-const nodemailer = require("nodemailer");
+ const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
     service: "Gmail",
@@ -268,3 +268,98 @@ const sendCourseCreatedEmail = (emails, nombre_curso, courseLink) => {
 
 // Exportar ambas funciones
 module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirmationEmail, sendCourseCreatedEmail, sendCursoUpdatedNotification };
+
+
+
+
+
+//--------------------------------------------------------------
+
+//Cod. prueba para enviar correos con nodemailer
+
+
+
+const nodemailer = require('nodemailer');
+
+/**
+ * Envía un email utilizando nodemailer
+ * @param {string} destinatario - Email del destinatario
+ * @param {string} asunto - Asunto del email
+ * @param {string} mensaje - Mensaje en texto plano
+ * @param {Object} datos - Datos adicionales para plantillas
+ * @returns {Promise<Object>} - Información sobre el envío del email
+ */
+const enviarEmail = async (destinatario, asunto, mensaje, datos = {}) => {
+  try {
+    // Configuración del transporte (esto debería venir de variables de entorno)
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST || 'smtp.example.com',
+      port: process.env.EMAIL_PORT || 587,
+      secure: process.env.EMAIL_SECURE === 'true',
+      auth: {
+        user: process.env.EMAIL_USER || 'user@example.com',
+        pass: process.env.EMAIL_PASS || 'password'
+      }
+    });
+
+    // Generar HTML para el email (se podría usar una plantilla)
+    let htmlMensaje = `
+      <div style="font-family: Arial, sans-serif; padding: 20px;">
+        <h2>${asunto}</h2>
+        <p>${mensaje}</p>
+    `;
+
+    // Agregar detalles específicos según el tipo de datos
+    if (datos.curso) {
+      htmlMensaje += `
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-top: 15px;">
+          <h3>Detalles del curso:</h3>
+          <ul>
+            <li><strong>Nombre:</strong> ${datos.curso.nombre_curso}</li>
+            <li><strong>Ficha:</strong> ${datos.curso.ficha || 'No asignada'}</li>
+            ${datos.curso.fecha_inicio ? `<li><strong>Fecha inicio:</strong> ${new Date(datos.curso.fecha_inicio).toLocaleDateString()}</li>` : ''}
+            ${datos.curso.fecha_fin ? `<li><strong>Fecha fin:</strong> ${new Date(datos.curso.fecha_fin).toLocaleDateString()}</li>` : ''}
+            ${datos.curso.hora_inicio ? `<li><strong>Hora inicio:</strong> ${datos.curso.hora_inicio}</li>` : ''}
+            ${datos.curso.hora_fin ? `<li><strong>Hora fin:</strong> ${datos.curso.hora_fin}</li>` : ''}
+            ${datos.curso.dias_formacion ? `<li><strong>Días:</strong> ${datos.curso.dias_formacion}</li>` : ''}
+            ${datos.curso.lugar_formacion ? `<li><strong>Lugar:</strong> ${datos.curso.lugar_formacion}</li>` : ''}
+          </ul>
+        </div>
+      `;
+    }
+
+    // Si es una notificación que requiere respuesta
+    if (datos.notificacion && datos.notificacion.requiere_respuesta) {
+      const urlRespuesta = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/responder-disponibilidad/${datos.notificacion.id}`;
+      htmlMensaje += `
+        <div style="margin-top: 20px;">
+          <p><strong>Se requiere su respuesta antes del:</strong> ${datos.notificacion.fecha_limite_respuesta ? new Date(datos.notificacion.fecha_limite_respuesta).toLocaleString() : 'Lo antes posible'}</p>
+          <a href="${urlRespuesta}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Responder disponibilidad</a>
+        </div>
+      `;
+    }
+
+    htmlMensaje += `
+        <hr style="margin-top: 20px;">
+        <p style="font-size: 12px; color: #777;">Este es un mensaje automático del Sistema de Gestión de Formación Complementaria.</p>
+      </div>
+    `;
+
+    // Enviar el email
+    const info = await transporter.sendMail({
+      from: `"SGFC - Formación Complementaria" <${process.env.EMAIL_USER || 'noreply@example.com'}>`,
+      to: destinatario,
+      subject: asunto,
+      text: mensaje,
+      html: htmlMensaje
+    });
+
+    console.log(`Email enviado: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error('Error al enviar email:', error);
+    throw error;
+  }
+};
+
+module.exports = enviarEmail;
