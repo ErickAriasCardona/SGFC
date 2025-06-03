@@ -873,8 +873,33 @@ const createMasiveUsers = async (req, res) => {
             }
         }
 
-        // Eliminar el archivo después de procesarlo
-        fs.unlinkSync(rutaArchivo);
+        // Verificar si hay usuarios duplicados en el archivo
+        const duplicados = valoresColumna.filter((item, index) => valoresColumna.indexOf(item) !== index);
+        if (duplicados.length > 0) {
+            // Excepción: permitir duplicados si son valores vacíos ("")
+            const duplicadosFiltrados = duplicados.filter(item => item !== "");
+
+            if (duplicadosFiltrados.length > 0) {
+                fs.unlinkSync(rutaArchivo); // Asegurarse de eliminar el archivo
+                return res.status(400).json({
+                    message: "El archivo contiene usuarios duplicados no permitidos.",
+                    duplicados: duplicadosFiltrados
+                });
+            }
+        }
+
+        // Verificar si hay usuarios repetidos en la base de datos antes de crear
+        const emails = valoresColumna.map(identificacion => `${identificacion}@example.com`);
+        const existingUsers = await User.findAll({ where: { email: emails } });
+
+        if (existingUsers.length > 0) {
+            const repetidos = existingUsers.map(user => user.email);
+            fs.unlinkSync(rutaArchivo); // Asegurarse de eliminar el archivo
+            return res.status(409).json({
+                message: "Existen usuarios repetidos en la base de datos.",
+                repetidos
+            });
+        }
 
         // Crear usuarios con los datos extraídos
         for (const identificacion of valoresColumna) {
@@ -886,14 +911,6 @@ const createMasiveUsers = async (req, res) => {
             const email = `${identificacion}@example.com`;
             const password = identificacion.toString();
 
-            // Verificar si el usuario ya existe
-            const existingUser = await User.findOne({ where: { email } });
-            if (existingUser) {
-                console.log('usuarios repetidos');
-                return res.status(409).json({
-                    message: `usuario ${identificacion} repetidos`,
-                });
-            }
             // Crear el usuario
             const hashedPassword = await bcrypt.hash(password, 10);
             await User.create({
@@ -904,9 +921,13 @@ const createMasiveUsers = async (req, res) => {
                 verificacion_email: true,
             });
         }
+
+        // Eliminar el archivo después de procesarlo
+        fs.unlinkSync(rutaArchivo);
+
         return res.json({
             message: "Usuarios creados exitosamente.",
-        })
+        });
     } catch (error) {
         console.error("Error al procesar el archivo:", error);
 
