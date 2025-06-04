@@ -97,7 +97,7 @@ const obtenerCursosAsignadosAInstructor = async (req, res) => {
       include: [
         {
           model: Curso,
-          attributes: ['id', 'nombre_curso', 'descripcion', 'imagen'], // ajusta campos según tu modelo
+          attributes: ['ID', 'nombre_curso', 'descripcion', 'imagen', 'ficha', 'tipo_oferta', 'estado', 'fecha_inicio', 'fecha_fin', 'dias_formacion', 'lugar_formacion']
         }
       ]
     });
@@ -109,106 +109,210 @@ const obtenerCursosAsignadosAInstructor = async (req, res) => {
   }
 };
 
+/**
+ * Genera las sesiones automáticamente para un curso
+ */
+const generateSessions = async (curso) => {
+    try {
+        const { ID, fecha_inicio, fecha_fin, hora_inicio, hora_fin, dias_formacion } = curso;
+        
+        // Obtener la asignación del instructor para este curso
+        const asignacion = await AsignacionCursoInstructor.findOne({
+            where: {
+                curso_ID: ID,
+                estado: 'aceptada'
+            },
+            order: [['fecha_asignacion', 'DESC']] // Obtener la asignación más reciente
+        });
+
+        if (!asignacion) {
+            console.warn(`No se encontró un instructor asignado para el curso ${ID}`);
+            return 0;
+        }
+
+        // Convertir las fechas a objetos Date
+        const startDate = new Date(fecha_inicio);
+        const endDate = new Date(fecha_fin);
+        
+        // Convertir los días de formación a números (0 = Domingo, 1 = Lunes, etc.)
+        const diasSemana = dias_formacion.map(dia => {
+            const dias = {
+                'Lunes': 1,
+                'Martes': 2,
+                'Miércoles': 3,
+                'Jueves': 4,
+                'Viernes': 5,
+                'Sábado': 6,
+                'Domingo': 0
+            };
+            return dias[dia];
+        });
+
+        // Array para almacenar las sesiones a crear
+        const sessionsToCreate = [];
+        
+        // Iterar sobre cada día en el rango de fechas
+        let currentDate = new Date(startDate);
+        while (currentDate <= endDate) {
+            // Verificar si el día actual está en los días de formación
+            const dayOfWeek = currentDate.getDay();
+            if (diasSemana.includes(dayOfWeek)) {
+                // Crear una sesión para este día
+                sessionsToCreate.push({
+                    curso_ID: ID,
+                    instructor_ID: asignacion.instructor_ID,
+                    fecha: new Date(currentDate),
+                    hora_inicio,
+                    hora_fin,
+                    estado: 'programada'
+                });
+            }
+            // Avanzar al siguiente día
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        // Crear todas las sesiones en la base de datos
+        if (sessionsToCreate.length > 0) {
+            await dbInstance.Sesion.bulkCreate(sessionsToCreate);
+        }
+
+        return sessionsToCreate.length;
+    } catch (error) {
+        console.error('Error al generar las sesiones:', error);
+        throw error;
+    }
+};
+
 // Crear un curso (solo para administradores)
 const createCurso = async (req, res) => {
-  try {
-    const { accountType } = req.user;
-    if (accountType !== "Administrador") {
-      return res.status(403).json({ message: "No tienes permisos para crear cursos." });
+    try {
+        const { accountType } = req.user;
+        if (accountType !== "Administrador") {
+            return res.status(403).json({ message: "No tienes permisos para crear cursos." });
+        }
+
+        const {
+            nombre_curso,
+            descripcion,
+            tipo_oferta,
+            ficha,
+            estado,
+            fecha_inicio,
+            fecha_fin,
+            hora_inicio,
+            hora_fin,
+            dias_formacion,
+            lugar_formacion,
+        } = req.body;
+
+        // Validar campos obligatorios
+        if (!ficha || !nombre_curso || !descripcion || !tipo_oferta || !estado || 
+            !fecha_inicio || !fecha_fin || !hora_inicio || !hora_fin || !dias_formacion) {
+            return res.status(400).json({
+                message: "Todos los campos son obligatorios, incluyendo fechas, horarios y días de formación.",
+            });
+        }
+
+        // Validar que la fecha de inicio sea anterior a la fecha de fin
+        if (new Date(fecha_inicio) >= new Date(fecha_fin)) {
+            return res.status(400).json({
+                message: "La fecha de inicio debe ser anterior a la fecha de fin.",
+            });
+        }
+
+        // Procesar imagen y convertir a Base64 si se envió
+        let image = null;
+        if (req.file) {
+            const base64Data = req.file.buffer.toString('base64');
+            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+            const savePath = path.join(__dirname, '../base64storage', uniqueName);
+
+            if (!fs.existsSync(path.dirname(savePath))) {
+                fs.mkdirSync(path.dirname(savePath), { recursive: true });
+            }
+            fs.writeFileSync(savePath, base64Data);
+
+            image = `/base64storage/${uniqueName}`;
+        }
+
+        // Procesar días de formación
+        let diasFormacionParsed = dias_formacion;
+        if (typeof dias_formacion === 'string') {
+            try {
+                diasFormacionParsed = JSON.parse(dias_formacion);
+            } catch (e) {
+                return res.status(400).json({ message: "El formato de los días de formación no es válido." });
+            }
+        }
+
+        // Crear el curso
+        const nuevoCurso = await Curso.create({
+            nombre_curso,
+            descripcion,
+            tipo_oferta,
+            ficha,
+            estado,
+            fecha_inicio,
+            fecha_fin,
+            hora_inicio,
+            hora_fin,
+            dias_formacion: diasFormacionParsed,
+            lugar_formacion,
+            imagen: image,
+        });
+
+        // Si se recibe instructor_ID, se crea la asignación (AsignacionCursoInstructor) y se generan las sesiones automáticamente.
+        if (req.body.instructor_ID) {
+            const gestor_ID = req.user.id; // Se asume que el gestor_ID es el id del usuario autenticado (req.user.id)
+            const instructor_ID = req.body.instructor_ID;
+            const curso_ID = nuevoCurso.ID; // El ID del curso recién creado
+
+            // Crear la asignación (AsignacionCursoInstructor)
+            const nuevaAsignacion = await AsignacionCursoInstructor.create({
+                gestor_ID,
+                instructor_ID,
+                curso_ID,
+                fecha_asignacion: new Date(),
+                estado: 'aceptada'
+            });
+
+            // Generar sesiones automáticamente (se llama a generateSessions con el curso creado)
+            const sessionsCount = await generateSessions(nuevoCurso);
+            console.log("Se generaron " + sessionsCount + " sesiones automáticamente para el curso (ID: " + curso_ID + ")");
+        }
+
+        // Responder con éxito (se envía el mensaje, el curso creado y, si se generaron sesiones, se incluye sessionsGenerated)
+        res.status(201).json({ 
+            message: "Curso creado con éxito.",
+            sessionsGenerated: (req.body.instructor_ID ? (await generateSessions(nuevoCurso)) : 0),
+            curso: nuevoCurso
+        });
+
+        // Buscar usuarios verificados para enviar notificación
+        const usuarios = await User.findAll({
+            where: {
+                verificacion_email: true,
+                accountType: { [Op.or]: ['Empresa', 'Aprendiz'] },
+            },
+            attributes: ['email'],
+        });
+
+        const emails = usuarios.map(user => user.email);
+
+        if (emails.length > 0) {
+            const courseLink = `http://localhost:5173/cursos/${nuevoCurso.id}`;
+            await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
+        }
+
+    } catch (error) {
+        console.error("Error al crear el curso:", error);
+
+        if (error.name === "SequelizeValidationError") {
+            return res.status(400).json({ message: "Error de validación.", errors: error.errors });
+        }
+
+        res.status(500).json({ message: "Error al crear el curso." });
     }
-
-    const {
-      nombre_curso,
-      descripcion,
-      tipo_oferta,
-      ficha,
-      estado,
-      fecha_inicio,
-      fecha_fin,
-      hora_inicio,
-      hora_fin,
-      dias_formacion,
-      lugar_formacion,
-    } = req.body;
-
-    // Validar campos obligatorios
-    if (!ficha || !nombre_curso || !descripcion || !tipo_oferta || !estado) {
-      return res.status(400).json({
-        message: "Los campos nombre_curso, tipo_oferta, ficha, descripcion y estado son obligatorios.",
-      });
-    }
-
-    // Procesar imagen y convertir a Base64 si se envió
-    let image = null;
-    if (req.file) {
-      const base64Data = req.file.buffer.toString('base64');
-      const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-      const savePath = path.join(__dirname, '../base64storage', uniqueName);
-
-      if (!fs.existsSync(path.dirname(savePath))) {
-        fs.mkdirSync(path.dirname(savePath), { recursive: true });
-      }
-      fs.writeFileSync(savePath, base64Data);
-
-      image = `/base64storage/${uniqueName}`;
-    }
-
-    // Procesar días de formación
-    let diasFormacionParsed = dias_formacion;
-    if (typeof dias_formacion === 'string') {
-      try {
-        diasFormacionParsed = JSON.parse(dias_formacion);
-      } catch (e) {
-        return res.status(400).json({ message: "El formato de los días de formación no es válido." });
-      }
-    }
-
-    // Crear el curso
-    const nuevoCurso = await Curso.create({
-      nombre_curso,
-      descripcion,
-      tipo_oferta,
-      ficha,
-      estado,
-      fecha_inicio,
-      fecha_fin,
-      hora_inicio,
-      hora_fin,
-      dias_formacion: diasFormacionParsed,
-      lugar_formacion,
-      imagen: image,
-    });
-
-    // Responder con éxito
-    res.status(201).json({ message: "Curso creado con éxito." });
-
-    // Buscar usuarios verificados
-    const usuarios = await User.findAll({
-      where: {
-        verificacion_email: true,
-        accountType: { [Op.or]: ['Empresa', 'Aprendiz'] },
-      },
-      attributes: ['email'],
-    });
-
-    const emails = usuarios.map(user => user.email);
-
-    if (emails.length === 0) {
-      console.warn('No hay usuarios aceptados para mandar Email');
-    } else {
-      const courseLink = `http://localhost:5173/cursos/${nuevoCurso.id}`;
-      await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
-    }
-
-  } catch (error) {
-    console.error("Error al crear el curso:", error);
-
-    if (error.name === "SequelizeValidationError") {
-      return res.status(400).json({ message: "Error de validación.", errors: error.errors });
-    }
-
-    res.status(500).json({ message: "Error al crear el curso." });
-  }
 };
 
 // Actualizar un curso (solo para administradores)
@@ -413,6 +517,99 @@ const getCursoParticipants = async (req, res) => {
   }
 };
 
+/**
+ * Regenera las sesiones para cursos existentes que tengan instructores asignados
+ */
+const regenerateSessions = async (req, res) => {
+    try {
+        console.log('Iniciando regeneración de sesiones...');
+        
+        // Obtener todos los cursos que tienen instructores asignados
+        const cursosConInstructor = await Curso.findAll({
+            include: [{
+                model: AsignacionCursoInstructor,
+                where: {
+                    estado: 'aceptada'
+                },
+                required: true
+            }]
+        });
+
+        console.log(`Se encontraron ${cursosConInstructor.length} cursos con instructores asignados`);
+
+        let resultados = [];
+        let totalSesionesGeneradas = 0;
+
+        for (const curso of cursosConInstructor) {
+            try {
+                console.log(`Procesando curso ${curso.ID} - ${curso.nombre_curso}`);
+                
+                // Eliminar sesiones existentes del curso
+                const sesionesEliminadas = await dbInstance.Sesion.destroy({
+                    where: {
+                        curso_ID: curso.ID
+                    }
+                });
+                console.log(`Se eliminaron ${sesionesEliminadas} sesiones existentes del curso ${curso.ID}`);
+
+                // Generar nuevas sesiones
+                console.log(`Generando nuevas sesiones para el curso ${curso.ID}`);
+                const sesionesGeneradas = await generateSessions(curso);
+                console.log(`Se generaron ${sesionesGeneradas} nuevas sesiones para el curso ${curso.ID}`);
+                
+                resultados.push({
+                    curso_ID: curso.ID,
+                    nombre_curso: curso.nombre_curso,
+                    sesiones_generadas: sesionesGeneradas,
+                    estado: 'exitoso'
+                });
+
+                totalSesionesGeneradas += sesionesGeneradas;
+            } catch (error) {
+                console.error(`Error al regenerar sesiones para el curso ${curso.ID}:`, error);
+                console.error('Detalles del error:', {
+                    message: error.message,
+                    stack: error.stack,
+                    curso: {
+                        ID: curso.ID,
+                        nombre: curso.nombre_curso,
+                        fecha_inicio: curso.fecha_inicio,
+                        fecha_fin: curso.fecha_fin,
+                        dias_formacion: curso.dias_formacion
+                    }
+                });
+                resultados.push({
+                    curso_ID: curso.ID,
+                    nombre_curso: curso.nombre_curso,
+                    error: error.message,
+                    estado: 'error'
+                });
+            }
+        }
+
+        console.log('Proceso de regeneración completado');
+        console.log('Resumen:', {
+            totalCursos: cursosConInstructor.length,
+            totalSesionesGeneradas,
+            resultados
+        });
+
+        res.status(200).json({
+            success: true,
+            message: `Se regeneraron ${totalSesionesGeneradas} sesiones en total`,
+            resultados
+        });
+    } catch (error) {
+        console.error('Error al regenerar las sesiones:', error);
+        console.error('Stack trace:', error.stack);
+        res.status(500).json({
+            success: false,
+            message: 'Error al regenerar las sesiones',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
   setDb,
   createCurso,
@@ -423,7 +620,9 @@ module.exports = {
   asignarCursoAInstructor,
   obtenerCursosAsignadosAInstructor,
   uploadImagesBase64,
-  getCursoParticipants
+  getCursoParticipants,
+  generateSessions,
+  regenerateSessions
 };
 
 

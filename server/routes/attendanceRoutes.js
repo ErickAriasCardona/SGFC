@@ -13,7 +13,7 @@ router.get('/sessions', attendanceController.getScheduledSessions);
 router.get('/sessions/:sessionId/participants', attendanceController.getSessionParticipants);
 
 // Registrar asistencia para una sesión
-router.post('/sessions/:sessionId/register', attendanceController.registerAttendance);
+router.post('/courses/:courseId/register', attendanceController.registerAttendance);
 
 // Actualizar un registro de asistencia específico
 router.put('/attendance/:attendanceId', attendanceController.updateAttendance);

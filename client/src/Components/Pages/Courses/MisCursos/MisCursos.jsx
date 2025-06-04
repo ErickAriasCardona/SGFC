@@ -12,6 +12,8 @@ export const MisCursos = () => {
   const [filteredCursos, setFilteredCursos] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [currentPosition, setCurrentPosition] = useState(0);
+  const [maxScroll, setMaxScroll] = useState(0);
   const scrollRef = useRef(null);
   const navigate = useNavigate();
 
@@ -23,10 +25,18 @@ export const MisCursos = () => {
       try {
         let response;
         
+        // Verificar que tenemos un ID válido antes de hacer la petición
+        if (!userSession?.ID && !userSession?.id) {
+          setErrorMessage("No se pudo obtener el ID del usuario");
+          return;
+        }
+
         // Obtener cursos según el tipo de cuenta
         switch (userSession?.accountType) {
           case 'Instructor':
-            response = await axiosInstance.get(`/api/courses/cursos-asignados/${userSession.id}`);
+            // Usar el ID que esté disponible (ID o id)
+            const instructorId = userSession.ID || userSession.id;
+            response = await axiosInstance.get(`/api/courses/cursos-asignados/${instructorId}`);
             // Transformar la respuesta para mantener el mismo formato que los otros endpoints
             const cursosAsignados = response.data.map(asignacion => ({
               ...asignacion.Curso,
@@ -77,6 +87,19 @@ export const MisCursos = () => {
     setFilteredCursos(filtered);
   };
 
+  // Función para actualizar el estado del scroll
+  const updateScrollState = () => {
+    const { current } = scrollRef;
+    if (!current) return;
+
+    const trackWidth = current.scrollWidth;
+    const containerWidth = current.offsetWidth;
+    const scrollLeft = current.scrollLeft;
+
+    setMaxScroll(trackWidth - containerWidth);
+    setCurrentPosition(scrollLeft);
+  };
+
   // Función para manejar el scroll del carrusel
   const scroll = (direction) => {
     const { current } = scrollRef;
@@ -85,17 +108,40 @@ export const MisCursos = () => {
     const card = current.querySelector('.carousel-card');
     if (!card) return;
 
-    const cardStyles = window.getComputedStyle(card);
     const cardWidth = card.offsetWidth;
-    const gap = parseInt(cardStyles.marginRight || 16);
+    const gap = 24; // 1.5rem en píxeles
+    const scrollAmount = (cardWidth + gap) * 3; // Scroll 3 cartas a la vez
 
-    const scrollAmount = (cardWidth + gap) * 4;
+    const newPosition = direction === 'left' 
+      ? Math.max(0, currentPosition - scrollAmount)
+      : Math.min(maxScroll, currentPosition + scrollAmount);
 
-    current.scrollBy({
-      left: direction === 'left' ? -scrollAmount : scrollAmount,
-      behavior: 'smooth',
+    current.scrollTo({
+      left: newPosition,
+      behavior: 'smooth'
     });
   };
+
+  // Efecto para actualizar el estado del scroll
+  useEffect(() => {
+    const { current } = scrollRef;
+    if (!current) return;
+
+    const handleScroll = () => {
+      updateScrollState();
+    };
+
+    current.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', updateScrollState);
+
+    // Actualizar estado inicial
+    updateScrollState();
+
+    return () => {
+      current.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', updateScrollState);
+    };
+  }, [filteredCursos]);
 
   // Función para redirigir al usuario al ver un curso
   const handleCardClick = (ID) => {
@@ -145,13 +191,14 @@ export const MisCursos = () => {
           <div className="carousel-container">
             <h2 className="carousel-title">Resultados ({filteredCursos.length})</h2>
             <div className="carousel-wrapper">
-              <button 
-                className="carousel-arrow left" 
-                onClick={() => scroll('left')}
-                disabled={filteredCursos.length === 0}
-              >
-                <img src={arrowLeft} alt="Flecha izquierda" />
-              </button>
+              {currentPosition > 0 && (
+                <button 
+                  className="carousel-arrow left" 
+                  onClick={() => scroll('left')}
+                >
+                  <img src={arrowLeft} alt="Flecha izquierda" />
+                </button>
+              )}
               <div className="carousel-track" ref={scrollRef}>
                 {filteredCursos.map((curso) => {
                   // Asegurar que cada curso tenga un ID único
@@ -180,13 +227,14 @@ export const MisCursos = () => {
                   );
                 })}
               </div>
-              <button 
-                className="carousel-arrow right" 
-                onClick={() => scroll('right')}
-                disabled={filteredCursos.length === 0}
-              >
-                <img src={arrowRight} alt="Flecha derecha" />
-              </button>
+              {currentPosition < maxScroll && (
+                <button 
+                  className="carousel-arrow right" 
+                  onClick={() => scroll('right')}
+                >
+                  <img src={arrowRight} alt="Flecha derecha" />
+                </button>
+              )}
             </div>
           </div>
         </div>

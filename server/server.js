@@ -76,14 +76,17 @@ async function startServer() {
     // Inicializar base de datos
     const db = await initializeDatabase();
     
-    // Inyectar la instancia de la base de datos en los controladores
+    // Inyectar la instancia de la base de datos en los controladores y servicios
     authGoogleController.setDb(db);
     const sessionController = require('./controllers/sessionController');
     const attendanceController = require('./controllers/attendanceController');
     const cursoController = require('./controllers/cursoController');
+    const notificationService = require('./services/notificationService');
+
     sessionController.setDb(db);
     attendanceController.setDb(db);
     cursoController.setDb(db);
+    notificationService.setDb(db);
 
     // Crear datos por defecto
     await db.Departamento.createDefaultDeparment();

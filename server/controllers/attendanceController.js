@@ -102,31 +102,30 @@ const getSessionParticipants = async (req, res) => {
  */
 const registerAttendance = async (req, res) => {
     try {
-        const sessionId = req.params.sessionId;//parametro de la ruta
-        const { attendanceData } = req.body;
+        const { courseId } = req.params; // Cambiamos sessionId por courseId
+        const { attendanceData, selectedDate } = req.body;
         const instructorId = req.user.id;
 
-        // Verificar que la sesión pertenezca al instructor
-        const session = await dbInstance.Sesion.findOne({
-            where: {
-                ID: sessionId,
-                instructor_ID: instructorId
-            }
-        });
+        // Convertir la fecha seleccionada a objeto Date
+        const targetDate = new Date(selectedDate);
+        const startOfDay = new Date(targetDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(targetDate);
+        endOfDay.setHours(23, 59, 59, 999);
 
+        // Buscar (o crear "on the fly") la sesión (solo por curso_ID y fecha) (se usa instructor_ID = 1 (o un valor "genérico") si no existe una sesión)
+        let session = await dbInstance.Sesion.findOne({ where: { curso_ID: courseId, fecha: { [Op.between]: [startOfDay, endOfDay] } } });
         if (!session) {
-            return res.status(404).json({
-                success: false,
-                message: 'Sesión no encontrada o no autorizada'
-            });
+            // (Opcional) Si no existe, se crea una sesión "genérica" (por ejemplo, con instructor_ID = 1) para ese curso y fecha.
+            session = await dbInstance.Sesion.create({ curso_ID: courseId, instructor_ID: 1, fecha: targetDate, hora_inicio: "00:00", hora_fin: "00:00", estado: "programada" });
         }
 
         // Registrar la asistencia para cada participante
         const attendanceRecords = attendanceData.map(record => ({
-            sesion_ID: sessionId,
+            sesion_ID: session.ID,
             usuario_ID: record.userId,
-            estado: record.status, // 'Presente' o 'Ausente'
-            fecha: new Date(),
+            estado: record.status,
+            fecha: targetDate,
             registrado_por: instructorId
         }));
 

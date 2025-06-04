@@ -8,8 +8,11 @@ import addIMG from '../../../../assets/Icons/addImg.png';
 import buttonEdit from '../../../../assets/Icons/buttonEdit.png';
 import calendar from '../../../../assets/Icons/calendar.png';
 import axiosInstance  from '../../../../config/axiosInstance'; 
+import { useNavigate } from 'react-router-dom';
+import { AssignInstructorCourse } from '../AssignInstructorCourse/AssignInstructorCourse';
 
 export const CreateCourse = () => {
+    const navigate = useNavigate();
     const [preview, setPreview] = useState(null);
     const fileInputRef = useRef(null);
     const [selected, setSelected] = useState('Cerrada');
@@ -17,6 +20,8 @@ export const CreateCourse = () => {
     const [ficha, setFicha] = useState('');
     const [nombreCurso, setNombreCurso] = useState('');
     const [descripcion, setDescripcion] = useState('');
+    const [instructor_ID, setInstructor_ID] = useState(null);
+    const [showAssignModal, setShowAssignModal] = useState(false);
 
     // New state for calendar data
     const [calendarData, setCalendarData] = useState({
@@ -48,10 +53,21 @@ export const CreateCourse = () => {
       setCalendarData(data);
     };
 
+    const handleAssignInstructor = (instructorId) => {
+      setInstructor_ID(instructorId);
+      setShowAssignModal(false);
+    };
+
     // Función para manejar la creación del curso
     const handleCreateCourse = async () => {
       if (!ficha || !nombreCurso || !descripcion || !selected || !selectedStatus) {
         alert("Por favor, completa todos los campos requeridos.");
+        return;
+      }
+
+      // Validar que se hayan seleccionado fechas y horarios
+      if (!calendarData.startDate || !calendarData.endDate || calendarData.selectedSlots.length === 0) {
+        alert("Por favor, selecciona las fechas y horarios del curso.");
         return;
       }
 
@@ -62,21 +78,35 @@ export const CreateCourse = () => {
         formData.append("descripcion", descripcion);
         formData.append("tipo_oferta", selected);
         formData.append("estado", selectedStatus);
+        formData.append("fecha_inicio", calendarData.startDate);
+        formData.append("fecha_fin", calendarData.endDate);
 
-        // Append calendar data fields if available
-        if (calendarData.startDate) {
-          formData.append("fecha_inicio", calendarData.startDate);
+        // Obtener la primera hora de inicio y la última hora de fin de los slots seleccionados
+        const slots = calendarData.selectedSlots;
+        const horas = slots.map(slot => {
+          const [_, hora] = slot.split('-');
+          return hora;
+        }).sort();
+
+        if (horas.length > 0) {
+          formData.append("hora_inicio", horas[0]);
+          formData.append("hora_fin", horas[horas.length - 1]);
         }
-        if (calendarData.endDate) {
-          formData.append("fecha_fin", calendarData.endDate);
-        }
-        if (calendarData.selectedSlots.length > 0) {
-          // For simplicity, send selectedSlots as JSON string
-          formData.append("dias_formacion", JSON.stringify(calendarData.selectedSlots));
-        }
+
+        // Convertir los slots seleccionados a días de la semana
+        const diasSemana = slots.map(slot => {
+          const [dia] = slot.split('-');
+          return dia;
+        }).filter((dia, index, self) => self.indexOf(dia) === index); // Eliminar duplicados
+
+        formData.append("dias_formacion", JSON.stringify(diasSemana));
 
         if (fileInputRef.current.files[0]) {
           formData.append("imagen", fileInputRef.current.files[0]);
+        }
+
+        if (instructor_ID) {
+          formData.append("instructor_ID", instructor_ID);
         }
 
         const response = await axiosInstance.post("/api/courses/cursos", formData, {
@@ -88,11 +118,20 @@ export const CreateCourse = () => {
         alert("Curso creado con éxito");
         console.log(response.data);
 
-        // Recargar la página o limpiar el formulario
-        window.location.reload();
+        // Redirigir al usuario a la página del curso creado
+        if (response.data.curso && response.data.curso.ID) {
+          navigate(`/Cursos/${response.data.curso.ID}`);
+        } else {
+          console.error("No se pudo obtener el ID del curso creado");
+          navigate('/Cursos/MisCursos');
+        }
       } catch (error) {
         console.error("Error al crear el curso:", error);
-        alert("Ocurrió un error al crear el curso");
+        if (error.response?.data?.message) {
+          alert(`Error: ${error.response.data.message}`);
+        } else {
+          alert("Ocurrió un error al crear el curso");
+        }
       }
     };
     return (
@@ -196,8 +235,8 @@ export const CreateCourse = () => {
                                 </div>
 
                                 <div>
-                                    <p id='p_addInstructor'> Instructor: Asignar instructor
-                                        <button className='addInstructor'>
+                                    <p id='p_addInstructor'> Instructor: {instructor_ID ? "Asignado (ID: " + instructor_ID + ")" : "Asignar instructor"}
+                                        <button className='addInstructor' onClick={() => setShowAssignModal(true)}>
                                             <img src={buttonEdit} alt="" />
                                         </button>
                                     </p>
@@ -235,6 +274,14 @@ export const CreateCourse = () => {
                     Open Calendar Modal
                 </button>
             </div>
+
+            {showAssignModal && (
+                <AssignInstructorCourse
+                    curso_ID={null} // (o el ID del curso si ya se creó)
+                    onClose={() => setShowAssignModal(false)}
+                    onAssign={handleAssignInstructor}
+                />
+            )}
         </>
     );
 };

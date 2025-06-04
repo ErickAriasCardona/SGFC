@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './AssignInstructorCourse.css';
 import axiosInstance from '../../../../config/axiosInstance';
 
-export const AssignInstructorCourse = ({ curso_ID, onClose }) => {
+export const AssignInstructorCourse = ({ curso_ID, onClose, onAssign }) => {
 
     const [filteredInstructors, setFilteredInstructors] = useState([]);
     const [instructors, setInstructors] = useState([]);
@@ -90,6 +90,7 @@ const asignarInstructor = async (instructor_ID) => {
         });
 
         alert(response.data.mensaje || 'Instructor asignado correctamente');
+        if (onAssign) { onAssign(instructor_ID); }
         if (onClose) onClose();
     } catch (error) {
         alert(

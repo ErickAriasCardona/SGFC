@@ -24,6 +24,9 @@ router.post('/asignaciones', cursoController.asignarCursoAInstructor);
 // Obtener cursos asignados a un instructor
 router.get('/cursos-asignados/:instructor_ID', cursoController.obtenerCursosAsignadosAInstructor);
 
+// Regenerar sesiones para cursos existentes (solo para administradores)
+router.post('/regenerar-sesiones', cursoController.regenerateSessions);
+
 // Obtener participantes de un curso
 router.get('/cursos/:courseId/participants', cursoController.getCursoParticipants);
 

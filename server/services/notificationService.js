@@ -1,5 +1,14 @@
 const { sendEmail } = require('./emailService');
 const { Notificacion, Usuario, Sesion, Curso } = require('../models');
+const { format } = require('date-fns');
+const { Op } = require('sequelize');
+
+let dbInstance;
+
+// Función para inyectar la instancia de la base de datos
+const setDb = (databaseInstance) => {
+    dbInstance = databaseInstance;
+};
 
 /**
  * Envía una notificación por email y la registra en la base de datos
@@ -115,29 +124,79 @@ const sendAbsenceNotifications = async (sessionId) => {
  */
 const scheduleAbsenceNotifications = async () => {
     try {
-        // Obtener las sesiones finalizadas en las últimas 24 horas
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-
-        const sessions = await Sesion.findAll({
+        const today = new Date();
+        const sessions = await dbInstance.Sesion.findAll({
             where: {
-                estado: 'finalizada',
                 fecha: {
-                    [Op.gte]: yesterday
+                    [Op.lte]: today
+                },
+                estado: 'finalizada'
+            },
+            include: [
+                {
+                    model: dbInstance.Curso,
+                    as: 'Curso',
+                    attributes: ['ID', 'nombre_curso']
+                },
+                {
+                    model: dbInstance.Usuario,
+                    as: 'instructor',
+                    attributes: ['ID', 'nombres', 'apellidos', 'email']
                 }
-            }
+            ]
         });
 
-        // Enviar notificaciones para cada sesión
-        const results = await Promise.all(
-            sessions.map(session => sendAbsenceNotifications(session.ID))
-        );
+        let sessionsProcessed = 0;
 
-        return {
-            success: true,
-            sessionsProcessed: sessions.length,
-            results
-        };
+        for (const session of sessions) {
+            // Verificar si ya se enviaron notificaciones para esta sesión
+            const existingNotifications = await dbInstance.Notificacion.findAll({
+                where: {
+                    sesion_ID: session.ID,
+                    tipo: 'inasistencia'
+                }
+            });
+
+            if (existingNotifications.length > 0) {
+                continue; // Saltar esta sesión si ya se enviaron notificaciones
+            }
+
+            // Obtener las asistencias de la sesión
+            const asistencias = await dbInstance.Asistencia.findAll({
+                where: {
+                    sesion_ID: session.ID,
+                    estado: 'Ausente'
+                },
+                include: [
+                    {
+                        model: dbInstance.Usuario,
+                        as: 'aprendiz',
+                        attributes: ['ID', 'nombres', 'apellidos', 'email']
+                    }
+                ]
+            });
+
+            // Enviar notificaciones a los aprendices ausentes
+            for (const asistencia of asistencias) {
+                await dbInstance.Notificacion.create({
+                    usuario_ID: asistencia.aprendiz.ID,
+                    tipo: 'inasistencia',
+                    titulo: 'Registro de Inasistencia',
+                    mensaje: `Se ha registrado tu inasistencia a la sesión del curso "${session.Curso.nombre_curso}" el día ${format(new Date(session.fecha), 'dd/MM/yyyy')}.`,
+                    fecha_envio: new Date(),
+                    estado: 'enviada',
+                    sesion_ID: session.ID,
+                    curso_ID: session.Curso.ID
+                });
+
+                // Aquí podrías agregar la lógica para enviar el correo electrónico
+                // await sendAbsenceEmail(asistencia.aprendiz.email, session);
+            }
+
+            sessionsProcessed++;
+        }
+
+        return { success: true, sessionsProcessed };
     } catch (error) {
         console.error('Error al programar notificaciones de inasistencia:', error);
         throw error;
@@ -145,6 +204,7 @@ const scheduleAbsenceNotifications = async () => {
 };
 
 module.exports = {
+    setDb,
     sendNotification,
     sendAbsenceNotifications,
     scheduleAbsenceNotifications

@@ -8,6 +8,7 @@ import { es } from 'date-fns/locale';
 import { AttendanceManagement } from '../SeeCourse/AttendanceManagement';
 import { MonthlyCalendar } from '../../../UI/Modal_Calendar/ViewCalendar/MonthlyCalendar';
 import './ManageAttendance.css';
+import illustration from '../../../../assets/Ilustrations/Sucessfull.svg';
 
 export const ManageAttendance = () => {
     const { id } = useParams();
@@ -18,6 +19,7 @@ export const ManageAttendance = () => {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [trainingDays, setTrainingDays] = useState([]);
 
     useEffect(() => {
         const fetchCurso = async () => {
@@ -27,6 +29,35 @@ export const ManageAttendance = () => {
                 const response = await axiosInstance.get(`/api/courses/cursos/${id}`);
                 console.log('Datos del curso recibidos:', response.data);
                 setCurso(response.data);
+
+                // Procesar los días de formación
+                if (response.data.dias_formacion) {
+                    try {
+                        const diasFormacion = JSON.parse(response.data.dias_formacion);
+                        console.log('Días de formación procesados:', diasFormacion);
+                        // Asegurarse de que los días estén en el formato correcto (ej: "Lun-8:00")
+                        const diasProcesados = diasFormacion.map(dia => {
+                            if (typeof dia === 'string') {
+                                // Si ya está en formato "Dia-Hora", dejarlo como está
+                                return dia;
+                            } else if (dia.dia && dia.hora) {
+                                // Si es un objeto con propiedades dia y hora, convertirlo al formato correcto
+                                return `${dia.dia}-${dia.hora}`;
+                            }
+                            return null;
+                        }).filter(Boolean); // Eliminar valores nulos
+
+                        console.log('Días de formación procesados:', diasProcesados);
+                        setTrainingDays(diasProcesados);
+                    } catch (error) {
+                        console.error('Error al procesar los días de formación:', error);
+                        console.error('Datos recibidos:', response.data.dias_formacion);
+                        setTrainingDays([]);
+                    }
+                } else {
+                    console.log('No hay días de formación definidos');
+                    setTrainingDays([]);
+                }
             } catch (error) {
                 console.error("Error al obtener el curso:", error);
                 setError("Error al cargar los datos del curso. Por favor, intente nuevamente.");
@@ -39,9 +70,15 @@ export const ManageAttendance = () => {
     }, [id]);
 
     const handleDateSelect = (date) => {
+        console.log('Fecha seleccionada:', date);
         if (date) {
+            console.log('Actualizando estado con fecha:', date);
             setSelectedDate(date);
             setShowAttendanceManagement(true);
+            console.log('Estado actualizado:', {
+                selectedDate: date,
+                showAttendanceManagement: true
+            });
         }
     };
 
@@ -77,7 +114,7 @@ export const ManageAttendance = () => {
             <Main>
                 <div className="manage-attendance-container">
                     <p className="error-message">{error}</p>
-                    <button 
+                    <button
                         className="back-button"
                         onClick={() => navigate(`/Cursos/${id}`)}
                     >
@@ -93,7 +130,7 @@ export const ManageAttendance = () => {
             <Main>
                 <div className="manage-attendance-container">
                     <p>No se encontró información del curso.</p>
-                    <button 
+                    <button
                         className="back-button"
                         onClick={() => navigate(`/Cursos/${id}`)}
                     >
@@ -109,7 +146,7 @@ export const ManageAttendance = () => {
             <Main>
                 <div className="manage-attendance-container">
                     <p>El curso no tiene fechas definidas.</p>
-                    <button 
+                    <button
                         className="back-button"
                         onClick={() => navigate(`/Cursos/${id}`)}
                     >
@@ -123,63 +160,39 @@ export const ManageAttendance = () => {
     return (
         <>
             <Main>
-                <div className="manage-attendance-container">
-                    <div className="attendance-header">
-                        <h2>Gestión de Asistencia</h2>
-                        <h3 className="course-name">{curso.nombre_curso}</h3>
-                    </div>
-                    
-                    <div className="attendance-content">
-                        <div className="calendar-section">
-                            <div className="calendar-wrapper">
-                                <button 
-                                    className="close-button"
-                                    onClick={() => navigate(`/Cursos/${id}`)}
-                                >
-                                    Volver
-                                </button>
-                                <MonthlyCalendar
-                                    currentMonth={currentMonth}
-                                    onMonthChange={handleMonthChange}
-                                    selectedDate={selectedDate}
-                                    onDateSelect={handleDateSelect}
-                                    dateRange={{
-                                        start: curso.fecha_inicio,
-                                        end: curso.fecha_fin
-                                    }}
-                                />
-                            </div>
+                <div className="container_main_attendance">
+                    <h2>Gestión de <span className="complementary">asistencias</span></h2>
+                    <p>Ficha: {curso.ficha}</p>
 
-                            <div className="course-info-section">
-                                <div className="course-info-card">
-                                    <h4>Información del Curso</h4>
-                                    <div className="info-content">
-                                        <div className="info-row">
-                                            <span className="info-label">Ficha:</span>
-                                            <span className="info-value">{curso.ficha}</span>
-                                        </div>
-                                        <div className="info-row">
-                                            <span className="info-label">Fecha de inicio:</span>
-                                            <span className="info-value">
-                                                {format(parseISO(curso.fecha_inicio), 'dd/MM/yyyy', { locale: es })}
-                                            </span>
-                                        </div>
-                                        <div className="info-row">
-                                            <span className="info-label">Fecha de fin:</span>
-                                            <span className="info-value">
-                                                {format(parseISO(curso.fecha_fin), 'dd/MM/yyyy', { locale: es })}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
+                    <div className="calendar-main-content">
+
+
+                        <MonthlyCalendar
+                            selectedDate={selectedDate}
+                            onDateSelect={handleDateSelect}
+                            startDate={curso.fecha_inicio}
+                            endDate={curso.fecha_fin}
+                            trainingDays={trainingDays}
+                        />
+
                     </div>
+                    <div className="illustration-container">
+                        <img src="/src/assets/Ilustrations/Frame01.svg" alt="Ilustración de gestión de asistencia" />
+                    </div>
+
+                    <div className="">
+                        Por favor seleccione el día en el que quiere gestionar asistencias del curso
+                    </div>
+
+                    <button className="back-button" onClick={() => navigate(`/Cursos/${id}`)}>
+                        Volver
+                    </button>
                 </div>
             </Main>
             <Footer />
 
-            {selectedDate && (
+            {selectedDate && showAttendanceManagement && (
                 <AttendanceManagement
                     open={showAttendanceManagement}
                     onClose={handleCloseAttendanceManagement}

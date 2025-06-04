@@ -20,15 +20,6 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
     const [tempAttendance, setTempAttendance] = useState({});
 
     useEffect(() => {
-        // Verificar autenticación al abrir el modal
-        const userSession = JSON.parse(localStorage.getItem('userSession')) || 
-                          JSON.parse(sessionStorage.getItem('userSession'));
-        
-        if (!userSession?.token) {
-            setError('Debes iniciar sesión para acceder a esta función');
-            return;
-        }
-
         if (open) {
             setShowOptions(true);
             setSelectedOption(null);
@@ -55,10 +46,9 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
         } catch (error) {
             console.error('Error al obtener participantes:', error);
             if (error.response?.status === 401) {
-                setError('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
                 localStorage.removeItem('userSession');
                 sessionStorage.removeItem('userSession');
-                navigate('/login');
+                navigate('/');
             } else if (error.response?.status === 403) {
                 setError('No tienes permisos para acceder a esta función');
             } else {
@@ -111,22 +101,29 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
             );
 
             if (existingRecord) {
-                await axiosInstance.put(`/api/attendance/${existingRecord.ID}`, {
-                    estado: status
+                await axiosInstance.put(`/api/attendance/attendance/${existingRecord.ID}`, {
+                    status
                 });
             } else {
-                await axiosInstance.post(`/api/attendance/register`, {
-                    sesionId: courseId,
-                    aprendizId: participantId,
-                    estado: status,
-                    fecha: selectedDate
+                const response = await axiosInstance.post(`/api/attendance/courses/${courseId}/register`, {
+                    attendanceData: [{
+                        userId: participantId,
+                        status: status
+                    }],
+                    selectedDate
                 });
+                
+                if (response.data.success) {
+                    fetchAttendanceRecords();
+                }
             }
-
-            fetchAttendanceRecords();
         } catch (error) {
             console.error('Error al actualizar asistencia:', error);
-            setError('Error al actualizar la asistencia');
+            if (error.response?.status === 404) {
+                setError('No hay una sesión programada para esta fecha');
+            } else {
+                setError('Error al actualizar la asistencia');
+            }
         }
     };
 
@@ -176,29 +173,30 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
             setLoading(true);
             setError(null);
 
-            // Crear un array de promesas para registrar todas las asistencias
-            const attendancePromises = Object.entries(tempAttendance).map(([participantId, status]) => {
-                return axiosInstance.post(`/api/attendance/register`, {
-                    sesionId: courseId,
-                    aprendizId: participantId,
-                    estado: status,
-                    fecha: selectedDate
-                });
+            const attendanceData = Object.entries(tempAttendance).map(([participantId, status]) => ({
+                userId: participantId,
+                status: status
+            }));
+
+            const response = await axiosInstance.post(`/api/attendance/courses/${courseId}/register`, {
+                attendanceData,
+                selectedDate
             });
 
-            await Promise.all(attendancePromises);
-            
-            // Limpiar el estado temporal y volver a la vista de opciones
-            setTempAttendance({});
-            setCurrentParticipantIndex(0);
-            setSelectedOption(null);
-            setShowOptions(true);
-            
-            // Mostrar mensaje de éxito
-            alert('Asistencias registradas exitosamente');
+            if (response.data.success) {
+                setTempAttendance({});
+                setCurrentParticipantIndex(0);
+                setSelectedOption(null);
+                setShowOptions(true);
+                alert('Asistencias registradas exitosamente');
+            }
         } catch (error) {
             console.error('Error al guardar las asistencias:', error);
-            setError('Error al guardar las asistencias');
+            if (error.response?.status === 404) {
+                setError('No hay una sesión programada para esta fecha');
+            } else {
+                setError('Error al guardar las asistencias');
+            }
         } finally {
             setLoading(false);
         }
