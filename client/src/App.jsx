@@ -61,6 +61,23 @@ function App() {
 
   useEffect(() => {
     const userSession = localStorage.getItem('userSession');
+    const userInfo = sessionStorage.getItem('userSession');
+    const { email } = JSON.parse(userInfo || '{}'); // Manejo seguro si userInfo es null
+  
+    if (email?.includes('@example.com')) {
+      // Usa un modal o confirmación personalizada
+      // const userResponse = window.confirm(
+      //   'TIENES QUE ACTUALIZAR TU CORREO Y CONTRASEÑA PARA UTILIZAR LA APLICACIÓN. ¿Deseas ir a la página de actualización ahora?'
+      // );
+
+      //  Mostrar el Modal_General
+      setShowAccountType(true);
+
+      //   if (userResponse) {
+    //     navigate('/MiPerfil'); // Redirige si el usuario acepta
+    //   }
+    }
+
     if (userSession) {
       const { accountType } = JSON.parse(userSession);
       navigate('/Inicio', { state: { accountType } });

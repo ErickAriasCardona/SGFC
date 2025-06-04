@@ -161,6 +161,7 @@ const loginUser = async (req, res) => {
             message: "Inicio de sesión exitoso",
             id: user.ID,
             accountType: user.accountType,
+            email: user.email
         });
     } catch (error) {
         console.error(error);
@@ -909,7 +910,7 @@ const createMasiveUsers = async (req, res) => {
             }
 
             const email = `${identificacion}@example.com`;
-            const password = identificacion.toString();
+            const password = `${identificacion.toString()}example`;
 
             // Crear el usuario
             const hashedPassword = await bcrypt.hash(password, 10);
