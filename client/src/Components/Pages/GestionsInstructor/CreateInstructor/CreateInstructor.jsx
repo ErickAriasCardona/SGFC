@@ -56,7 +56,7 @@ export const CreateInstructor = ({ onClose }) => {
         data.append('estado', formData.estado);
 
         try {
-            const response = await axiosInstance.post('/api/users/instructores', data, {
+            const response = await axiosInstance.post('/api/users/crearInstructor', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

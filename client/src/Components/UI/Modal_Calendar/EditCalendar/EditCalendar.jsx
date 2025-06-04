@@ -2,9 +2,20 @@ import React, { useState, useEffect } from 'react';
 import './ECalendar.css';
 
 const times = [
-  '6:00', '8:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'
+  '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', 
+  '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', 
+  '20:00', '21:00', '22:00'
 ];
-const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+const dayAbbreviations = {
+  'Lunes': 'Lun',
+  'Martes': 'Mar',
+  'Miércoles': 'Mié',
+  'Jueves': 'Jue',
+  'Viernes': 'Vie',
+  'Sábado': 'Sáb'
+};
 
 export const EditCalendar = ({ closeModal, onSave, initialData }) => {
   const [startDate, setStartDate] = useState('');
@@ -130,7 +141,7 @@ export const EditCalendar = ({ closeModal, onSave, initialData }) => {
                 <tr>
                   <th></th>
                   {days.map((day) => (
-                    <th key={day}>{day}</th>
+                    <th key={day}>{dayAbbreviations[day]}</th>
                   ))}
                 </tr>
               </thead>

@@ -101,29 +101,20 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
             );
 
             if (existingRecord) {
-                await axiosInstance.put(`/api/attendance/attendance/${existingRecord.ID}`, {
+                await axiosInstance.put(`/api/attendance/${existingRecord.ID}`, {
                     status
                 });
             } else {
-                const response = await axiosInstance.post(`/api/attendance/courses/${courseId}/register`, {
-                    attendanceData: [{
-                        userId: participantId,
-                        status: status
-                    }],
-                    selectedDate
+                await axiosInstance.post(`/api/attendance/courses/${courseId}/register`, {
+                    usuario_ID: participantId,
+                    estado: status
                 });
-                
-                if (response.data.success) {
-                    fetchAttendanceRecords();
-                }
             }
+            
+            await fetchAttendanceRecords();
         } catch (error) {
             console.error('Error al actualizar asistencia:', error);
-            if (error.response?.status === 404) {
-                setError('No hay una sesión programada para esta fecha');
-            } else {
-                setError('Error al actualizar la asistencia');
-            }
+            setError('Error al actualizar la asistencia');
         }
     };
 
@@ -173,30 +164,23 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
             setLoading(true);
             setError(null);
 
-            const attendanceData = Object.entries(tempAttendance).map(([participantId, status]) => ({
-                userId: participantId,
-                status: status
-            }));
+            const attendancePromises = Object.entries(tempAttendance).map(([participantId, status]) => 
+                axiosInstance.post(`/api/attendance/courses/${courseId}/register`, {
+                    usuario_ID: participantId,
+                    estado: status
+                })
+            );
 
-            const response = await axiosInstance.post(`/api/attendance/courses/${courseId}/register`, {
-                attendanceData,
-                selectedDate
-            });
+            await Promise.all(attendancePromises);
 
-            if (response.data.success) {
-                setTempAttendance({});
-                setCurrentParticipantIndex(0);
-                setSelectedOption(null);
-                setShowOptions(true);
-                alert('Asistencias registradas exitosamente');
-            }
+            setTempAttendance({});
+            setCurrentParticipantIndex(0);
+            setSelectedOption(null);
+            setShowOptions(true);
+            alert('Asistencias registradas exitosamente');
         } catch (error) {
-            console.error('Error al guardar las asistencias:', error);
-            if (error.response?.status === 404) {
-                setError('No hay una sesión programada para esta fecha');
-            } else {
-                setError('Error al guardar las asistencias');
-            }
+            console.error('Error al guardar asistencias:', error);
+            setError('Error al guardar las asistencias');
         } finally {
             setLoading(false);
         }

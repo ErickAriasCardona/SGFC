@@ -1,4 +1,4 @@
-const { Notificacion, Usuario, Sesion, Curso } = require('../models');
+const { Notificacion, Usuario, Sesion, Curso, Asistencia } = require('../models');
 const { sendNotification, sendAbsenceNotifications } = require('../services/notificationService');
 
 /**
@@ -20,12 +20,9 @@ const getUserNotifications = async (req, res) => {
             where: whereClause,
             include: [
                 {
-                    model: Sesion,
-                    attributes: ['ID', 'fecha', 'hora_inicio', 'hora_fin'],
-                    include: [{
-                        model: Curso,
-                        attributes: ['ID', 'nombre_curso', 'ficha']
-                    }]
+                    model: Usuario,
+                    as: 'usuario',
+                    attributes: ['ID', 'nombres', 'apellidos', 'email']
                 }
             ],
             order: [['fecha_envio', 'DESC']],
@@ -94,36 +91,56 @@ const markNotificationAsRead = async (req, res) => {
  */
 const sendManualAbsenceNotification = async (req, res) => {
     try {
-        const { sessionId } = req.params;
+        const { attendanceId } = req.params;
         const instructorId = req.user.id;
 
-        // Verificar que la sesión pertenezca al instructor
-        const session = await Sesion.findOne({
+        // Obtener el registro de asistencia
+        const attendance = await Asistencia.findOne({
             where: {
-                ID: sessionId,
-                instructor_ID: instructorId
-            }
+                ID: attendanceId,
+                estado: 'Ausente'
+            },
+            include: [
+                {
+                    model: Usuario,
+                    as: 'aprendiz',
+                    attributes: ['ID', 'nombres', 'apellidos', 'email']
+                }
+            ]
         });
 
-        if (!session) {
+        if (!attendance) {
             return res.status(404).json({
                 success: false,
-                message: 'Sesión no encontrada o no autorizada'
+                message: 'Registro de asistencia no encontrado o no es una ausencia'
             });
         }
 
-        const result = await sendAbsenceNotifications(sessionId);
+        const title = `Notificación de Inasistencia`;
+        const message = `
+            <h2>Notificación de Inasistencia</h2>
+            <p>Estimado(a) ${attendance.aprendiz.nombres} ${attendance.aprendiz.apellidos},</p>
+            <p>Le informamos que se ha registrado una inasistencia en la fecha ${new Date(attendance.fecha).toLocaleDateString()}.</p>
+            <p>Por favor, asegúrese de asistir a las próximas sesiones programadas.</p>
+            <p>Saludos cordiales,<br>SGFC</p>
+        `;
+
+        await sendNotification(
+            attendance.aprendiz.ID,
+            'inasistencia',
+            title,
+            message
+        );
 
         res.status(200).json({
             success: true,
-            message: `Notificaciones enviadas a ${result.notificationsSent} usuarios`,
-            result
+            message: 'Notificación de inasistencia enviada correctamente'
         });
     } catch (error) {
-        console.error('Error al enviar notificaciones manualmente:', error);
+        console.error('Error al enviar notificación manualmente:', error);
         res.status(500).json({
             success: false,
-            message: 'Error al enviar las notificaciones'
+            message: 'Error al enviar la notificación'
         });
     }
 };

@@ -78,7 +78,7 @@ export const UpdateInstructor = ({ instructor }) => {
                 }
             }
 
-            const response = await axiosInstance.put(`/api/users/instructores/${instructor.ID}`, {
+            const response = await axiosInstance.put(`/api/users/perfil/actualizar/${instructor.ID}`, {
                 ...formDataToSend,
                 headers: {
                     'Content-Type': 'multipart/form-data',

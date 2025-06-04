@@ -61,8 +61,9 @@ export const SeeCourse = () => {
     const calendarData = {
         startDate: curso.fecha_inicio ? curso.fecha_inicio.split('T')[0] : '',
         endDate: curso.fecha_fin ? curso.fecha_fin.split('T')[0] : '',
-        
-        selectedSlots: curso.dias_formacion ? JSON.parse(curso.dias_formacion) : []
+        selectedSlots: curso.dias_formacion ? JSON.parse(curso.dias_formacion) : [],
+        hora_inicio: curso.hora_inicio || '',
+        hora_fin: curso.hora_fin || ''
     };
 
     // Función para redirigir a la página de gestión de asistencia

@@ -6,17 +6,11 @@ const authMiddleware = require('../middlewares/authMiddleware');
 // Proteger todas las rutas con autenticación
 router.use(authMiddleware);
 
-// Obtener las sesiones programadas del instructor
-router.get('/sessions', attendanceController.getScheduledSessions);
-
-// Obtener los participantes de una sesión específica
-router.get('/sessions/:sessionId/participants', attendanceController.getSessionParticipants);
-
-// Registrar asistencia para una sesión
+// Registrar asistencia para un curso
 router.post('/courses/:courseId/register', attendanceController.registerAttendance);
 
 // Actualizar un registro de asistencia específico
-router.put('/attendance/:attendanceId', attendanceController.updateAttendance);
+router.put('/:attendanceId', attendanceController.updateAttendance);
 
 // Obtener registros de asistencia con filtros
 router.get('/records', attendanceController.getAttendanceRecords);

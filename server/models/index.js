@@ -12,7 +12,6 @@ const SolicitudCurso = require("./SolicitudCurso");
 const AsignacionCursoInstructor = require("./AsignacionCursoInstructor");
 const InscripcionCurso = require("./InscripcionCurso");
 const Asistencia = require("./Asistencia");
-const Sesion = require("./Sesion");
 const Notificacion = require("./Notificacion");
 
 // Leer la URL de conexión (recomendada en producción)
@@ -69,7 +68,6 @@ async function initializeDatabase() {
   SolicitudCurso.init(sequelize);
   AsignacionCursoInstructor.init(sequelize);
   InscripcionCurso.init(sequelize);
-  Sesion.init(sequelize);
   Asistencia.init(sequelize);
   Notificacion.init(sequelize);
 
@@ -84,7 +82,6 @@ async function initializeDatabase() {
     SolicitudCurso,
     AsignacionCursoInstructor,
     InscripcionCurso,
-    Sesion,
     Asistencia,
     Notificacion
   };
@@ -99,7 +96,7 @@ async function initializeDatabase() {
 
   return {
     sequelize,
-    ...models, // Exportar todos los modelos
+    ...models
   };
 }
 

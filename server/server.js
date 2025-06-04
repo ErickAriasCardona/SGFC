@@ -11,7 +11,6 @@ const authGoogleController = require('./controllers/authGoogleController');
 const authRouter = express.Router();
 const userRoutes = require("./routes/userRoutes");
 const cursoRoutes = require("./routes/cursoRoutes");
-const sessionRoutes = require("./routes/sessionRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 
@@ -67,7 +66,6 @@ app.use("/base64storage", express.static(path.join(__dirname, "base64storage")))
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRoutes);
 app.use("/api/courses", cursoRoutes);
-app.use("/api/sessions", sessionRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/notifications", notificationRoutes);
 
@@ -78,12 +76,11 @@ async function startServer() {
     
     // Inyectar la instancia de la base de datos en los controladores y servicios
     authGoogleController.setDb(db);
-    const sessionController = require('./controllers/sessionController');
     const attendanceController = require('./controllers/attendanceController');
     const cursoController = require('./controllers/cursoController');
     const notificationService = require('./services/notificationService');
 
-    sessionController.setDb(db);
+  
     attendanceController.setDb(db);
     cursoController.setDb(db);
     notificationService.setDb(db);

@@ -55,7 +55,7 @@ export const CreateGestor = ({ onClose }) => {
         data.append('estado', formData.estado);
 
         try {
-            const response = await axiosInstance.post('/crearGestor', data, {
+            const response = await axiosInstance.post('/api/users/crearGestor', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

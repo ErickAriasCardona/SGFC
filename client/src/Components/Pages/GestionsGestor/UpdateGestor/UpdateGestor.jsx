@@ -54,7 +54,7 @@ export const UpdateGestor = ({ gestor }) => {
             }
 
             const response = await axiosInstance.put(
-                `/perfil/actualizar/${formData.ID}`,
+                `/api/users/perfil/actualizar/${formData.ID}`,
                 formDataToSend,
                 {
                     headers: {

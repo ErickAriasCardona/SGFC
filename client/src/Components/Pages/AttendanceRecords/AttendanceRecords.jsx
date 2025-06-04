@@ -31,14 +31,25 @@ export const AttendanceRecords = () => {
                 return;
             }
 
-            const params = {
-                startDate: selectedDate || undefined,
-                courseId: selectedCourse || undefined
-            };
+            const params = {};
+            
+            if (selectedDate) {
+                params.startDate = selectedDate;
+                params.endDate = selectedDate;
+            }
+
+            if (selectedCourse) {
+                params.courseId = selectedCourse;
+            }
 
             const response = await axiosInstance.get('/api/attendance/records', { params });
-            setRecords(response.data.records);
-            setFilteredRecords(response.data.records);
+            
+            if (response.data.success) {
+                setRecords(response.data.records);
+                setFilteredRecords(response.data.records);
+            } else {
+                alert('Error al cargar los registros de asistencia');
+            }
         } catch (error) {
             console.error('Error al obtener los registros:', error);
             alert('Error al cargar los registros de asistencia');

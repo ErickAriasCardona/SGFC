@@ -81,24 +81,41 @@ export const CreateCourse = () => {
         formData.append("fecha_inicio", calendarData.startDate);
         formData.append("fecha_fin", calendarData.endDate);
 
-        // Obtener la primera hora de inicio y la última hora de fin de los slots seleccionados
-        const slots = calendarData.selectedSlots;
-        const horas = slots.map(slot => {
-          const [_, hora] = slot.split('-');
-          return hora;
-        }).sort();
+        // Procesar los slots para obtener horarios y días
+        const slotsByDay = {};
+        calendarData.selectedSlots.forEach(slot => {
+          const [dia, hora] = slot.split('-');
+          if (!slotsByDay[dia]) {
+            slotsByDay[dia] = [];
+          }
+          slotsByDay[dia].push(hora);
+        });
 
-        if (horas.length > 0) {
-          formData.append("hora_inicio", horas[0]);
-          formData.append("hora_fin", horas[horas.length - 1]);
-        }
+        // Obtener la primera hora de inicio y la última hora de fin
+        let horaInicio = '23:59';
+        let horaFin = '00:00';
+        Object.values(slotsByDay).flat().forEach(hora => {
+          if (hora < horaInicio) horaInicio = hora;
+          if (hora > horaFin) horaFin = hora;
+        });
 
-        // Convertir los slots seleccionados a días de la semana
-        const diasSemana = slots.map(slot => {
-          const [dia] = slot.split('-');
-          return dia;
-        }).filter((dia, index, self) => self.indexOf(dia) === index); // Eliminar duplicados
+        // Asegurarse de que las horas tengan el formato correcto (HH:mm)
+        horaInicio = horaInicio.padStart(5, '0');
+        horaFin = horaFin.padStart(5, '0');
 
+        formData.append("hora_inicio", horaInicio);
+        formData.append("hora_fin", horaFin);
+
+        // Obtener los días únicos y asegurarse de que estén en formato completo
+        const diasMapping = {
+          'Lun': 'Lunes',
+          'Mar': 'Martes',
+          'Mié': 'Miércoles',
+          'Jue': 'Jueves',
+          'Vie': 'Viernes',
+          'Sáb': 'Sábado'
+        };
+        const diasSemana = Object.keys(slotsByDay).map(dia => diasMapping[dia] || dia);
         formData.append("dias_formacion", JSON.stringify(diasSemana));
 
         if (fileInputRef.current.files[0]) {

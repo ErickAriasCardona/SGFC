@@ -8,132 +8,25 @@ const setDb = (databaseInstance) => {
 };
 
 /**
- * Obtiene las sesiones programadas para un instructor
- */
-const getScheduledSessions = async (req, res) => {
-    try {
-        const instructorId = req.user.id; // Obtenido del token JWT
-
-        const sessions = await dbInstance.Sesion.findAll({
-            where: {
-                instructor_ID: instructorId,
-                fecha: new Date(), // Sesiones del día actual
-            },
-            include: [{
-                model: dbInstance.Curso,
-                attributes: ['nombre']
-            }],
-            order: [['hora_inicio', 'ASC']]
-        });
-
-        res.status(200).json({
-            success: true,
-            sessions
-        });
-    } catch (error) {
-        console.error('Error al obtener las sesiones:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error al obtener las sesiones programadas'
-        });
-    }
-};
-
-/**
- * Obtiene la lista de participantes de una sesión específica
- */
-const getSessionParticipants = async (req, res) => {
-    try {
-        const { sessionId } = req.params;
-        const instructorId = req.user.id;
-
-        // Verificar que la sesión pertenezca al instructor
-        const session = await dbInstance.Sesion.findOne({
-            where: {
-                ID: sessionId,
-                instructor_ID: instructorId
-            }
-        });
-
-        if (!session) {
-            return res.status(404).json({
-                success: false,
-                message: 'Sesión no encontrada o no autorizada'
-            });
-        }
-
-        // Obtener los participantes activos del curso asociado a la sesión
-        const participants = await dbInstance.InscripcionCurso.findAll({
-            where: {
-                curso_ID: session.curso_ID,
-                estado_inscripcion: 'activo'
-            },
-            include: [{
-                model: dbInstance.Usuario,
-                as: 'aprendiz',
-                attributes: ['ID', 'nombres', 'apellidos', 'email']
-            }]
-        });
-
-        // Transformar los resultados para mantener la estructura esperada por el frontend
-        const formattedParticipants = participants.map(participant => ({
-            ID: participant.aprendiz.ID,
-            nombres: participant.aprendiz.nombres,
-            apellidos: participant.aprendiz.apellidos,
-            email: participant.aprendiz.email,
-            inscripcion_ID: participant.ID
-        }));
-
-        res.status(200).json({
-            success: true,
-            participants: formattedParticipants
-        });
-    } catch (error) {
-        console.error('Error al obtener los participantes:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error al obtener los participantes de la sesión'
-        });
-    }
-};
-
-/**
- * Registra la asistencia de los participantes en una sesión
+ * Registrar asistencia para un curso
  */
 const registerAttendance = async (req, res) => {
     try {
-        const { courseId } = req.params; // Cambiamos sessionId por courseId
-        const { attendanceData, selectedDate } = req.body;
-        const instructorId = req.user.id;
+        const { courseId } = req.params;
+        const { usuario_ID, estado } = req.body;
+        const registrador_ID = req.user.id;
 
-        // Convertir la fecha seleccionada a objeto Date
-        const targetDate = new Date(selectedDate);
-        const startOfDay = new Date(targetDate);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(targetDate);
-        endOfDay.setHours(23, 59, 59, 999);
+        // Crear la asistencia
+        const asistencia = await dbInstance.Asistencia.create({
+            usuario_ID,
+            estado,
+            registrado_por: registrador_ID
+        });
 
-        // Buscar (o crear "on the fly") la sesión (solo por curso_ID y fecha) (se usa instructor_ID = 1 (o un valor "genérico") si no existe una sesión)
-        let session = await dbInstance.Sesion.findOne({ where: { curso_ID: courseId, fecha: { [Op.between]: [startOfDay, endOfDay] } } });
-        if (!session) {
-            // (Opcional) Si no existe, se crea una sesión "genérica" (por ejemplo, con instructor_ID = 1) para ese curso y fecha.
-            session = await dbInstance.Sesion.create({ curso_ID: courseId, instructor_ID: 1, fecha: targetDate, hora_inicio: "00:00", hora_fin: "00:00", estado: "programada" });
-        }
-
-        // Registrar la asistencia para cada participante
-        const attendanceRecords = attendanceData.map(record => ({
-            sesion_ID: session.ID,
-            usuario_ID: record.userId,
-            estado: record.status,
-            fecha: targetDate,
-            registrado_por: instructorId
-        }));
-
-        await dbInstance.Asistencia.bulkCreate(attendanceRecords);
-
-        res.status(200).json({
+        res.status(201).json({
             success: true,
-            message: 'Asistencia registrada correctamente'
+            message: 'Asistencia registrada correctamente',
+            asistencia
         });
     } catch (error) {
         console.error('Error al registrar la asistencia:', error);
@@ -156,19 +49,13 @@ const updateAttendance = async (req, res) => {
         const attendance = await dbInstance.Asistencia.findOne({
             where: {
                 ID: attendanceId
-            },
-            include: [{
-                model: dbInstance.Sesion,
-                where: {
-                    instructor_ID: instructorId
-                }
-            }]
+            }
         });
 
         if (!attendance) {
             return res.status(404).json({
                 success: false,
-                message: 'Registro de asistencia no encontrado o no autorizado'
+                message: 'Registro de asistencia no encontrado'
             });
         }
 
@@ -193,15 +80,12 @@ const updateAttendance = async (req, res) => {
 
 /**
  * Obtiene los registros de asistencia con filtros
- * Permite filtrar por usuario, curso, sesión, fecha y estado
+ * Permite filtrar por usuario, fecha y estado
  */
 const getAttendanceRecords = async (req, res) => {
     try {
         const {
             userId,
-            courseId,
-            sessionId,
-            date,
             startDate,
             endDate,
             status,
@@ -216,15 +100,6 @@ const getAttendanceRecords = async (req, res) => {
                 model: dbInstance.Usuario,
                 as: 'aprendiz',
                 attributes: ['ID', 'nombres', 'apellidos', 'email']
-            },
-            {
-                model: dbInstance.Sesion,
-                as: 'sesion',
-                attributes: ['ID', 'fecha', 'hora_inicio', 'hora_fin'],
-                include: [{
-                    model: dbInstance.Curso,
-                    attributes: ['ID', 'nombre_curso', 'ficha']
-                }]
             }
         ];
 
@@ -245,41 +120,20 @@ const getAttendanceRecords = async (req, res) => {
             includeClause[0].where = {
                 empresa_ID: empresaUser.empresa_ID
             };
-        } else if (user.accountType === 'Instructor') {
-            // Modificar la consulta para filtrar por instructor
-            includeClause[1].where = {
-                instructor_ID: user.id
-            };
         }
 
         // Aplicar filtros adicionales
         if (userId) whereClause.usuario_ID = userId;
-        if (sessionId) whereClause.sesion_ID = sessionId;
         if (status) whereClause.estado = status;
 
-        // Filtrar por fecha
-        if (date) {
-            const startOfDay = new Date(date);
-            startOfDay.setHours(0, 0, 0, 0);
-            const endOfDay = new Date(date);
-            endOfDay.setHours(23, 59, 59, 999);
-            whereClause.fecha = {
-                [Op.between]: [startOfDay, endOfDay]
-            };
-        } else if (startDate && endDate) {
+        // Filtrar por rango de fechas
+        if (startDate && endDate) {
             const start = new Date(startDate);
             start.setHours(0, 0, 0, 0);
             const end = new Date(endDate);
             end.setHours(23, 59, 59, 999);
             whereClause.fecha = {
                 [Op.between]: [start, end]
-            };
-        }
-
-        // Filtrar por curso si se proporciona
-        if (courseId) {
-            includeClause[1].include[0].where = {
-                ID: courseId
             };
         }
 
@@ -316,8 +170,6 @@ const getAttendanceRecords = async (req, res) => {
 
 module.exports = {
     setDb,
-    getScheduledSessions,
-    getSessionParticipants,
     registerAttendance,
     updateAttendance,
     getAttendanceRecords

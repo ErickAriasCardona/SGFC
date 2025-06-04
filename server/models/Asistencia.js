@@ -9,10 +9,6 @@ class Asistencia extends Model {
                     primaryKey: true,
                     autoIncrement: true
                 },
-                sesion_ID: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false
-                },
                 usuario_ID: {
                     type: DataTypes.INTEGER,
                     allowNull: false
@@ -49,13 +45,6 @@ class Asistencia extends Model {
     }
 
     static associate(models) {
-        // Relación con la sesión
-        this.belongsTo(models.Sesion, {
-            foreignKey: 'sesion_ID',
-            targetKey: 'ID',
-            as: 'sesion'
-        });
-
         // Relación con el usuario (aprendiz)
         this.belongsTo(models.Usuario, {
             foreignKey: 'usuario_ID',

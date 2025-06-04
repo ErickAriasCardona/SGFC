@@ -13,6 +13,6 @@ router.get('/', notificationController.getUserNotifications);
 router.put('/:notificationId/read', notificationController.markNotificationAsRead);
 
 // Enviar notificaciones de inasistencia manualmente (solo instructores)
-router.post('/sessions/:sessionId/absence-notifications', notificationController.sendManualAbsenceNotification);
+router.post('/attendance/:attendanceId/absence-notifications', notificationController.sendManualAbsenceNotification);
 
 module.exports = router; 

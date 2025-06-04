@@ -31,12 +31,8 @@ class Notificacion extends Model {
                     defaultValue: DataTypes.NOW
                 },
                 estado: {
-                    type: DataTypes.ENUM('enviada', 'fallida', 'pendiente'),
+                    type: DataTypes.ENUM('enviada', 'fallida', 'pendiente', 'leida'),
                     defaultValue: 'pendiente'
-                },
-                sesion_ID: {
-                    type: DataTypes.INTEGER,
-                    allowNull: true
                 },
                 curso_ID: {
                     type: DataTypes.INTEGER,
@@ -56,21 +52,12 @@ class Notificacion extends Model {
         // Relación con el usuario
         this.belongsTo(models.Usuario, {
             foreignKey: 'usuario_ID',
-            targetKey: 'ID',
             as: 'usuario'
-        });
-
-        // Relación con la sesión
-        this.belongsTo(models.Sesion, {
-            foreignKey: 'sesion_ID',
-            targetKey: 'ID',
-            as: 'sesion'
         });
 
         // Relación con el curso
         this.belongsTo(models.Curso, {
             foreignKey: 'curso_ID',
-            targetKey: 'ID',
             as: 'curso'
         });
     }

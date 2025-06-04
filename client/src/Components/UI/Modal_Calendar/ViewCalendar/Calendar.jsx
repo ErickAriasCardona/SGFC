@@ -4,15 +4,28 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 const times = [
-  '6:00', '8:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'
+  '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
+  '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
+  '20:00', '21:00', '22:00'
 ];
-const days = ['Lun', 'Mar', 'Mier', 'Jue', 'Vier', 'Sab'];
+
+const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const dayAbbreviations = {
+  'Lunes': 'Lun',
+  'Martes': 'Mar',
+  'Miércoles': 'Mié',
+  'Jueves': 'Jue',
+  'Viernes': 'Vie',
+  'Sábado': 'Sáb'
+};
 
 export const ViewCalendar = ({ calendarData, closeModal }) => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedSlots, setSelectedSlots] = useState(new Set());
-  const [daysWithSchedule, setDaysWithSchedule] = useState(new Set());
+  const [daysWithSchedule, setDaysWithSchedule] = useState([]);
+  const [horaInicio, setHoraInicio] = useState('');
+  const [horaFin, setHoraFin] = useState('');
 
   useEffect(() => {
     if (calendarData) {
@@ -20,68 +33,38 @@ export const ViewCalendar = ({ calendarData, closeModal }) => {
       setStartDate(calendarData.startDate || '');
       setEndDate(calendarData.endDate || '');
       
-      // Procesar los slots seleccionados
+      // Procesar los días de formación
       if (Array.isArray(calendarData.selectedSlots)) {
-        console.log('Slots seleccionados (raw):', calendarData.selectedSlots);
+        setDaysWithSchedule(calendarData.selectedSlots);
+      }
+
+      // Crear slots basados en los días y el rango de horas
+      if (calendarData.hora_inicio && calendarData.hora_fin) {
+        setHoraInicio(calendarData.hora_inicio);
+        setHoraFin(calendarData.hora_fin);
         
-        // Crear un Set con los días que tienen horarios
-        const daysSet = new Set();
-        const slotsSet = new Set();
-        
-        calendarData.selectedSlots.forEach(slot => {
-          console.log('Procesando slot:', slot);
-          const [day, time] = slot.split('-');
-          if (day && time) {
-            const normalizedDay = day.toLowerCase();
-            daysSet.add(normalizedDay);
-            slotsSet.add(slot);
-            console.log(`Agregado día: ${normalizedDay}, horario: ${time}`);
-          }
+        const newSlots = new Set();
+        calendarData.selectedSlots.forEach(dia => {
+          times.forEach(time => {
+            if (time >= calendarData.hora_inicio && time <= calendarData.hora_fin) {
+              newSlots.add(`${dia}-${time}`);
+            }
+          });
         });
-        
-        console.log('Set de días con horarios:', Array.from(daysSet));
-        console.log('Set de slots seleccionados:', Array.from(slotsSet));
-        
-        setDaysWithSchedule(daysSet);
-        setSelectedSlots(slotsSet);
-      } else {
-        console.warn('selectedSlots no es un array:', calendarData.selectedSlots);
+        setSelectedSlots(newSlots);
       }
     }
   }, [calendarData]);
 
-  // Función para verificar si un día tiene horarios seleccionados
-  const hasSelectedTime = (day) => {
-    const hasSchedule = daysWithSchedule.has(day.toLowerCase());
-    console.log(`Verificando día ${day}:`, hasSchedule, 'días disponibles:', Array.from(daysWithSchedule));
-    return hasSchedule;
-  };
-
-  // Función para verificar si un slot específico está seleccionado
-  const isSlotSelected = (day, time) => {
-    const slotKey = `${day}-${time}`;
-    const isSelected = selectedSlots.has(slotKey);
-    console.log(`Verificando slot ${slotKey}:`, isSelected, 'slots disponibles:', Array.from(selectedSlots));
-    return isSelected;
-  };
-
-  // Función para obtener los horarios de un día específico
-  const getDaySchedule = (day) => {
-    const daySlots = Array.from(selectedSlots).filter(slot => 
-      slot.toLowerCase().startsWith(day.toLowerCase())
-    );
-    return daySlots.map(slot => slot.split('-')[1]);
-  };
-
   return (
     <div className="modal-overlay">
-      <div className="modal-background">
-        <div className="modal-container calendar-modal centered-modal">
-          <button className="close-button" onClick={closeModal}>Cerrar</button>
-          <h2 className="modal-title">
-            Fechas y <span className="highlight">horarios</span>
-          </h2>
+      <div className="modal-content calendar-modal">
+        <div className="modal-header">
+          <h3>Horario del Curso</h3>
+          <button className="close-button" onClick={closeModal}>×</button>
+        </div>
 
+        <div className="calendar-wrapper">
           {/* Información de fechas */}
           <div className="date-inputs organized-date-inputs">
             <div className="date-display">
@@ -104,50 +87,45 @@ export const ViewCalendar = ({ calendarData, closeModal }) => {
             </div>
           </div>
 
+          {/* Horario del curso */}
+          <div className="schedule-section">
+            <h4>Horario:</h4>
+            <p>De {horaInicio} a {horaFin}</p>
+            
+            <h4>Días de formación:</h4>
+            <ul className="days-list">
+              {daysWithSchedule.map((dia, index) => (
+                <li key={index}>{dia}</li>
+              ))}
+            </ul>
+          </div>
+
           {/* Calendario de slots */}
-          <div className="calendar-container">          
+          <div className="calendar-container">
             <table className="calendar-table">
               <thead>
                 <tr>
                   <th></th>
-                  {days.map((day) => {
-                    const hasSchedule = hasSelectedTime(day);
-                    console.log(`Verificando día ${day}:`, hasSchedule);
-                    return (
-                      <th 
-                        key={day} 
-                        className={hasSchedule ? 'day-with-schedule' : ''}
-                      >
-                        {day}
-                        {hasSchedule && (
-                          <span 
-                            className="day-indicator" 
-                            title="Día con horarios seleccionados"
-                          >•</span>
-                        )}
-                      </th>
-                    );
-                  })}
+                  {days.map(day => (
+                    <th key={day}>{dayAbbreviations[day]}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {times.map((time) => (
+                {times.map(time => (
                   <tr key={time}>
                     <td className="time-cell">{time}</td>
-                    {days.map((day) => {
-                      const isSelected = isSlotSelected(day, time);
-                      const dayHasSchedule = hasSelectedTime(day);
+                    {days.map(day => {
+                      const slot = `${day}-${time}`;
+                      const isSelected = selectedSlots.has(slot);
+                      const isDayWithSchedule = daysWithSchedule.includes(day);
                       return (
                         <td
-                          key={`${day}-${time}`}
-                          className={`slot-cell ${dayHasSchedule ? 'day-with-schedule' : ''} ${isSelected ? 'selected' : ''}`}
-                        >
-                          {isSelected && (
-                            <div className="selected-slot">
-                              <span className="time-range">{time}</span>
-                            </div>
-                          )}
-                        </td>
+                          key={slot}
+                          className={`calendar-day 
+                            ${isDayWithSchedule ? 'training-day' : ''} 
+                            ${isSelected ? 'selected' : ''}`}
+                        />
                       );
                     })}
                   </tr>
