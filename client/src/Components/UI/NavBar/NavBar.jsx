@@ -49,7 +49,7 @@ export const NavBar = ({ children }) => {
 
   return (
     <div className="navBar">
-      <div className="logo">Logo</div>
+      <div className="logo">SGFC</div>
 
       <div className="container_options">{children}</div>
 
