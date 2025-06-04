@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './NavBar.css';
 import { NavLink, useNavigate } from 'react-router-dom';
 import settings from '../../../assets/Icons/settings.png';
@@ -6,9 +6,11 @@ import notifications from '../../../assets/Icons/notifications.png';
 import profile from '../../../assets/Icons/userGrey.png';
 import logout from '../../../assets/Icons/cerrar-sesion.png';
 import axiosInstance from '../../../config/axiosInstance';
+import noRead from '../../../assets/Icons/mensaje-no-leido.png';
+import ifRead from '../../../assets/Icons/mensaje-leido.png';
 
 // Importamos el hook del contexto de los modales
-import { useModal } from '../../../Context/ModalContext'; 
+import { useModal } from '../../../Context/ModalContext';
 
 export const NavBar = ({ children }) => {
   const navigate = useNavigate();
@@ -47,6 +49,22 @@ export const NavBar = ({ children }) => {
     setShowSignIn(true);
   };
 
+  // Estado y referencia para el menú de notificaciones
+  const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
+  const notificationsMenuRef = useRef(null);
+
+  // Cerrar el menú si se hace clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationsMenuRef.current && !notificationsMenuRef.current.contains(event.target)) {
+        setShowNotificationsMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+
   return (
     <div className="navBar">
       <div className="logo">SGFC</div>
@@ -61,13 +79,44 @@ export const NavBar = ({ children }) => {
 
       {isLoggedIn && (
         <div className="container_options_profile">
-          <button>
+          <button >
             <img src={settings} alt="Configuración" />
           </button>
 
-          <button>
-            <img src={notifications} alt="Notificaciones" />
-          </button>
+          <div className="notifications-menu" ref={notificationsMenuRef}>
+            <button className='btn-notifications' onClick={() => setShowNotificationsMenu((prev) => !prev)}>
+              <img className='img_notifications' src={notifications} alt="Notificaciones" />
+            </button>
+            {showNotificationsMenu && (
+              <div className="dropdown-notifications">
+                <div className="arrow-up" />
+
+                <div className="notification-item">
+                  <div className='container-img-notifications'>
+                    <img src={noRead} alt="" />
+                  </div>
+                  <div className='container-text-notifications'>
+                    <p className="notification-sender">Remitente</p>
+                    <span className="notification-affair">Asunto de la notificación</span>
+                  </div>
+
+                </div>
+
+                <div className="notification-item">
+                  <div className='container-img-notifications'>
+                    <img src={ifRead} alt="" />
+                  </div>
+                  <div className='container-text-notifications'>
+                    <p className="notification-sender">Remitente</p>
+                    <span className="notification-affair">Asunto de la notificación</span>
+                  </div>
+
+                </div>
+
+
+              </div>
+            )}
+          </div>
 
           <button id='btn_profile' onClick={handleProfileClick}>
             <img src={profile} alt="Perfil" />

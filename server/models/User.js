@@ -32,13 +32,13 @@ class Usuario extends Model {
         },
         // --- Campo para foto_perfil (cambiado a STRING) ---
         foto_perfil: {
-          type: DataTypes.STRING(500), // Usar STRING para la URL de la imagen de Google
+          type: DataTypes.TEXT, // Usar STRING para la URL de la imagen de Google
           allowNull: true,
         },
         verificacion_email: {
           type: DataTypes.BOOLEAN,
           defaultValue: false,
-        },
+        }, 
         token: {
           type: DataTypes.STRING(255),
           allowNull: true,
