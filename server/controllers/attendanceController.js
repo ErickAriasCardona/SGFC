@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
+const { sendNotification } = require('../services/notificationService');
 let dbInstance;
 
 // Función para inyectar la instancia de la base de datos
@@ -16,12 +17,58 @@ const registerAttendance = async (req, res) => {
         const { usuario_ID, estado } = req.body;
         const registrador_ID = req.user.id;
 
-        // Crear la asistencia
+        // Obtener información del curso
+        const curso = await dbInstance.Curso.findByPk(courseId);
+        if (!curso) {
+            return res.status(404).json({
+                success: false,
+                message: 'Curso no encontrado'
+            });
+        }
+
+        // Obtener información del aprendiz
+        const aprendiz = await dbInstance.Usuario.findByPk(usuario_ID);
+        if (!aprendiz) {
+            return res.status(404).json({
+                success: false,
+                message: 'Aprendiz no encontrado'
+            });
+        }
+
+        // Crear la asistencia con la fecha actual
         const asistencia = await dbInstance.Asistencia.create({
             usuario_ID,
             estado,
-            registrado_por: registrador_ID
+            registrado_por: registrador_ID,
+            fecha: new Date(),
+            curso_ID: courseId
         });
+
+        // Si el estado es 'Ausente', enviar notificación
+        if (estado === 'Ausente') {
+            const title = `Inasistencia registrada - ${curso.nombre_curso}`;
+            const message = `
+                <h2>Notificación de Inasistencia</h2>
+                <p>Estimado(a) ${aprendiz.nombres} ${aprendiz.apellidos},</p>
+                <p>Le informamos que se ha registrado una inasistencia en el curso:</p>
+                <ul>
+                    <li><strong>Curso:</strong> ${curso.nombre_curso}</li>
+                    <li><strong>Ficha:</strong> ${curso.ficha}</li>
+                    <li><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</li>
+                </ul>
+                <p>Por favor, asegúrese de asistir a las próximas sesiones programadas.</p>
+                <p>Saludos cordiales,<br>SGFC</p>
+            `;
+
+            await sendNotification(
+                aprendiz.ID,
+                'inasistencia',
+                title,
+                message,
+                null,
+                curso.ID
+            );
+        }
 
         res.status(201).json({
             success: true,

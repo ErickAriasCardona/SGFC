@@ -79,11 +79,12 @@ async function startServer() {
     const attendanceController = require('./controllers/attendanceController');
     const cursoController = require('./controllers/cursoController');
     const notificationService = require('./services/notificationService');
+    const notificationController = require('./controllers/notificationController');
 
-  
     attendanceController.setDb(db);
     cursoController.setDb(db);
     notificationService.setDb(db);
+    notificationController.setDb(db);
 
     // Crear datos por defecto
     await db.Departamento.createDefaultDeparment();

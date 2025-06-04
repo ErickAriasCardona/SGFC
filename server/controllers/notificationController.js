@@ -1,5 +1,10 @@
-const { Notificacion, Usuario, Sesion, Curso, Asistencia } = require('../models');
 const { sendNotification, sendAbsenceNotifications } = require('../services/notificationService');
+let dbInstance;
+
+// Función para inyectar la instancia de la base de datos
+const setDb = (databaseInstance) => {
+    dbInstance = databaseInstance;
+};
 
 /**
  * Obtiene las notificaciones de un usuario
@@ -16,11 +21,11 @@ const getUserNotifications = async (req, res) => {
 
         const offset = (page - 1) * limit;
 
-        const { count, rows: notifications } = await Notificacion.findAndCountAll({
+        const { count, rows: notifications } = await dbInstance.Notificacion.findAndCountAll({
             where: whereClause,
             include: [
                 {
-                    model: Usuario,
+                    model: dbInstance.Usuario,
                     as: 'usuario',
                     attributes: ['ID', 'nombres', 'apellidos', 'email']
                 }
@@ -57,7 +62,7 @@ const markNotificationAsRead = async (req, res) => {
         const { notificationId } = req.params;
         const userId = req.user.id;
 
-        const notification = await Notificacion.findOne({
+        const notification = await dbInstance.Notificacion.findOne({
             where: {
                 ID: notificationId,
                 usuario_ID: userId
@@ -95,14 +100,14 @@ const sendManualAbsenceNotification = async (req, res) => {
         const instructorId = req.user.id;
 
         // Obtener el registro de asistencia
-        const attendance = await Asistencia.findOne({
+        const attendance = await dbInstance.Asistencia.findOne({
             where: {
                 ID: attendanceId,
                 estado: 'Ausente'
             },
             include: [
                 {
-                    model: Usuario,
+                    model: dbInstance.Usuario,
                     as: 'aprendiz',
                     attributes: ['ID', 'nombres', 'apellidos', 'email']
                 }
@@ -146,6 +151,7 @@ const sendManualAbsenceNotification = async (req, res) => {
 };
 
 module.exports = {
+    setDb,
     getUserNotifications,
     markNotificationAsRead,
     sendManualAbsenceNotification

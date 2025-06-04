@@ -265,6 +265,34 @@ const sendCourseCreatedEmail = (emails, nombre_curso, courseLink) => {
     })
 }
 
+// Función genérica para enviar correos
+const sendEmail = (email, subject, html) => {
+    const mailOptions = {
+        from: "eariassena19@gmail.com",
+        to: email,
+        subject: subject,
+        html: html
+    };
 
-// Exportar ambas funciones
-module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirmationEmail, sendCourseCreatedEmail, sendCursoUpdatedNotification };
+    return new Promise((resolve, reject) => {
+        transporter.sendMail(mailOptions, (err, info) => {
+            if (err) {
+                console.error("Error al enviar el correo:", err);
+                reject(err);
+            } else {
+                console.log("Correo enviado:", info.response);
+                resolve(info);
+            }
+        });
+    });
+};
+
+// Exportar todas las funciones
+module.exports = { 
+    sendVerificationEmail, 
+    sendPasswordResetEmail, 
+    sendPasswordChangeConfirmationEmail, 
+    sendCourseCreatedEmail, 
+    sendCursoUpdatedNotification,
+    sendEmail 
+};

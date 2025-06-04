@@ -15,14 +15,14 @@ const setDb = (databaseInstance) => {
  */
 const sendNotification = async (userId, type, title, message, sessionId = null, courseId = null) => {
     try {
-        // Obtener el usuario
-        const user = await Usuario.findByPk(userId);
+        // Obtener el usuario usando dbInstance
+        const user = await dbInstance.Usuario.findByPk(userId);
         if (!user) {
             throw new Error('Usuario no encontrado');
         }
 
-        // Crear el registro de notificación
-        const notification = await Notificacion.create({
+        // Crear el registro de notificación usando dbInstance
+        const notification = await dbInstance.Notificacion.create({
             usuario_ID: userId,
             tipo: type,
             titulo: title,
