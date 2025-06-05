@@ -238,15 +238,9 @@ export const MonthlyCalendar = ({ selectedDate, onDateSelect, startDate, endDate
 
   return (
     <div className="simple-calendar-container">
-      <div className="simple-calendar-header">
-        {/* <button className="month-nav-button" onClick={() => handleMonthChange(-1)}>
-          ←
-        </button> */}
-        <h2 className="month-title">{format(currentDate, "MMMM", { locale: es }).toUpperCase()}</h2>
-        {/* <button className="month-nav-button" onClick={() => handleMonthChange(1)}>
-          →
-        </button> */}
-      </div>
+
+      <div className="month-title">{format(currentDate, "MMMM", { locale: es }).toUpperCase()}</div>
+
 
       <div className="simple-calendar-weekdays">
         <div className="weekday">LUN</div>

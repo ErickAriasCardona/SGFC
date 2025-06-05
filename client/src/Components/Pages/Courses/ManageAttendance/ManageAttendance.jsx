@@ -181,11 +181,11 @@ export const ManageAttendance = () => {
                         <img src="/src/assets/Ilustrations/Frame01.svg" alt="Ilustración de gestión de asistencia" />
                     </div>
 
-                    <div className="">
+                    <div className="text-container-manageAttendance">
                         Por favor seleccione el día en el que quiere gestionar asistencias del curso
                     </div>
 
-                    <button className="back-button" onClick={() => navigate(`/Cursos/${id}`)}>
+                    <button className="back-button-manageAttendance" onClick={() => navigate(`/Cursos/${id}`)}>
                         Volver
                     </button>
                 </div>

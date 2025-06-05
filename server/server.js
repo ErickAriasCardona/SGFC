@@ -14,9 +14,6 @@ const cursoRoutes = require("./routes/cursoRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 
-// Importar servicios
-const { scheduleAbsenceNotifications } = require('./services/notificationService');
-
 // libreria para programar tareas
 const cron = require('node-cron');
 const { cleanExpiredTokens } = require('./controllers/userController');
@@ -30,19 +27,6 @@ cron.schedule('0 * * * *', async () => {
   }
 }, {
   timezone: "America/Bogota" // Usa tu zona horaria real
-});
-
-// Ejecuta el envío de notificaciones de inasistencia cada día a las 8:00 PM
-cron.schedule('0 20 * * *', async () => {
-  try {
-    console.log('🕒 Iniciando envío de notificaciones de inasistencia...');
-    const result = await scheduleAbsenceNotifications();
-    console.log(`✅ Notificaciones enviadas: ${result.sessionsProcessed} sesiones procesadas`);
-  } catch (error) {
-    console.error('❌ Error al enviar notificaciones de inasistencia:', error);
-  }
-}, {
-  timezone: "America/Bogota"
 });
 
 const app = express();

@@ -17,14 +17,14 @@ export const MisCursos = () => {
   const scrollRef = useRef(null);
   const navigate = useNavigate();
 
-  const userSession = JSON.parse(localStorage.getItem('userSession')) || 
-                     JSON.parse(sessionStorage.getItem('userSession'));
+  const userSession = JSON.parse(localStorage.getItem('userSession')) ||
+    JSON.parse(sessionStorage.getItem('userSession'));
 
   useEffect(() => {
     const fetchCursos = async () => {
       try {
         let response;
-        
+
         // Verificar que tenemos un ID válido antes de hacer la petición
         if (!userSession?.ID && !userSession?.id) {
           setErrorMessage("No se pudo obtener el ID del usuario");
@@ -79,8 +79,8 @@ export const MisCursos = () => {
   const handleSearch = (e) => {
     const searchValue = e.target.value.toLowerCase();
     setSearchTerm(searchValue);
-    
-    const filtered = cursos.filter(curso => 
+
+    const filtered = cursos.filter(curso =>
       (curso.ficha || '').toLowerCase().includes(searchValue) ||
       (curso.nombre_curso || '').toLowerCase().includes(searchValue)
     );
@@ -112,7 +112,7 @@ export const MisCursos = () => {
     const gap = 24; // 1.5rem en píxeles
     const scrollAmount = (cardWidth + gap) * 3; // Scroll 3 cartas a la vez
 
-    const newPosition = direction === 'left' 
+    const newPosition = direction === 'left'
       ? Math.max(0, currentPosition - scrollAmount)
       : Math.min(maxScroll, currentPosition + scrollAmount);
 
@@ -186,20 +186,17 @@ export const MisCursos = () => {
 
           {errorMessage && <p className="error-message">{errorMessage}</p>}
 
-          <div className='lineMedium'></div>
-
-          <div className="carousel-container">
-            <h2 className="carousel-title">Resultados ({filteredCursos.length})</h2>
-            <div className="carousel-wrapper">
+          <div className="carousel-container-misCursos">
+            <div className="carousel-wrapper-misCursos">
               {currentPosition > 0 && (
-                <button 
-                  className="carousel-arrow left" 
+                <button
+                  className="carousel-arrow-misCursos left"
                   onClick={() => scroll('left')}
                 >
                   <img src={arrowLeft} alt="Flecha izquierda" />
                 </button>
               )}
-              <div className="carousel-track" ref={scrollRef}>
+              <div className="carousel-track-misCursos" ref={scrollRef}>
                 {filteredCursos.map((curso) => {
                   // Asegurar que cada curso tenga un ID único
                   const cursoId = curso.ID || curso.id;
@@ -207,10 +204,10 @@ export const MisCursos = () => {
                     console.warn('Curso sin ID:', curso);
                     return null;
                   }
-                  
+
                   return (
                     <div
-                      className="carousel-card"
+                      className="carousel-card-misCursos"
                       key={`curso-${cursoId}`}
                       onClick={() => handleCardClick(cursoId)}
                     >
@@ -218,24 +215,27 @@ export const MisCursos = () => {
                         src={`http://localhost:3001${curso.imagen}` || "ruta/imagen/por/defecto.jpg"}
                         alt={curso.nombre_curso || 'Curso sin nombre'}
                       />
-                      <div className="card-text">
+                      <div className="card-text-misCursos">
                         <h4>{curso.nombre_curso || 'Sin nombre'}</h4>
-                        <p className="ficha">Ficha: {curso.ficha || 'No disponible'}</p>
-                        <p className="description">{curso.descripcion || 'Sin descripción'}</p>
+                        <p className="ficha-misCursos">Ficha: {curso.ficha || 'No disponible'}</p>
+                        <p className="description-misCursos">{curso.descripcion || 'Sin descripción'}</p>
                       </div>
                     </div>
                   );
                 })}
               </div>
               {currentPosition < maxScroll && (
-                <button 
-                  className="carousel-arrow right" 
+                <button
+                  className="carousel-arrow-misCursos right"
                   onClick={() => scroll('right')}
                 >
                   <img src={arrowRight} alt="Flecha derecha" />
                 </button>
               )}
             </div>
+          </div>
+          <div className="illustration-container-misCursos">
+            <img src="/src/assets/Ilustrations/Frame01.svg" alt="Ilustración de gestión de asistencia" />
           </div>
         </div>
       </Main>

@@ -508,7 +508,6 @@
 
 .calendar-day.selected {
   background: rgba(0, 132, 61, 0.4);
-  border: 2px solid #00ff00;
   box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
 }
 
