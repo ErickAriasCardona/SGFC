@@ -60,7 +60,8 @@ export const ConsultCourses = () => {
     }
 
     try {
-      const response = await axiosInstance.get(`/cursos/${searchTerm}`); // Solicitud al endpoint de búsqueda por ID
+      const response = await axiosInstance.get(`/searchCurso?input=${searchTerm}`); // Solicitud al endpoint de búsqueda por ID
+      console.log(searchTerm)
       setCursos([response.data]); // Mostrar solo el curso encontrado
       setErrorMessage(""); // Limpiar el mensaje de error
     } catch (error) {

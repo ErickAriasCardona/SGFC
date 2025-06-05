@@ -299,43 +299,50 @@ const getAllCursos = async (req, res) => {
   }
 };
 
-// Obtener un curso por ID
-const getCursoById = async (req, res) => {
+const getCursoByNameOrFicha = async (req, res) => {
   try {
-    const { id } = req.params; // Obtener el ID del curso desde los parámetros de la URL
-    const curso = await Curso.findByPk(id); // Buscar el curso por ID
+    const { input } = req.query;
 
-    if (!curso) {
-      return res.status(404).json({ message: "Curso no encontrado." });
+    let curso;
+
+    if (!input) {
+      return res.status(400).json({ message: "El campo 'input' es obligatorio." });
+    }
+
+    if(isNaN(Number(input))){
+      let nombre_curso = input;
+      curso = await Curso.findAll({ where: { nombre_curso }})
+    }else{
+      let ficha = input;
+      curso = await Curso.findAll({ where: { ficha }})
+    }
+
+    if (!curso || curso.length === 0) {
+      return res.status(404).json({ message: "Curso no encontrado" });
     }
 
     res.status(200).json(curso);
+
+    // const { nombre_curso, ficha } = req.body;
+    // console.log(req.body)
+    // let curso;
+
+    // if (nombre_curso) {
+    //   curso = await Curso.findAll({ where: { nombre_curso } });
+    // } else if (ficha) {
+    //   curso = await Curso.findAll({ where: { ficha } });
+    // }
+
+    // if (!curso || curso.length === 0) {
+    //   return res.status(404).json({ message: "Curso no encontrado" });
+    // }
+
+    // res.status(200).json(curso);
   } catch (error) {
-    console.error("Error al obtener el curso:", error);
+    console.error("Error al obtener curso: ", error);
     res.status(500).json({ message: "Error al obtener el curso." });
   }
-};
-
-//obtener curso por ficha
-const getCursoByFicha = async (req, res) => {
-  try {
-    const { ficha } = req.params; // Obtener la ficha del curso desde los parámetros de la URL
-    console.log("Ficha recibida:", ficha); // Log para verificar el valor recibido
-
-    // Buscar el curso por ficha
-    const curso = await Curso.findOne({ where: { ficha } });
-    console.log("Resultado de la consulta:", curso); // Log para verificar el resultado de la consulta
-
-    if (!curso) {
-      return res.status(404).json({ message: "Curso no encontrado." });
-    }
-
-    res.status(200).json(curso);
-  } catch (error) {
-    console.error("Error al obtener el curso por ficha:", error);
-    res.status(500).json({ message: "Error al obtener el curso." });
-  }
-};
+}
 
 // Nuevo controlador para transformacion
 const uploadImagesBase64 = async (req, res) => {
@@ -369,8 +376,7 @@ module.exports = {
   createCurso,
   updateCurso,
   getAllCursos,
-  getCursoById,
-  getCursoByFicha,
+  getCursoByNameOrFicha,
   asignarCursoAInstructor,
   obtenerCursosAsignadosAInstructor,
   uploadImagesBase64
