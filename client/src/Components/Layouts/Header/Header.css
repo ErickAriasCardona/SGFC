@@ -110,3 +110,9 @@
     border-right: 10px solid transparent;
     border-bottom: 10px solid #007736;
 }
+
+@media (max-width: 768px){
+    .header{
+        width: 412px;
+    }
+}

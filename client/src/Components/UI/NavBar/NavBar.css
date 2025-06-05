@@ -1,31 +1,24 @@
-*{
-    margin: 0;
-    padding: 0;
-    width: 0;
-    height: 0;
-}
-
-.navBar{
+.navBar {
     width: 100%;
     height: 4.5rem;
     background-color: rgba(176, 176, 176, 0.13);
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     border-radius: 0 0 8rem 8rem;
     align-items: center;
-    gap: 3rem;
+    gap: 6rem;
     font-size: 16px;
 
 }
 
-.logo{
-    width:6rem;
+.logo {
+    width: 6rem;
     height: auto;
     background-color: #1a1a1a;
     border-radius: 15px;
     text-align: center;
     display: flex;
-    justify-content: center;    
+    justify-content: center;
     align-items: center;
     color: #00843D;
     padding: 0.5rem;
@@ -34,14 +27,15 @@
 }
 
 
-.container_options, .container_options_profile{
-    width:auto;
+.container_options,
+.container_options_profile {
+    width: auto;
     height: auto;
     background-color: #1a1a1a;
     border-radius: 20px;
     text-align: center;
     display: flex;
-    justify-content: space-evenly;    
+    justify-content: space-evenly;
     align-items: center;
     color: #ffff;
     padding: 0.8rem 1rem;
@@ -49,7 +43,7 @@
 }
 
 
-.button_signIn{
+.button_signIn {
     width: 10rem;
     height: auto;
     background-color: #00843D;
@@ -62,14 +56,16 @@
     padding: 1rem;
 }
 
-.container_options_profile{
+.container_options_profile {
     padding: 0.8rem;
     gap: 1rem;
 
 }
-.container_options_profile>button, .btn-notifications {
+
+.container_options_profile>button,
+.btn-notifications {
     width: 2rem;
-    height:2rem;
+    height: 2rem;
     border-style: none;
     background-color: transparent;
     border: 2px solid #b0b0b0;
@@ -80,21 +76,22 @@
     padding: 5px;
 }
 
-.notifications-menu{
+.notifications-menu {
     position: relative;
     width: auto;
     height: auto;
 }
 
-.container_options_profile>button>img, .img_notifications{
+.container_options_profile>button>img,
+.img_notifications {
     width: 100%;
     height: auto;
     padding: 0.5rem;
 }
 
-#btn_profile{
+#btn_profile {
     width: 2rem;
-    height:2rem;
+    height: 2rem;
     border-style: none;
     background-color: transparent;
     display: flex;
@@ -118,16 +115,16 @@
     height: auto;
 }
 
-.dropdown-notifications>.notification-item{
+.dropdown-notifications>.notification-item {
     width: auto;
     height: auto;
     display: flex;
     justify-content: center;
     align-items: center;
-    
+
 }
 
-.container-img-notifications{
+.container-img-notifications {
     width: 2rem;
     height: 2rem;
     background-color: #b0b0b0;
@@ -135,17 +132,18 @@
     justify-content: center;
     align-items: center;
     border-radius: 50%;
-    
-    
-    
+
+
+
 }
+
 .container-img-notifications>img {
     width: 60%;
     height: auto;
     object-fit: cover;
 }
 
-.container-text-notifications{
+.container-text-notifications {
     width: auto;
     height: auto;
     display: flex;
@@ -154,7 +152,7 @@
     padding: 0.5rem 0.5rem;
 }
 
-.container-text-notifications>p{
+.container-text-notifications>p {
     width: auto;
     height: auto;
     font-size: 14px;
@@ -163,8 +161,79 @@
     font-weight: 600;
 }
 
-.notification-affair{
+.notification-affair {
     width: 100%;
     height: auto;
     font-size: 12px;
+}
+
+.hamburger-btn {
+    width: auto;
+    height: auto;
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    margin-left: 2rem;
+}
+
+.mobile-menu {
+    display: none;
+    flex-direction: column;
+    margin-top: 10px;
+    width: auto;
+    height: auto;
+    position: absolute;
+    top: 3.9rem;
+    right: 0;
+    background-color: #1a1a1a;
+}
+
+.mobile-menu.open {
+    display: flex;
+    width: auto;
+    height: auto;
+}
+
+.desktop-options {
+    display: flex;
+    gap: 4rem;
+    width: auto;
+    height: auto;
+}
+
+/* Mostrar el botón hamburguesa y ocultar los ítems de escritorio en móviles */
+@media (max-width: 768px) {
+    .hamburger-btn {
+        display: flex;
+    }
+
+    .desktop-options {
+        display: none;
+
+    }
+
+    .container_options,
+    .container_options_profile {
+        flex-direction: column;
+        background-color: transparent;
+    }
+
+    .navBar {
+        border-radius: 0;
+    }
+
+}
+
+
+/* En escritorio ocultamos el menú móvil y mostramos las opciones normales */
+@media (min-width: 769px) {
+    .mobile-menu {
+        display: none !important;
+    }
+
+    .desktop-options {
+        display: flex;
+    }
 }
