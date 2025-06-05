@@ -70,7 +70,11 @@ class Usuario extends Model {
         resetPasswordExpires: {
           type: DataTypes.DATE,
           allowNull: true
-        }
+        },
+        document_identity: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },  
       },
       {
         sequelize,
@@ -128,3 +132,4 @@ class Usuario extends Model {
 }
 
 module.exports = Usuario;
+

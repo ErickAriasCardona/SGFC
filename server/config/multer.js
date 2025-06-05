@@ -42,7 +42,6 @@ const fileFilter = (req, file, cb) => {
     }
 };
 */
-
 const fileFilter = (req, file, cb) => {
     if (file.fieldname === 'foto_perfil') {
         // Solo las imagenes
@@ -52,12 +51,12 @@ const fileFilter = (req, file, cb) => {
         } else {
             cb(new Error('Solo se aceptan imágenes (jpeg, jpg, png) para foto_perfil.'));
         }
-    } else if (file,fieldname === 'document_pdf') {
+    } else if (file.fieldname === 'document_pdf') {
         // Solo los pdf
         if (file.mimetype === 'application/pdf') {
             cb(null, true);
         } else {
-            cb(new Error('Solo se acepta PDF para documento_pdf.'));
+            cb(new Error('Solo se acepta PDF para document_pdf.'));
         }
     } else {
         cb(new Error('Campo de archivo no permitido.'));

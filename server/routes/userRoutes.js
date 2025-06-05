@@ -1,12 +1,30 @@
 const express = require("express");
-const { registerUser, verifyEmail, loginUser,requestPasswordReset,resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile,updateProfilePicture,createInstructor, createGestor,logoutUser } = require("../controllers/userController");
+const { 
+  registerUser, 
+  verifyEmail, 
+  loginUser,
+  requestPasswordReset,
+  resetPassword, 
+  getAllUsers, 
+  getUserProfile, 
+  getAprendices, 
+  getEmpresas, 
+  getInstructores, 
+  getGestores, 
+  updateUserProfile,
+  updateProfilePicture,
+  createInstructor, 
+  createGestor,
+  logoutUser,
+  convertPdfToImages,
+} = require("../controllers/userController");
 const router = express.Router();
 const upload = require("../config/multer"); // Importar configuración de multer
 
 router.post("/createUser", 
   upload.fields([
     { name: 'foto_perfil', maxCount: 1},
-    { name: 'documento_pdf', maxCount: 1}
+    { name: 'document_pdf', maxCount: 1}
   ]), 
   registerUser); // Ruta para registrar usuario
 router.get("/verificarCorreo", verifyEmail); // Ruta para verificar correo
@@ -24,6 +42,7 @@ router.put('/perfil/actualizarFoto/:id', updateProfilePicture); // Actualizar fo
 router.post('/crearInstructor', upload.single('foto_perfil'), createInstructor);
 router.post('/crearGestor', upload.single('foto_perfil'), createGestor);
 router.post("/logout", logoutUser);
+router.post('/usuarios/:userId/convertir-pdf', convertPdfToImages);
 
 
 router.get("/", (req, res) => {

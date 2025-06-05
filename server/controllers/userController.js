@@ -4,6 +4,10 @@ const { sendVerificationEmail, sendPasswordResetEmail } = require("../services/e
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
+const axios = require('axios');
+const FormData = require('form-data');
+const path = require('path');
+const fs = require('fs');
 
 // Registrar usuario
 const Empresa = require('../models/empresa'); // Importar el modelo Empresa
@@ -53,6 +57,20 @@ const registerUser = async (req, res) => {
             foto_perfil = `/base64storage/${uniqueName}`;
         }
 
+        // Procesar Documento si se sube 
+        const fs = require('fs');
+        const path = require('path');
+        
+        const pdfFile = req.files['document_pdf'] ? req.files['document_pdf'][0] : null;
+        let pdfPath = null;
+
+        if (pdfFile) {
+            const uniqueName = `documento_${Date.now()}${path.extname(pdfFile.originalname)}`;
+            const savePath = path.join(__dirname, '../uploads', uniqueName);
+            fs.writeFileSync(savePath, pdfFile.buffer);
+            pdfPath = `/uploads/${uniqueName}` 
+        };
+
         // Crear nuevo usuario
         const newUser = await User.create({
             email,
@@ -65,12 +83,13 @@ const registerUser = async (req, res) => {
             titulo_profesional: titulo_profesional || null,
             verificacion_email: false,
             token,
-            foto_perfil: image, // Guardar la ruta del archivo base64 si existe
+            document_identity: pdfPath,
+            foto_perfil, // Guardar la ruta del archivo base64 si existe
         });
 
         // Si el tipo de cuenta es Empresa, crear un registro en la tabla Empresa y relacionarlo con el usuario
-        if (accountType === 'Empresa') {
-            const nuevaEmpresa = await Empresa.create({
+            if (accountType === 'Empresa') {
+                const nuevaEmpresa = await Empresa.create({
                 NIT: null, // Inicialmente vacío
                 email_empresa: null, // Usar el email del usuario como email de la empresa
                 nombre_empresa: null, // Inicialmente vacío
@@ -574,6 +593,48 @@ const updateUserProfile = async (req, res) => {
     }
 };
 
+// Convertir Documento de identidad a Imagen (Creee el controlador para la API aun estoy en eso....!!)
+
+        const convertPdfToImages = async (req, res) => {
+            try {
+                const { userId } = req.params;
+                const user = await User.findByPk(userId);  
+                if (!user || !user.document_identity) {
+                    return res.status(404).json({ message: 'Usuario o documento no encontrado.' });
+                }
+                
+            const absolutePath = path.join(__dirname, '..', user.document_identity);
+            
+            if (!fs.existsSync(absolutePath)) {
+                return res.status(404).json({ message: 'Archivo PDF no encontrado en el servidor.' })
+            }
+
+            const form = new FormData();
+            form.append('file', fs.createReadStream(absolutePath));
+
+            const headers = {
+                ...form.getHeaders(),
+                'x-client-id': 'c38d4fb0-f2ad-4d0f-97ec-00e8d6b09b42',
+                'x-api-key': '57a90e6bcd7801b56e5d8aa6c30a4aac'
+            };
+
+            const response = await axios.post(
+                'https://api.groupdocs.cloud/v2.0/conversion',
+                form,
+                { headers }
+            );
+
+            const imagenes = response.data.images;
+
+            res.status(200).json({ message: 'Conversion Exitosa', imagenes });
+            
+        } catch (error) {
+            console.error('Error al convertir PDF a imagenes:', error.response?.data || error.message);
+            res.status(500).json({ message: 'Error al convertir PDF a imagenes', error: error.message });
+            }
+        };
+
+
 // Actualizar foto de perfil
 const updateProfilePicture = async (req, res) => {
     try {
@@ -757,4 +818,22 @@ const createGestor = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor, logoutUser };
+module.exports = { 
+    registerUser,
+    verifyEmail, 
+    loginUser, 
+    requestPasswordReset, 
+    resetPassword, 
+    getAllUsers, 
+    getUserProfile, 
+    getAprendices, 
+    getEmpresas, 
+    getInstructores, 
+    getGestores, 
+    updateUserProfile, 
+    updateProfilePicture, 
+    createInstructor, 
+    createGestor, 
+    convertPdfToImages,
+    logoutUser,
+};
