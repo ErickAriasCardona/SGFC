@@ -36,17 +36,27 @@
 }
 
 
-.startOption.active {
+.startOption.active,
+.whoWeAre.active,
+.courses.active,
+.gestiones.active,
+.empresas.active,
+.empleados.active {
     background-color: #00843D;
 }
 
-.courses-menu , .gestiones-menu, .empleados-menu {
+.courses-menu,
+.gestiones-menu,
+.empleados-menu {
     position: relative;
     width: auto;
     height: auto;
 }
 
-.courses,.gestiones, .empresas, .empleados {
+.courses,
+.gestiones,
+.empresas,
+.empleados {
     color: white;
     border-radius: 2rem;
     background-color: transparent;
@@ -61,13 +71,16 @@
 
 
 .courses:hover,
-.courses.active, .gestiones:hover,
+.courses.active,
+.gestiones:hover,
 .gestiones.active {
     background-color: #006c30;
     width: auto;
 }
 
-.dropdown-courses, .dropdown-gestiones, .dropdown-empleados {
+.dropdown-courses,
+.dropdown-gestiones,
+.dropdown-empleados {
     position: absolute;
     top: 2.5rem;
     left: 0;
@@ -82,7 +95,9 @@
     height: auto;
 }
 
-.dropdown-courses button, .dropdown-gestiones button, .dropdown-empleados button {
+.dropdown-courses button,
+.dropdown-gestiones button,
+.dropdown-empleados button {
     background: transparent;
     border: none;
     color: white;
@@ -95,7 +110,9 @@
     height: auto;
 }
 
-.dropdown-courses button:hover, .dropdown-gestiones button:hover, .dropdown-empleados button:hover {
+.dropdown-courses button:hover,
+.dropdown-gestiones button:hover,
+.dropdown-empleados button:hover {
     background-color: #005c2e;
     border-radius: 0.5rem;
 }
@@ -111,8 +128,19 @@
     border-bottom: 10px solid #007736;
 }
 
-@media (max-width: 768px){
-    .header{
+@media (max-width: 768px) {
+    .header {
         width: 412px;
     }
+
+    .startOption.active,
+    .whoWeAre.active,
+    .courses.active,
+    .gestiones.active,
+    .empresas.active,
+    .empleados.active {
+        background-color: #1a1a1a;
+    }
+
+
 }

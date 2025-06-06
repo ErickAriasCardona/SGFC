@@ -78,45 +78,24 @@ export const NavBar = ({ children }) => {
 
         {isLoggedIn && (
           <div className="container_options_profile">
-            <button>
-              <img src={settings} alt="Configuración" />
+            <button className="mobile-profile-btn">
+              <span className="mobile-label">Configuración</span>
+              <img className="desktop-icon" src={settings} alt="Configuración" />
             </button>
 
-            <div className="notifications-menu" ref={notificationsMenuRef}>
-              <button className='btn-notifications' onClick={() => setShowNotificationsMenu((prev) => !prev)}>
-                <img className='img_notifications' src={notifications} alt="Notificaciones" />
-              </button>
-              {showNotificationsMenu && (
-                <div className="dropdown-notifications">
-                  <div className="arrow-up" />
-                  <div className="notification-item">
-                    <div className='container-img-notifications'>
-                      <img src={noRead} alt="" />
-                    </div>
-                    <div className='container-text-notifications'>
-                      <p className="notification-sender">Remitente</p>
-                      <span className="notification-affair">Asunto de la notificación</span>
-                    </div>
-                  </div>
-                  <div className="notification-item">
-                    <div className='container-img-notifications'>
-                      <img src={ifRead} alt="" />
-                    </div>
-                    <div className='container-text-notifications'>
-                      <p className="notification-sender">Remitente</p>
-                      <span className="notification-affair">Asunto de la notificación</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <button id='btn_profile' onClick={handleProfileClick}>
-              <img src={profile} alt="Perfil" />
+            <button className="mobile-profile-btn" onClick={() => setShowNotificationsMenu((prev) => !prev)}>
+              <span className="mobile-label">Notificaciones</span>
+              <img className="desktop-icon" src={notifications} alt="Notificaciones" />
             </button>
 
-            <button onClick={handleLogout}>
-              <img src={logout} alt="Cerrar sesión" />
+            <button className="mobile-profile-btn" id='btn_profile' onClick={handleProfileClick}>
+              <span className="mobile-label">Perfil</span>
+              <img className="desktop-icon" src={profile} alt="Perfil" />
+            </button>
+
+            <button className="mobile-profile-btn" onClick={handleLogout}>
+              <span className="mobile-label">Cerrar sesión</span>
+              <img className="desktop-icon" src={logout} alt="Cerrar sesión" />
             </button>
           </div>
         )}

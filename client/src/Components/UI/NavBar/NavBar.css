@@ -1,7 +1,7 @@
 .navBar {
     width: 100%;
     height: 4.5rem;
-    background-color: rgba(176, 176, 176, 0.13);
+    background-color: #b0b0b021;
     display: flex;
     justify-content: center;
     border-radius: 0 0 8rem 8rem;
@@ -187,7 +187,7 @@
     position: absolute;
     top: 3.9rem;
     right: 0;
-    background-color: #1a1a1a;
+    background-color: #00843ee7;
 }
 
 .mobile-menu.open {
@@ -202,6 +202,17 @@
     width: auto;
     height: auto;
 }
+
+.mobile-label {
+  display: none;
+}
+
+.desktop-icon {
+  display: inline;
+  width: 2rem;
+  height: 2rem;
+}
+
 
 /* Mostrar el botón hamburguesa y ocultar los ítems de escritorio en móviles */
 @media (max-width: 768px) {
@@ -223,6 +234,28 @@
     .navBar {
         border-radius: 0;
     }
+    .desktop-icon {
+    display: none !important;
+  }
+  .mobile-label {
+    display: inline !important;
+    font-size: 1.1rem;
+    color: #fff;
+    margin-right: 0.5rem;
+  }
+  .mobile-profile-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.1rem;
+    padding: 0.7rem 0;
+    text-align: left;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
 
 }
 

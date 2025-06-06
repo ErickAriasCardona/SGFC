@@ -55,4 +55,9 @@
         align-items: center;
         margin-top: 3rem;
     }
+
+    
+    .circle , .circle_2{
+        display: none;
+    }
 }
