@@ -75,7 +75,7 @@ const asignarCursoAInstructor = async (req, res) => {
     if (inscripciones.length === 0) {
       console.log("⚠️ No hay aprendices inscritos aún, no se enviaron notificaciones.");
     } else {
-      const aprendizIDs = inscripciones.map(i => i.aprendiz_ID);
+      const aprendizIDs = inscripciones.map(inscripcion => inscripcion.aprendiz_ID);
 
       const aprendices = await User.findAll({
         where: {
@@ -87,8 +87,22 @@ const asignarCursoAInstructor = async (req, res) => {
 
       const emailsAprendices = aprendices.map(a => a.email);
 
+      // instructor_ID viene de asignacion_cursos_instructor
+      const instructor = await User.findOne({
+      where: {
+        ID: instructor_ID,
+        accountType: 'Instructor'
+      }
+      });
+
+      let nombreInstructor = 'Instructor asignado';
+      if (instructor) {
+        nombreInstructor = `${instructor.nombres} ${instructor.apellidos}`;
+      }
+
+      // Ahora llama a tu función de email y pásale el nombre del instructor
       for (const email of emailsAprendices) {
-        await sendCursoUpdatedNotification(email, curso);
+        await sendStudentsInstructorAssignedEmail (email, curso, nombreInstructor);
       }
 }
 
@@ -305,7 +319,7 @@ const updateCurso = async (req, res) => {
       console.warn('No hay usuarios aceptados para mandar Email')
     } else {
 
-      await sendCursoUpdatedNotification(emails, curso);
+      sendCursoUpdatedNotification(emails, curso);
     };
 
     res.status(200).json({

@@ -294,16 +294,16 @@ const sendInstructorAssignedEmail = (email, curso) => {
 };
 
 
-// Enviar correo al instructor notificando su asignación
-const sendStudentsInstructorAssignedEmail = (emails, curso, instructor) => {
+// Enviar correo al aprendiz notificando su instructor asignado
+const sendStudentsInstructorAssignedEmail = (emails, curso,nombreInstructor) => {
   const mailOptions = {
     from: 'eariassena19@gmail.com',
     to: emails, // puede ser un string o un array de emails
-    subject: `Tu curso ${curso.titulo} ya tiene instructor asignado`,
+    subject: `Tu curso ${curso.nombre_curso} ya tiene instructor asignado`,
     html: `
       <h2>¡Buenas noticias!</h2>
-      <p>El curso <strong>${curso.titulo}</strong> al que estás inscrito ya tiene un instructor asignado.</p>
-      <p>Instructor: ${instructor.nombres} ${instructor.apellidos}</p>
+      <p>El curso <strong>${curso.nombre_curso}</strong> al que estás inscrito ya tiene un instructor asignado.</p>
+      <p><strong>Instructor:</strong> ${nombreInstructor}</p>
       <p>Prepárate para iniciar el aprendizaje. Revisa los detalles en la plataforma.</p>
     `,
   };
@@ -324,4 +324,11 @@ const sendStudentsInstructorAssignedEmail = (emails, curso, instructor) => {
 
 
 // Exportar ambas funciones
-module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirmationEmail, sendCourseCreatedEmail, sendCursoUpdatedNotification,sendStudentsInstructorAssignedEmail, sendInstructorAssignedEmail };
+module.exports = { 
+   sendVerificationEmail,
+   sendPasswordResetEmail,
+   sendPasswordChangeConfirmationEmail,
+   sendCourseCreatedEmail,
+   sendCursoUpdatedNotification,
+   sendStudentsInstructorAssignedEmail,
+   sendInstructorAssignedEmail };
