@@ -133,7 +133,7 @@
 
 /* Días de formación */
 .calendar-day.training-day {
-    background-color: rgba(0, 132, 61, 0.4);
+    background-color: rgba(0, 132, 61, 0.2);
     color: white;
     font-weight: 500;
 }

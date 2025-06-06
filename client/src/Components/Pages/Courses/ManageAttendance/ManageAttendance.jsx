@@ -8,7 +8,6 @@ import { es } from 'date-fns/locale';
 import { AttendanceManagement } from '../SeeCourse/AttendanceManagement';
 import { MonthlyCalendar } from '../../../UI/Modal_Calendar/ViewCalendar/MonthlyCalendar';
 import './ManageAttendance.css';
-import illustration from '../../../../assets/Ilustrations/Sucessfull.svg';
 
 export const ManageAttendance = () => {
     const { id } = useParams();
@@ -178,7 +177,7 @@ export const ManageAttendance = () => {
 
                     </div>
                     <div className="illustration-container">
-                        <img src="/src/assets/Ilustrations/Frame01.svg" alt="Ilustración de gestión de asistencia" />
+                        <img src="/src/assets/Ilustrations/Raising hand-pana.svg" alt="Ilustración de gestión de asistencia" />
                     </div>
 
                     <div className="text-container-manageAttendance">

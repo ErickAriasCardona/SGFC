@@ -110,7 +110,7 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                     estado: status
                 });
             }
-            
+
             await fetchAttendanceRecords();
         } catch (error) {
             console.error('Error al actualizar asistencia:', error);
@@ -164,7 +164,7 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
             setLoading(true);
             setError(null);
 
-            const attendancePromises = Object.entries(tempAttendance).map(([participantId, status]) => 
+            const attendancePromises = Object.entries(tempAttendance).map(([participantId, status]) =>
                 axiosInstance.post(`/api/attendance/courses/${courseId}/register`, {
                     usuario_ID: participantId,
                     estado: status
@@ -190,33 +190,40 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
 
     if (showOptions) {
         return (
-            <Modal_General closeModal={onClose}>
-                <div className="attendance-options">
-                    <h2>Gestión de Asistencia</h2>
-                    <p className="attendance-date">
-                        {format(parseISO(selectedDate), 'dd/MM/yyyy', { locale: es })}
-                    </p>
-                    <div className="options-container">
-                        <button 
-                            className="option-button"
-                            onClick={() => handleOptionSelect('add')}
-                        >
-                            Agregar Asistencia
-                        </button>
-                        <button 
-                            className="option-button"
-                            onClick={() => handleOptionSelect('update')}
-                        >
-                            Actualizar Asistencia
-                        </button>
-                        <button 
-                            className="option-button"
-                            onClick={() => handleOptionSelect('view')}
-                        >
-                            Consultar Asistencias
-                        </button>
-                    </div>
+            <Modal_General className='modal-attendance' closeModal={onClose}>
+                <p>Por favor seleccione una de las siguientes opciones</p>
+
+                {/*  <p className="attendance-date">
+                    {format(parseISO(selectedDate), 'dd/MM/yyyy', { locale: es })}
+                </p> */}
+                <div className='options1-add'>
+                    <p>Agregar asistencia</p>
+                    <button
+                        className="option-button-add"
+                        onClick={() => handleOptionSelect('add')}
+                    >
+                        <img src="/src/assets/Icons/agregar-archivo.png" alt="Agregar Asistencia"></img>
+                    </button>
                 </div>
+                <div className='options2-update'>
+                    <p>Actualizar asistencia</p>
+                    <button
+                        className="option-button-update"
+                        onClick={() => handleOptionSelect('update')}
+                    >
+                        <img src="/src/assets/Icons/actualizar (1).png" alt="Actualizar Asistencia"></img>
+                    </button>
+                </div>
+                <div className='options3-view'>
+                    <p>Consultar asistencias</p>
+                    <button
+                        className="option-button-view"
+                        onClick={() => handleOptionSelect('view')}
+                    >
+                        <img src="/src/assets/Icons/archivos.png" alt="Consultar Asistencias"></img>
+                    </button>
+                </div>
+
             </Modal_General>
         );
     }
@@ -226,86 +233,99 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
         const participantStatus = tempAttendance[currentParticipant?.ID] || 'Pendiente';
 
         return (
-            <Modal_General closeModal={onClose}>
-                <div className="attendance-carousel">
-                    <div className="carousel-header">
-                        <button className="back-button" onClick={handleBack}>
-                            ← Volver
-                        </button>
-                        <h2>Registrar Asistencia</h2>
-                        <p className="attendance-date">
-                            {format(parseISO(selectedDate), 'dd/MM/yyyy', { locale: es })}
-                        </p>
+            <Modal_General className='modal-attendance-register' closeModal={onClose}>
+
+
+
+
+                <h2>Agregar <span className='complementary'>asistencia</span></h2>
+                <p> en este listado puedes agregar las asistencias del dia
+                    {format(parseISO(selectedDate), 'dd/MM/yyyy', { locale: es })}
+                </p>
+
+
+                {error && (
+                    <p className="error-message">{error}</p>
+                )}
+
+                {loading ? (
+                    <div className="loading-container">
+                        <p>Cargando participantes...</p>
+                    </div>
+                ) : participants.length === 0 ? (
+                    <div className="no-participants">
+                        <p>No hay participantes inscritos en este curso</p>
+                    </div>
+                ) : currentParticipant ? (
+                    <div className="carousel-container-register">
+                        <div className="carousel-wrapper-register">
+                            <button
+                                className="carousel-arrow-register left"
+                                onClick={handlePrevParticipant}>
+                                <img src="/src/assets/Icons/arrowLeft.png" alt="Flecha izquierda"/>
+                            </button>
+
+                            <div className='carousel-track-register'>
+                                <div className="carouse-card-register">
+                                    <div className="participant-info">
+                                        <div className="participant-image">
+                                            <img
+                                                src={currentParticipant.foto_perfil || "/src/assets/Icons/user-default.png"}
+                                                alt={`Foto de ${currentParticipant.nombres}`}
+                                            />
+                                        </div>
+                                        <h3>Participante {currentParticipantIndex + 1} de {participants.length}</h3>
+                                        <p className="participant-name">
+                                            {currentParticipant.nombres} {currentParticipant.apellidos}
+                                        </p>
+                                        <p className="participant-document">
+                                            Documento: {currentParticipant.documento}
+                                        </p>
+                                    </div>
+
+
+
+
+                                </div>
+
+                            </div>
+
+
+
+                            <button
+                                className="carousel-arrow-register right"
+                                onClick={handleNextParticipant}
+                            >
+                                <img src="/src/assets/Icons/arrowRight.png" alt="Flecha derecha" />
+                            </button>
+
+
+                        </div>
                     </div>
 
-                    {error && (
-                        <p className="error-message">{error}</p>
-                    )}
+                ) : null}
 
-                    {loading ? (
-                        <div className="loading-container">
-                            <p>Cargando participantes...</p>
-                        </div>
-                    ) : participants.length === 0 ? (
-                        <div className="no-participants">
-                            <p>No hay participantes inscritos en este curso</p>
-                        </div>
-                    ) : currentParticipant ? (
-                        <div className="carousel-content">
-                            <div className="participant-info">
-                                <h3>Participante {currentParticipantIndex + 1} de {participants.length}</h3>
-                                <p className="participant-name">
-                                    {currentParticipant.nombres} {currentParticipant.apellidos}
-                                </p>
-                                <p className="participant-document">
-                                    Documento: {currentParticipant.documento}
-                                </p>
-                            </div>
-
-                            <div className="attendance-buttons">
-                                <button
-                                    className={`attendance-button ${participantStatus === 'Presente' ? 'active' : ''}`}
-                                    onClick={() => handleAttendanceStatus(currentParticipant.ID, 'Presente')}
-                                >
-                                    Asistencia
-                                </button>
-                                <button
-                                    className={`attendance-button ${participantStatus === 'Ausente' ? 'active' : ''}`}
-                                    onClick={() => handleAttendanceStatus(currentParticipant.ID, 'Ausente')}
-                                >
-                                    Inasistencia
-                                </button>
-                            </div>
-
-                            <div className="carousel-navigation">
-                                <button 
-                                    className="nav-button"
-                                    onClick={handlePrevParticipant}
-                                    disabled={currentParticipantIndex === 0}
-                                >
-                                    ← Anterior
-                                </button>
-                                <button 
-                                    className="nav-button"
-                                    onClick={handleNextParticipant}
-                                    disabled={currentParticipantIndex === participants.length - 1}
-                                >
-                                    Siguiente →
-                                </button>
-                            </div>
-
-                            <div className="save-section">
-                                <button 
-                                    className="save-button"
-                                    onClick={handleSaveAttendance}
-                                    disabled={Object.keys(tempAttendance).length === 0}
-                                >
-                                    Guardar Reporte
-                                </button>
-                            </div>
-                        </div>
-                    ) : null}
+                <div className="attendance-buttons">
+                    <button
+                        className={`attendance-button ${participantStatus === 'Presente' ? 'active' : ''}`}
+                        onClick={() => handleAttendanceStatus(currentParticipant.ID, 'Presente')}
+                    >
+                        Asistencia
+                    </button>
+                    <button
+                        className={`attendance-button ${participantStatus === 'Ausente' ? 'active' : ''}`}
+                        onClick={() => handleAttendanceStatus(currentParticipant.ID, 'Ausente')}
+                    >
+                        Inasistencia
+                    </button>
                 </div>
+
+                <button
+                    className="save-button-register"
+                    onClick={handleSaveAttendance}
+                >
+                    Guardar reporte
+                </button>
             </Modal_General>
         );
     }
@@ -351,7 +371,7 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                                         r => r.aprendiz.ID === participant.ID
                                     );
                                     const isReadOnly = selectedOption === 'view';
-                                    
+
                                     return (
                                         <tr key={participant.ID}>
                                             <td>

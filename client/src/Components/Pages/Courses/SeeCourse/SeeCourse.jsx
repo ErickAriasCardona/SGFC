@@ -142,16 +142,9 @@ export const SeeCourse = () => {
                                         Ver fechas y horarios
                                     </button>
 
-                                    {/* Botón de gestión de asistencia (solo para instructores) */}
-                                    {userSession?.accountType === 'Instructor' && (
-                                        <button 
-                                            className="manageAttendance"
-                                            onClick={handleAttendanceClick}
-                                        >
-                                            Gestionar Asistencia
-                                        </button>
-                                    )}
+
                                 </div>
+
                             </div>
                         </div>
                     </div>
@@ -163,6 +156,15 @@ export const SeeCourse = () => {
                             onClick={() => navigate(`/Cursos/ActualizarCurso/${id}`)}
                         >
                             Editar Curso
+                        </button>
+                    )}
+                    {/* Botón de gestión de asistencia (solo para instructores) */}
+                    {userSession?.accountType === 'Instructor' && (
+                        <button
+                            className="manageAttendance"
+                            onClick={handleAttendanceClick}
+                        >
+                            Gestionar asistencias
                         </button>
                     )}
                 </div>
@@ -199,7 +201,7 @@ export const SeeCourse = () => {
                             />
                         </div>
                         <div className="modal-buttons">
-                            <button 
+                            <button
                                 className="cancel-button"
                                 onClick={() => setShowAttendanceDatePicker(false)}
                             >

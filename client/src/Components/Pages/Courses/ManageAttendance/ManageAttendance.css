@@ -44,12 +44,12 @@
     align-items: center;
     justify-content: start;
     position: absolute;
-    top: 35%;
+    top: 44%;
     left: 55%;
 }
 
 .illustration-container img {
-    width: 25em;
+    width: 20em;
     height: auto;
     margin-top: -12%;
     left: 15rem;

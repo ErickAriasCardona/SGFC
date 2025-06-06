@@ -235,7 +235,7 @@ export const MisCursos = () => {
             </div>
           </div>
           <div className="illustration-container-misCursos">
-            <img src="/src/assets/Ilustrations/Frame01.svg" alt="Ilustración de gestión de asistencia" />
+            <img src="/src/assets/Ilustrations/Professor-amico.svg" alt="Ilustración de gestión de asistencia" />
           </div>
         </div>
       </Main>

@@ -230,12 +230,12 @@
   align-items: center;
   justify-content: start;
   position: absolute;
-  top: 50%;
-  right: 40%;
+  top: 55%;
+  right: 35%;
 }
 
 .illustration-container-misCursos img {
-  width: 23rem;
+  width: 20rem;
   height: auto;
   margin-top: -12%;
   left: 15rem;
