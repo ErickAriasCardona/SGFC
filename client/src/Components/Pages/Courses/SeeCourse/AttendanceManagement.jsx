@@ -38,7 +38,9 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
             setLoading(true);
             setError(null);
             const response = await axiosInstance.get(`/api/courses/cursos/${courseId}/participants`);
+            console.log('Respuesta completa:', response.data);
             if (response.data.success) {
+                console.log('Participantes recibidos:', response.data.participants);
                 setParticipants(response.data.participants);
             } else {
                 setError('Error al cargar los participantes');
@@ -164,10 +166,13 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
             setLoading(true);
             setError(null);
 
+            const formattedDate = format(parseISO(selectedDate), 'yyyy-MM-dd');
+
             const attendancePromises = Object.entries(tempAttendance).map(([participantId, status]) =>
                 axiosInstance.post(`/api/attendance/courses/${courseId}/register`, {
                     usuario_ID: participantId,
-                    estado: status
+                    estado: status,
+                    fecha: formattedDate
                 })
             );
 
@@ -239,8 +244,7 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
 
 
                 <h2>Agregar <span className='complementary'>asistencia</span></h2>
-                <p> en este listado puedes agregar las asistencias del dia
-                    {format(parseISO(selectedDate), 'dd/MM/yyyy', { locale: es })}
+                <p> en este listado puedes agregar las asistencias del dia  {format(parseISO(selectedDate), 'dd/MM/yyyy', { locale: es })}
                 </p>
 
 
@@ -262,32 +266,48 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                             <button
                                 className="carousel-arrow-register left"
                                 onClick={handlePrevParticipant}>
-                                <img src="/src/assets/Icons/arrowLeft.png" alt="Flecha izquierda"/>
+                                <img src="/src/assets/Icons/arrowLeft.png" alt="Flecha izquierda" />
                             </button>
 
                             <div className='carousel-track-register'>
-                                <div className="carouse-card-register">
-                                    <div className="participant-info">
-                                        <div className="participant-image">
-                                            <img
-                                                src={currentParticipant.foto_perfil || "/src/assets/Icons/user-default.png"}
-                                                alt={`Foto de ${currentParticipant.nombres}`}
-                                            />
+                                {participants.map((participant, index) => {
+                                    const isMain = index === currentParticipantIndex;
+                                    const isVisible = Math.abs(index - currentParticipantIndex) <= 2;
+                                    
+                                    if (!isVisible) return null;
+
+                                    const position = index - currentParticipantIndex;
+                                    const scale = 1 - Math.abs(position) * 0.1;
+                                    const opacity = 1 - Math.abs(position) * 0.2;
+
+                                    return (
+                                        <div 
+                                            key={participant.ID}
+                                            className={`carousel-card-register ${isMain ? 'main-card' : 'side-card'}`}
+                                            style={{
+                                                transform: `translateX(${position * 50}%) scale(${scale})`,
+                                                zIndex: 5 - Math.abs(position),
+                                                opacity: opacity
+                                            }}
+                                        >
+                                            <div className="participant-image">
+                                                <img
+                                                    src={participant.foto_perfil ? 
+                                                        participant.foto_perfil.includes('googleusercontent.com') ? 
+                                                            `${participant.foto_perfil}=s400-c-rw` : 
+                                                            participant.foto_perfil 
+                                                        : "/src/assets/Icons/usuario.png"}
+                                                    alt={`Foto de ${participant.nombres}`}
+                                                    onError={(e) => {
+                                                        console.log('Error cargando imagen:', e);
+                                                        e.target.onerror = null;
+                                                        e.target.src = "/src/assets/Icons/usuario.png";
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
-                                        <h3>Participante {currentParticipantIndex + 1} de {participants.length}</h3>
-                                        <p className="participant-name">
-                                            {currentParticipant.nombres} {currentParticipant.apellidos}
-                                        </p>
-                                        <p className="participant-document">
-                                            Documento: {currentParticipant.documento}
-                                        </p>
-                                    </div>
-
-
-
-
-                                </div>
-
+                                    );
+                                })}
                             </div>
 
 
@@ -298,22 +318,26 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                             >
                                 <img src="/src/assets/Icons/arrowRight.png" alt="Flecha derecha" />
                             </button>
-
-
                         </div>
+                        <p className="participant-name">
+                            {currentParticipant.nombres} {currentParticipant.apellidos}
+                        </p>
+
+
+
                     </div>
 
                 ) : null}
 
                 <div className="attendance-buttons">
                     <button
-                        className={`attendance-button ${participantStatus === 'Presente' ? 'active' : ''}`}
+                        className={`attendance-button-asist ${participantStatus === 'Presente' ? 'active' : ''}`}
                         onClick={() => handleAttendanceStatus(currentParticipant.ID, 'Presente')}
                     >
                         Asistencia
                     </button>
                     <button
-                        className={`attendance-button ${participantStatus === 'Ausente' ? 'active' : ''}`}
+                        className={`attendance-button-noAsist ${participantStatus === 'Ausente' ? 'active' : ''}`}
                         onClick={() => handleAttendanceStatus(currentParticipant.ID, 'Ausente')}
                     >
                         Inasistencia

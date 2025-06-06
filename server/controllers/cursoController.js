@@ -481,6 +481,8 @@ const getCursoParticipants = async (req, res) => {
   const { courseId } = req.params;
 
   try {
+    console.log('Buscando participantes para el curso:', courseId);
+    
     const inscripciones = await dbInstance.InscripcionCurso.findAll({
       where: { 
         curso_ID: courseId,
@@ -490,10 +492,13 @@ const getCursoParticipants = async (req, res) => {
         {
           model: dbInstance.Usuario,
           as: 'aprendiz',
-          attributes: ['ID', 'nombres', 'apellidos', 'email', 'cedula']
+          attributes: ['ID', 'nombres', 'apellidos', 'email', 'cedula', 'foto_perfil']
         }
       ]
     });
+
+    console.log('Inscripciones encontradas:', inscripciones.length);
+    console.log('Primera inscripción:', inscripciones[0]?.aprendiz);
 
     const participantes = inscripciones.map(inscripcion => ({
       ID: inscripcion.aprendiz.ID,
@@ -501,8 +506,11 @@ const getCursoParticipants = async (req, res) => {
       apellidos: inscripcion.aprendiz.apellidos,
       email: inscripcion.aprendiz.email,
       documento: inscripcion.aprendiz.cedula,
+      foto_perfil: inscripcion.aprendiz.foto_perfil,
       inscripcion_ID: inscripcion.ID
     }));
+
+    console.log('Participantes procesados:', participantes);
 
     res.status(200).json({
       success: true,

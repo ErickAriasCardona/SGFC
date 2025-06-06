@@ -14,7 +14,7 @@ const setDb = (databaseInstance) => {
 const registerAttendance = async (req, res) => {
     try {
         const { courseId } = req.params;
-        const { usuario_ID, estado } = req.body;
+        const { usuario_ID, estado, fecha } = req.body;
         const registrador_ID = req.user.id;
 
         // Obtener información del curso
@@ -35,12 +35,12 @@ const registerAttendance = async (req, res) => {
             });
         }
 
-        // Crear la asistencia con la fecha actual
+        // Crear la asistencia con la fecha proporcionada
         const asistencia = await dbInstance.Asistencia.create({
             usuario_ID,
             estado,
             registrado_por: registrador_ID,
-            fecha: new Date(),
+            fecha: fecha ? new Date(fecha) : new Date(),
             curso_ID: courseId
         });
 
