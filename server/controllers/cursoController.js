@@ -478,51 +478,32 @@ const uploadImagesBase64 = async (req, res) => {
 
 // Obtener participantes de un curso
 const getCursoParticipants = async (req, res) => {
-  const { courseId } = req.params;
+    try {
+        const { courseId } = req.params;
 
-  try {
-    console.log('Buscando participantes para el curso:', courseId);
-    
-    const inscripciones = await dbInstance.InscripcionCurso.findAll({
-      where: { 
-        curso_ID: courseId,
-        estado_inscripcion: 'activo'
-      },
-      include: [
-        {
-          model: dbInstance.Usuario,
-          as: 'aprendiz',
-          attributes: ['ID', 'nombres', 'apellidos', 'email', 'cedula', 'foto_perfil']
-        }
-      ]
-    });
+        const participantes = await dbInstance.InscripcionCurso.findAll({
+            where: {
+                curso_ID: courseId,
+                estado_inscripcion: 'activo'
+            },
+            include: [{
+                model: dbInstance.Usuario,
+                as: 'aprendiz',
+                attributes: ['ID', 'nombres', 'apellidos', 'email', 'documento', 'foto_perfil']
+            }]
+        });
 
-    console.log('Inscripciones encontradas:', inscripciones.length);
-    console.log('Primera inscripción:', inscripciones[0]?.aprendiz);
-
-    const participantes = inscripciones.map(inscripcion => ({
-      ID: inscripcion.aprendiz.ID,
-      nombres: inscripcion.aprendiz.nombres,
-      apellidos: inscripcion.aprendiz.apellidos,
-      email: inscripcion.aprendiz.email,
-      documento: inscripcion.aprendiz.cedula,
-      foto_perfil: inscripcion.aprendiz.foto_perfil,
-      inscripcion_ID: inscripcion.ID
-    }));
-
-    console.log('Participantes procesados:', participantes);
-
-    res.status(200).json({
-      success: true,
-      participants: participantes
-    });
-  } catch (error) {
-    console.error('Error al obtener los participantes del curso:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Error interno al obtener los participantes del curso' 
-    });
-  }
+        res.status(200).json({
+            success: true,
+            participants: participantes
+        });
+    } catch (error) {
+        console.error('Error al obtener los participantes del curso:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener los participantes del curso'
+        });
+    }
 };
 
 /**

@@ -38,7 +38,7 @@ const registerAttendance = async (req, res) => {
         // Crear la asistencia con la fecha proporcionada
         const asistencia = await dbInstance.Asistencia.create({
             usuario_ID,
-            estado,
+            estado_asistencia: estado || 'Pendiente',
             registrado_por: registrador_ID,
             fecha: fecha ? new Date(fecha) : new Date(),
             curso_ID: courseId
@@ -107,7 +107,7 @@ const updateAttendance = async (req, res) => {
         }
 
         await attendance.update({
-            estado: status,
+            estado_asistencia: status || 'Pendiente',
             actualizado_por: instructorId,
             fecha_actualizacion: new Date()
         });
@@ -132,13 +132,15 @@ const updateAttendance = async (req, res) => {
 const getAttendanceRecords = async (req, res) => {
     try {
         const {
-            userId,
             startDate,
             endDate,
             status,
             page = 1,
-            limit = 10
+            limit = 100
         } = req.query;
+        const { courseId } = req.params;
+
+        console.log('Parámetros recibidos:', { courseId, startDate, endDate, status });
 
         const user = req.user;
         let whereClause = {};
@@ -146,7 +148,16 @@ const getAttendanceRecords = async (req, res) => {
             {
                 model: dbInstance.Usuario,
                 as: 'aprendiz',
-                attributes: ['ID', 'nombres', 'apellidos', 'email']
+                attributes: ['ID', 'nombres', 'apellidos', 'email', 'documento', 'foto_perfil', 'estado'],
+                include: [{
+                    model: dbInstance.InscripcionCurso,
+                    as: 'inscripciones',
+                    where: {
+                        curso_ID: courseId
+                    },
+                    attributes: ['estado_inscripcion'],
+                    required: false
+                }]
             }
         ];
 
@@ -170,8 +181,14 @@ const getAttendanceRecords = async (req, res) => {
         }
 
         // Aplicar filtros adicionales
-        if (userId) whereClause.usuario_ID = userId;
-        if (status) whereClause.estado = status;
+        if (courseId) {
+            whereClause.curso_ID = courseId;
+            console.log('Filtrando por curso:', courseId);
+        }
+        if (status) {
+            whereClause.estado_asistencia = status;
+            console.log('Filtrando por estado_asistencia:', status);
+        }
 
         // Filtrar por rango de fechas
         if (startDate && endDate) {
@@ -182,10 +199,20 @@ const getAttendanceRecords = async (req, res) => {
             whereClause.fecha = {
                 [Op.between]: [start, end]
             };
+            console.log('Filtrando por fecha:', { start, end });
         }
 
-        // Calcular el offset para la paginación
-        const offset = (page - 1) * limit;
+        console.log('Where clause:', whereClause);
+
+        // Primero, verificar si hay registros para este curso
+        const curso = await dbInstance.Curso.findByPk(courseId);
+        if (!curso) {
+            console.log('Curso no encontrado:', courseId);
+            return res.status(404).json({
+                success: false,
+                message: 'Curso no encontrado'
+            });
+        }
 
         // Realizar la consulta con paginación
         const { count, rows: records } = await dbInstance.Asistencia.findAndCountAll({
@@ -196,12 +223,28 @@ const getAttendanceRecords = async (req, res) => {
                 ['ID', 'DESC']
             ],
             limit: parseInt(limit),
-            offset: offset
+            offset: (parseInt(page) - 1) * parseInt(limit)
         });
+
+        console.log('Registros encontrados:', records.length);
+        if (records.length > 0) {
+            console.log('Estructura del primer registro:', JSON.stringify(records[0], null, 2));
+        } else {
+            console.log('No se encontraron registros de asistencia');
+        }
+
+        // Transformar los registros para incluir el estado del aprendiz
+        const transformedRecords = records.map(record => ({
+            ...record.toJSON(),
+            aprendiz: {
+                ...record.aprendiz.toJSON(),
+                estado_inscripcion: record.aprendiz.inscripciones?.[0]?.estado_inscripcion || 'pendiente'
+            }
+        }));
 
         res.status(200).json({
             success: true,
-            records,
+            records: transformedRecords,
             total: count,
             totalPages: Math.ceil(count / limit),
             currentPage: parseInt(page)

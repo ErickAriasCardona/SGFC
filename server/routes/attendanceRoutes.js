@@ -10,9 +10,9 @@ router.use(authMiddleware);
 router.post('/courses/:courseId/register', attendanceController.registerAttendance);
 
 // Actualizar un registro de asistencia específico
-router.put('/:attendanceId', attendanceController.updateAttendance);
+router.put('/courses/:courseId/update', attendanceController.updateAttendance);
 
 // Obtener registros de asistencia con filtros
-router.get('/records', attendanceController.getAttendanceRecords);
+router.get('/courses/:courseId/get', attendanceController.getAttendanceRecords);
 
 module.exports = router; 

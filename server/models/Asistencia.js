@@ -13,9 +13,14 @@ class Asistencia extends Model {
                     type: DataTypes.INTEGER,
                     allowNull: false
                 },
-                estado: {
-                    type: DataTypes.ENUM('Presente', 'Ausente'),
+                curso_ID: {
+                    type: DataTypes.INTEGER,
                     allowNull: false
+                },
+                estado_asistencia: {
+                    type: DataTypes.ENUM('Presente', 'Ausente', 'Pendiente'),
+                    allowNull: false,
+                    defaultValue: 'Pendiente'
                 },
                 fecha: {
                     type: DataTypes.DATE,
@@ -50,6 +55,13 @@ class Asistencia extends Model {
             foreignKey: 'usuario_ID',
             targetKey: 'ID',
             as: 'aprendiz'
+        });
+
+        // Relación con el curso
+        this.belongsTo(models.Curso, {
+            foreignKey: 'curso_ID',
+            targetKey: 'ID',
+            as: 'curso'
         });
 
         // Relación con el usuario que registró la asistencia
