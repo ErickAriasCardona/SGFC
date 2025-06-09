@@ -59,12 +59,13 @@ class Curso extends Model {
           type: DataTypes.STRING(45),
           allowNull: true,
         },
-        imagen: {
-          // Nuevo campo para la imagen
-          type: DataTypes.STRING(255), // Almacena la URL o ruta de la imagen
+
+        imagen: { // Nuevo campo para la imagen
+          type: DataTypes.TEXT, // Almacena la URL o ruta de la imagen
           allowNull: true, // Opcional inicialmente
-        },
-      },
+        }, 
+      }, 
+      
       {
         sequelize,
         tableName: "curso",

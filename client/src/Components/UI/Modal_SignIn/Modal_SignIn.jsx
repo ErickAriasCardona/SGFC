@@ -73,7 +73,7 @@ export const Modal_SignIn = ({
     const idToken = response.credential;
 
     try {
-      const res = await fetch("http://localhost:3001/auth/googleSignIn", {
+      const res = await fetch("https://sgfc-production.up.railway.app/auth/googleSignIn", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -112,7 +112,7 @@ export const Modal_SignIn = ({
     <div id="container_signIn">
       <div className="modalSignIn">
         <div className="option_signUp">
-          <div className="logo">Logo</div>
+          <div className="logo">SGFC</div>
           <h3>Lorem Ipsum es simplemente el texto</h3>
           <p>Lorem Ipsum es simplemente</p>
           <button className="goTo_register" onClick={showModalAccountType}>

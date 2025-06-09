@@ -147,16 +147,7 @@ const createCurso = async (req, res) => {
     // Procesar imagen y convertir a Base64 si se envió
     let image = null;
     if (req.file) {
-      const base64Data = req.file.buffer.toString("base64");
-      const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-      const savePath = path.join(__dirname, "../base64storage", uniqueName);
-
-      if (!fs.existsSync(path.dirname(savePath))) {
-        fs.mkdirSync(path.dirname(savePath), { recursive: true });
-      }
-      fs.writeFileSync(savePath, base64Data);
-
-      image = `/base64storage/${uniqueName}`;
+      image = req.file.buffer.toString('base64'); // Guardar base64 en la base de datos
     }
 
     // Procesar días de formación
@@ -204,7 +195,7 @@ const createCurso = async (req, res) => {
     if (emails.length === 0) {
       console.warn("No hay usuarios aceptados para mandar Email");
     } else {
-      const courseLink = `http://localhost:5173/cursos/${nuevoCurso.id}`;
+      const courseLink = `https://sgfc-seven.vercel.app/cursos/${nuevoCurso.id}`;
       await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
     }
   } catch (error) {
@@ -452,18 +443,10 @@ const updateCurso = async (req, res) => {
     }
 
     // Verificar si se envió una nueva imagen
-    let image = null;
+
+    let image = curso.imagen;
     if (req.file) {
-      const base64Data = req.file.buffer.toString("base64");
-      const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-      const savePath = path.join(__dirname, "../base64storage", uniqueName);
-
-      if (!fs.existsSync(path.dirname(savePath))) {
-        fs.mkdirSync(path.dirname(savePath), { recursive: true });
-      }
-      fs.writeFileSync(savePath, base64Data);
-
-      image = `/base64storage/${uniqueName}`;
+      image = req.file.buffer.toString('base64'); // Guardar base64 en la base de datos
     }
 
     // Preparar datos para actualización
@@ -530,6 +513,7 @@ const updateCurso = async (req, res) => {
     res.status(500).json({ message: "Error al actualizar el curso." });
   }
 };
+// ...existing code...
 
 // Obtener todos los cursos
 const getAllCursos = async (req, res) => {

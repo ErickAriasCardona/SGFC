@@ -20,7 +20,7 @@ export const UpdateCourse = () => {
             try {
                 const response = await axiosInstance.get(`/cursos/${id}`); // Obtener los datos del curso
                 setCurso(response.data);
-                setPreview(response.data.imagen ? `http://localhost:3001${response.data.imagen}` : null);
+                setPreview(response.data.imagen ? `sgfc.railway.internal${response.data.imagen}` : null);
             } catch (error) {
                 console.error("Error al obtener el curso:", error);
             }
