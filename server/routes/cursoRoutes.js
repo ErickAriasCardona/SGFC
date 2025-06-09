@@ -5,22 +5,12 @@ const upload = require("../config/multer");
 
 const router = express.Router();
 
-/*
-// Ruta para crear un curso (con subida de imagen)
-router.post("/cursos", authenticateUser, upload.single("imagen"), createCurso);
-*/
-
-
 
 // ruta para carga de imagenes en base64
 router.post("/cursos", authenticateUser, upload.single("imagen"), createCurso);
 
-
 // Ruta para actualizar un curso (solo administradores)
 router.put("/cursos/:id", authenticateUser, upload.single("imagen"), updateCurso);
-/*
-router.put("/cursos/:id", authenticateUser, updateCurso);
-*/
 
 // Ruta para obtener todos los cursos
 router.get("/cursos", getAllCursos);
@@ -36,5 +26,8 @@ router.post('/asignaciones', asignarCursoAInstructor);
 
 //cursos asignados a un isntructor
 router.get('/cursos-asignados/:instructor_ID', obtenerCursosAsignadosAInstructor);
+
+// Ruta para actualizar la programación de un curso
+router.put('/cursos/:id/programacion', authenticateUser, updateCurso);
 
 module.exports = router;

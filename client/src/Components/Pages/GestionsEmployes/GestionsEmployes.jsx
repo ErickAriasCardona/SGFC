@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
-import "./GestionsEmployes.css";
-import { Header } from "../../../Components/Layouts/Header/Header";
-import { Footer } from "../../../Components/Layouts/Footer/Footer";
-import { Main } from "../../../Components/Layouts/Main/Main";
-import { UpdateEmploye } from "./UpdateEmploye/UpdateEmploye";
-import axiosInstance from "../../../config/axiosInstance";
 import { Routes, Route, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import './GestionsEmployes.css';
+import { Header } from '../../../Components/Layouts/Header/Header';
+import { Footer } from '../../../Components/Layouts/Footer/Footer';
+import { Main } from '../../../Components/Layouts/Main/Main';
+import { UpdateEmploye } from './UpdateEmploye/UpdateEmploye';
+import axiosInstance from '../../../config/axiosInstance';
+import { useModal } from "../../../Context/ModalContext"; // Importa el contexto de los modales
 
 export const GestionsEmployes = () => {
   const navigate = useNavigate();
@@ -18,24 +19,23 @@ export const GestionsEmployes = () => {
       userSession.accountType === "Instructor");
 
   const [employes, setEmployes] = useState([]); // Estado para almacenar los empleados
-  const [filteredEmployes, setFilteredEmployes] = useState([]); // Estado para los empleados filtrados
-  const [filter, setFilter] = useState(""); // Estado para el valor del filtro
-  const [current, setCurrent] = useState(0); // Estado para el carrusel
-  const [selectedState, setSelectedState] = useState({
-    activo: true,
-    inactivo: true,
-  });
-  const [selectedEmploye, setSelectedEmploye] = useState(null); // Estado para el Employe seleccionado
-
-  const showModalSeeProfile = (employe) => {
-    setSelectedEmploye(employe); // Establecer el Employe seleccionado
-    const modalSeeProfile = document.getElementById(
-      "modal-overlayUpdateEmploye"
-    );
-    if (modalSeeProfile) {
-      modalSeeProfile.style.display = "flex"; // Mostrar el modal
-    }
-  };
+      const [filteredEmployes, setFilteredEmployes] = useState([]); // Estado para los empleados filtrados
+      const { setShowModalCreateEmployee } = useModal(); // Hook del contexto de los modales
+      const [filter, setFilter] = useState(''); // Estado para el valor del filtro
+      const [current, setCurrent] = useState(0); // Estado para el carrusel
+      const [selectedState, setSelectedState] = useState({
+          activo: true,
+          inactivo: true,
+      });
+      const [selectedEmploye, setSelectedEmploye] = useState(null); // Estado para el Employe seleccionado
+  
+      const showModalSeeProfile = (employe) => {
+          setSelectedEmploye(employe); // Establecer el Employe seleccionado
+          const modalSeeProfile = document.getElementById("modal-overlayUpdateEmploye");
+          if (modalSeeProfile) {
+              modalSeeProfile.style.display = "flex"; // Mostrar el modal
+          }
+      };
 
   // Función para obtener los empleados desde el backend
   const fetchEmployes = async () => {

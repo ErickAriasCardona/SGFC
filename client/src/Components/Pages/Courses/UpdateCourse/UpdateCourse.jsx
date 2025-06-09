@@ -23,21 +23,18 @@ export const UpdateCourse = () => {
     (userSession.accountType === "Administrador" ||
       userSession.accountType === "Gestor");
 
-  // Obtener los datos del curso al cargar la página
-  useEffect(() => {
-    const fetchCurso = async () => {
-      try {
-        const response = await axiosInstance.get(`/cursos/${id}`); // Obtener los datos del curso
-        setCurso(response.data);
-        setPreview(
-          response.data.imagen
-            ? `http://localhost:3001${response.data.imagen}`
-            : null
-        );
-      } catch (error) {
-        console.error("Error al obtener el curso:", error);
-      }
-    };
+
+    // Obtener los datos del curso al cargar la página
+    useEffect(() => {
+        const fetchCurso = async () => {
+            try {
+                const response = await axiosInstance.get(`/cursos/${id}`); // Obtener los datos del curso
+                setCurso(response.data);
+                setPreview(response.data.imagen ? `sgfc.railway.internal${response.data.imagen}` : null);
+            } catch (error) {
+                console.error("Error al obtener el curso:", error);
+            }
+        };
 
     fetchCurso();
   }, [id]);

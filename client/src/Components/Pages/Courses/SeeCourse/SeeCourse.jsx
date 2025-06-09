@@ -72,7 +72,7 @@ export const SeeCourse = () => {
                         <label className='upload-area'>
                             {curso.imagen ? (
                                 <img
-                                    src={`http://localhost:3001${curso.imagen}`}
+                                    src={`https://sgfc-production.up.railway.app/${curso.imagen}`}
                                     alt="Imagen del curso"
                                     className="preview-image"
                                 />
