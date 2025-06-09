@@ -17,6 +17,18 @@ const registerAttendance = async (req, res) => {
         const { usuario_ID, estado, fecha } = req.body;
         const registrador_ID = req.user.id;
 
+        // Validar fecha futura
+        const fechaAsistencia = new Date(fecha);
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        if (fechaAsistencia > hoy) {
+            return res.status(400).json({
+                success: false,
+                message: 'No se pueden registrar asistencias para fechas futuras'
+            });
+        }
+
         // Obtener información del curso
         const curso = await dbInstance.Curso.findByPk(courseId);
         if (!curso) {
@@ -89,13 +101,33 @@ const registerAttendance = async (req, res) => {
  */
 const updateAttendance = async (req, res) => {
     try {
-        const { attendanceId } = req.params;
-        const { status } = req.body;
+        const { courseId } = req.params;
+        const { attendanceId, status, fecha } = req.body;
         const instructorId = req.user.id;
+
+        // Validar fecha futura
+        const fechaAsistencia = new Date(fecha);
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        if (fechaAsistencia > hoy) {
+            return res.status(400).json({
+                success: false,
+                message: 'No se pueden actualizar asistencias para fechas futuras'
+            });
+        }
+
+        if (!attendanceId) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID de asistencia no proporcionado'
+            });
+        }
 
         const attendance = await dbInstance.Asistencia.findOne({
             where: {
-                ID: attendanceId
+                ID: attendanceId,
+                curso_ID: courseId
             }
         });
 
@@ -111,6 +143,37 @@ const updateAttendance = async (req, res) => {
             actualizado_por: instructorId,
             fecha_actualizacion: new Date()
         });
+
+        // Si el estado es 'Ausente', enviar notificación
+        if (status === 'Ausente') {
+            const curso = await dbInstance.Curso.findByPk(courseId);
+            const aprendiz = await dbInstance.Usuario.findByPk(attendance.usuario_ID);
+
+            if (curso && aprendiz) {
+                const title = `Inasistencia registrada - ${curso.nombre_curso}`;
+                const message = `
+                    <h2>Notificación de Inasistencia</h2>
+                    <p>Estimado(a) ${aprendiz.nombres} ${aprendiz.apellidos},</p>
+                    <p>Le informamos que se ha registrado una inasistencia en el curso:</p>
+                    <ul>
+                        <li><strong>Curso:</strong> ${curso.nombre_curso}</li>
+                        <li><strong>Ficha:</strong> ${curso.ficha}</li>
+                        <li><strong>Fecha:</strong> ${new Date(attendance.fecha).toLocaleDateString()}</li>
+                    </ul>
+                    <p>Por favor, asegúrese de asistir a las próximas sesiones programadas.</p>
+                    <p>Saludos cordiales,<br>SGFC</p>
+                `;
+
+                await sendNotification(
+                    aprendiz.ID,
+                    'inasistencia',
+                    title,
+                    message,
+                    null,
+                    curso.ID
+                );
+            }
+        }
 
         res.status(200).json({
             success: true,

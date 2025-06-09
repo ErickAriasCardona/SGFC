@@ -23,6 +23,8 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
     const [attendanceFilter, setAttendanceFilter] = useState('todos');
     const [selectedStatus, setSelectedStatus] = useState('');
     const [selectedAttendance, setSelectedAttendance] = useState('');
+    const [showApprenticeDetails, setShowApprenticeDetails] = useState(false);
+    const [selectedApprentice, setSelectedApprentice] = useState(null);
 
     useEffect(() => {
         if (open) {
@@ -43,9 +45,7 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
             setLoading(true);
             setError(null);
             const response = await axiosInstance.get(`/api/courses/cursos/${courseId}/participants`);
-            console.log('Respuesta completa de participantes:', response.data);
             if (response.data.success) {
-                console.log('Participantes recibidos:', response.data.participants);
                 setParticipants(response.data.participants);
             } else {
                 setError('Error al cargar los participantes');
@@ -69,43 +69,14 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
     const fetchAttendanceRecords = async () => {
         try {
             setLoading(true);
-            const selectedDateObj = parseISO(selectedDate);
-            const today = startOfDay(new Date());
-
-            if (selectedDateObj > today) {
-                setError('No se pueden consultar registros de fechas futuras');
-                setLoading(false);
-                return;
-            }
-
-            const formattedDate = format(selectedDateObj, 'yyyy-MM-dd');
-            console.log('Buscando registros para:', { courseId, date: formattedDate });
-
             const response = await axiosInstance.get(`/api/attendance/courses/${courseId}/get`, {
                 params: {
-                    startDate: formattedDate,
-                    endDate: formattedDate,
                     limit: 100
                 }
             });
 
-            // Log detallado de la respuesta
-            console.log('=== RESPUESTA DEL SERVIDOR ===');
-            console.log('Status:', response.status);
-            console.log('Headers:', response.headers);
-            console.log('Data completa:', JSON.stringify(response.data, null, 2));
-            console.log('Records recibidos:', response.data.records);
-            if (response.data.records && response.data.records.length > 0) {
-                console.log('Estructura del primer registro:', JSON.stringify(response.data.records[0], null, 2));
-            }
-            console.log('===========================');
-
             if (response.data.success) {
                 const records = response.data.records || [];
-                console.log('Número de registros recibidos:', records.length);
-                console.log('Estructura de los registros:', records);
-                
-                // Crear un mapa de registros por ID de aprendiz
                 const recordsMap = new Map();
                 records.forEach(record => {
                     if (record.aprendiz && record.aprendiz.ID) {
@@ -116,43 +87,28 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                     }
                 });
 
-                console.log('Mapa de registros:', Array.from(recordsMap.entries()));
-
-                // Crear registros para todos los participantes
                 const allRecords = participants.map(participant => {
                     const existingRecord = recordsMap.get(participant.aprendiz.ID);
-                    console.log('Procesando participante:', {
-                        id: participant.aprendiz.ID,
-                        nombre: participant.aprendiz.nombres,
-                        tieneRegistro: !!existingRecord,
-                        registro: existingRecord
-                    });
-
                     if (existingRecord) {
                         return existingRecord;
                     }
 
-                    const emptyRecord = {
+                    return {
                         ID: null,
                         aprendiz: {
                             ID: participant.aprendiz.ID,
                             nombres: participant.aprendiz.nombres,
-                            apellidos: participant.aprendiz.apellidos
+                            apellidos: participant.aprendiz.apellidos,
+                            documento: participant.aprendiz.documento
                         },
                         estado_asistencia: 'Pendiente',
-                        fecha: formattedDate,
                         curso_ID: courseId
                     };
-
-                    console.log('Creando registro vacío:', emptyRecord);
-                    return emptyRecord;
                 });
 
-                console.log('Todos los registros (incluyendo vacíos):', allRecords);
                 setAttendanceRecords(allRecords);
                 setError(null);
             } else {
-                console.error('Error en la respuesta:', response.data);
                 setError(response.data.message || 'Error al cargar los registros de asistencia');
             }
             setLoading(false);
@@ -265,15 +221,6 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
         // Buscar el registro de asistencia correspondiente
         const record = attendanceRecords.find(r => r?.aprendiz?.ID === participant.aprendiz?.ID);
         
-        // Log detallado del participante
-        console.log('Analizando participante:', {
-            id: participant.aprendiz?.ID,
-            nombre: participant.aprendiz?.nombres,
-            apellido: participant.aprendiz?.apellidos,
-            estadoAprendiz: record?.aprendiz?.estado,
-            estructuraCompleta: participant
-        });
-
         // Filtro por búsqueda
         const searchTermLower = searchTerm.toLowerCase();
         const matchesSearch =
@@ -283,68 +230,91 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
 
         // Filtro por estado del participante
         const matchesStatus = selectedStatus === '' || record?.aprendiz?.estado === selectedStatus;
-        console.log('Evaluación de estado:', {
-            estadoAprendiz: record?.aprendiz?.estado,
-            selectedStatus,
-            matchesStatus
-        });
-
-        console.log('Registro de asistencia encontrado:', {
-            participanteId: participant.aprendiz?.ID,
-            registro: record,
-            estadoAsistencia: record?.estado_asistencia
-        });
 
         // Si no hay filtro de asistencia seleccionado, solo aplicar búsqueda y estado
         if (selectedAttendance === '') {
-            console.log('Resultado filtrado (sin asistencia):', {
-                nombre: participant.aprendiz?.nombres,
-                estado: record?.aprendiz?.estado,
-                matchesSearch,
-                matchesStatus,
-                resultado: matchesSearch && matchesStatus
-            });
             return matchesSearch && matchesStatus;
         }
 
         // Verificar si el registro de asistencia coincide con el filtro seleccionado
         const matchesAttendance = record?.estado_asistencia === selectedAttendance;
         
-        console.log('Resultado filtrado completo:', {
-            nombre: participant.aprendiz?.nombres,
-            estadoAprendiz: record?.aprendiz?.estado,
-            selectedStatus,
-            selectedAttendance,
-            matchesSearch,
-            matchesStatus,
-            matchesAttendance,
-            resultado: matchesSearch && matchesStatus && matchesAttendance
-        });
-
         // Aplicar todos los filtros
         return matchesSearch && matchesStatus && matchesAttendance;
     });
-
-    // Efecto para monitorear los cambios en los filtros
-    useEffect(() => {
-        console.log('Estado actual de los filtros:', {
-            searchTerm,
-            selectedStatus,
-            selectedAttendance,
-            totalParticipants: participants.length,
-            filteredCount: filteredParticipants.length,
-            primerParticipante: participants[0] ? {
-                id: participants[0].aprendiz?.ID,
-                nombre: participants[0].aprendiz?.nombres,
-                estado: attendanceRecords.find(r => r?.aprendiz?.ID === participants[0].aprendiz?.ID)?.aprendiz?.estado
-            } : null
-        });
-    }, [searchTerm, selectedStatus, selectedAttendance, participants, filteredParticipants, attendanceRecords]);
 
     // Efecto para reiniciar el índice del carrusel cuando cambian los filtros
     useEffect(() => {
         setCurrentParticipantIndex(0);
     }, [searchTerm, selectedStatus, selectedAttendance]);
+
+    const handleSeeApprentice = () => {
+        console.log('handleSeeApprentice called');
+        const currentApprentice = filteredParticipants[currentParticipantIndex];
+        if (!currentApprentice) {
+            console.error('No hay aprendiz seleccionado');
+            return;
+        }
+
+        console.log('Aprendiz seleccionado:', currentApprentice);
+        
+        const attendanceRecord = attendanceRecords.find(
+            record => record?.aprendiz?.ID === currentApprentice?.aprendiz?.ID
+        );
+        
+        console.log('Registro de asistencia encontrado:', attendanceRecord);
+
+        setSelectedApprentice({
+            ...currentApprentice,
+            attendanceStatus: attendanceRecord?.estado_asistencia || 'Pendiente'
+        });
+        console.log('Setting showApprenticeDetails to true');
+        setShowApprenticeDetails(true);
+        setSelectedOption(null);
+    };
+
+    const handleCloseApprenticeDetails = () => {
+        setShowApprenticeDetails(false);
+        setSelectedApprentice(null);
+        setSelectedOption('update');
+    };
+
+    const handleToggleAttendance = async () => {
+        if (!selectedApprentice) return;
+
+        const newStatus = selectedApprentice.attendanceStatus === 'Presente' ? 'Ausente' : 'Presente';
+        
+        try {
+            const existingRecord = attendanceRecords.find(
+                record => record?.aprendiz?.ID === selectedApprentice.aprendiz.ID
+            );
+
+            if (existingRecord && existingRecord.ID) {
+                await axiosInstance.put(`/api/attendance/courses/${courseId}/update`, {
+                    attendanceId: existingRecord.ID,
+                    status: newStatus
+                });
+            } else {
+                await axiosInstance.post(`/api/attendance/courses/${courseId}/register`, {
+                    usuario_ID: selectedApprentice.aprendiz.ID,
+                    estado: newStatus,
+                    fecha: format(parseISO(selectedDate), 'yyyy-MM-dd')
+                });
+            }
+
+            // Actualizar el estado local
+            setSelectedApprentice(prev => ({
+                ...prev,
+                attendanceStatus: newStatus
+            }));
+            
+            // Actualizar los registros de asistencia
+            await fetchAttendanceRecords();
+        } catch (error) {
+            console.error('Error al actualizar asistencia:', error);
+            setError('Error al actualizar la asistencia');
+        }
+    };
 
     if (!open) return null;
 
@@ -445,10 +415,10 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                                         >
                                             <div className="participant-image">
                                                 <img
-                                                    src={participant.foto_perfil ?
-                                                        participant.foto_perfil.includes('googleusercontent.com') ?
-                                                            `${participant.foto_perfil}=s400-c-rw` :
-                                                            participant.foto_perfil
+                                                    src={participant.aprendiz?.foto_perfil ?
+                                                        participant.aprendiz.foto_perfil.includes('googleusercontent.com') ?
+                                                            `${participant.aprendiz.foto_perfil}=s400-c-rw` :
+                                                            participant.aprendiz.foto_perfil
                                                         : "/src/assets/Icons/usuario.png"}
                                                     alt={`Foto de ${participant.aprendiz?.nombres}`}
                                                     onError={(e) => {
@@ -514,41 +484,48 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                 <p>en este listado puedes actualizar las asistencias del día {format(parseISO(selectedDate), 'dd/MM/yyyy', { locale: es })}</p>
 
                 <div className="update-container">
-                    <section className="sectionGestionsCompanyBody">
-                        <section className="filterGestionsCompany">
-                            <strong className="tituloFiltrar">Filtrar por:</strong>
+                    <section className="sectionGestionsApprenticeBody">
+                        <section className="filterGestionsApprentice">
+                            <strong className="tituloFiltrarAprendiz">Filtrar por:</strong>
 
-                            <article className="filterOptionsGestionsCompany">
-                                <div className="filterOptionName">
-                                    <label className="labelFilterOption1">Nombre o documento de identidad</label>
+                            <article className="filterOptionsGestionsApprentice">
+                                <div className="filterOptionNameApprentice">
+                                    <label className="labelFilterOption1Apprentice">Nombre o documento de identidad</label>
 
-                                    <div className="inputFilterOption1">
+                                    <div className="inputFilterOption1Apprentice">
                                         <input
-                                            className="inputFilterOptionText"
+                                            className="inputFilterOptionTextApprentice"
                                             type="text"
                                             placeholder="Escriba el nombre o documento"
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                         />
+                                        <div className='iconSearchFilterAttendance'>
+                                            <img 
+                                                src="/src/assets/Icons/lupa.png" 
+                                                alt="Buscar" 
+                                                className="searchIconAttendance"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="courseStatusFilte">
+                                <div className="AttendanceStatusFilter">
                                     <label
-                                        className="labelFilterOption1"
+                                        className="labelFilterOption1Attendance"
                                         style={{ padding: "0 0 .5rem 0" }}
                                     >
                                     Estado del aprendiz
                                     </label>
 
-                                    <section className="sectionStatusFilter">
+                                    <section className="sectionStatusFilterAttendance">
                                         <button 
-                                            className={`statusOption ${selectedStatus === 'inactivo' ? 'selected' : ''}`}
+                                            className={`statusOptionAttendance ${selectedStatus === 'inactivo' ? 'selected' : ''}`}
                                             onClick={() => setSelectedStatus(selectedStatus === 'inactivo' ? '' : 'inactivo')}
                                         >
                                             Inactivo
                                         </button>
                                         <button 
-                                            className={`statusOption ${selectedStatus === 'activo' ? 'selected' : ''}`}
+                                            className={`statusOptionAttendance ${selectedStatus === 'activo' ? 'selected' : ''}`}
                                             onClick={() => setSelectedStatus(selectedStatus === 'activo' ? '' : 'activo')}
                                         >
                                             Activo
@@ -556,23 +533,23 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                                     </section>
                                 </div>
 
-                                <div className="courseStatusFilte">
+                                <div className="AttendanceStatusFilter">
                                     <label
-                                        className="labelFilterOption1"
+                                        className="labelFilterOption1Attendance"
                                         style={{ padding: "0 0 .5rem 0" }}
                                     >
                                     Tipo de asistencia
                                     </label>
 
-                                    <section className="sectionStatusFilter">
+                                    <section className="sectionStatusFilterAttendance">
                                         <button 
-                                            className={`statusOption ${selectedAttendance === 'Ausente' ? 'selected' : ''}`}
+                                            className={`statusOptionAttendance ${selectedAttendance === 'Ausente' ? 'selected' : ''}`}
                                             onClick={() => setSelectedAttendance(selectedAttendance === 'Ausente' ? '' : 'Ausente')}
                                         >
                                             Inasistencia
                                         </button>
                                         <button 
-                                            className={`statusOption ${selectedAttendance === 'Presente' ? 'selected' : ''}`}
+                                            className={`statusOptionAttendance ${selectedAttendance === 'Presente' ? 'selected' : ''}`}
                                             onClick={() => setSelectedAttendance(selectedAttendance === 'Presente' ? '' : 'Presente')}
                                         >
                                             Asistencia
@@ -630,13 +607,14 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                                                 >
                                                     <div className="participant-image">
                                                         <img
-                                                            src={participant.foto_perfil ?
-                                                                participant.foto_perfil.includes('googleusercontent.com') ?
-                                                                    `${participant.foto_perfil}=s400-c-rw` :
-                                                                    participant.foto_perfil
+                                                            src={participant.aprendiz?.foto_perfil ?
+                                                                participant.aprendiz.foto_perfil.includes('googleusercontent.com') ?
+                                                                    `${participant.aprendiz.foto_perfil}=s400-c-rw` :
+                                                                    participant.aprendiz.foto_perfil
                                                                 : "/src/assets/Icons/usuario.png"}
                                                             alt={`Foto de ${participant.aprendiz?.nombres}`}
                                                             onError={(e) => {
+                                                                console.log('Error cargando imagen:', e);
                                                                 e.target.onerror = null;
                                                                 e.target.src = "/src/assets/Icons/usuario.png";
                                                             }}
@@ -665,8 +643,9 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                 </div>
 
                 <button
-                    className="save-button-update"
-                    onClick={handleSaveAttendance}
+                    className="see-apprentice-button-update"
+                    onClick={handleSeeApprentice}
+                    disabled={!filteredParticipants[currentParticipantIndex]}
                 >
                     Ver Aprendiz
                 </button>
@@ -674,120 +653,126 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
         );
     }
 
-    return (
-        <Modal_General closeModal={onClose}>
-            <div className="attendance-management">
-                <div className="attendance-header">
-                    <button className="back-button" onClick={handleBack}>
-                        ← Volver
-                    </button>
-                    <h2>
-                        {selectedOption === 'add' && 'Agregar Asistencia'}
-                        {selectedOption === 'update' && 'Actualizar Asistencia'}
-                        {selectedOption === 'view' && 'Consultar Asistencias'}
-                    </h2>
-                    <p className="attendance-date">
-                        {format(parseISO(selectedDate), 'dd/MM/yyyy', { locale: es })}
-                    </p>
+    if (selectedOption === 'view') {
+        const presentRecords = attendanceRecords.filter(record => record.estado_asistencia === 'Presente');
+        const absentRecords = attendanceRecords.filter(record => record.estado_asistencia === 'Ausente');
+        const totalRecords = attendanceRecords.length;
+        const presentPercentage = totalRecords > 0 ? (presentRecords.length / totalRecords) * 100 : 0;
+        const absentPercentage = totalRecords > 0 ? (absentRecords.length / totalRecords) * 100 : 0;
+
+        return (
+            <Modal_General className='modal-attendance-register' closeModal={onClose}>
+                <h2>Reporte de <span className='complementary'>asistencias</span></h2>
+                <p className='SubtitleViewAttendance'>Listado general de asistencias del curso</p>
+
+                <div className="attendance-report-header">
+                    <div className="attendance-header-item">
+                        <h3>Asistencias</h3>
+                        <div className="percentage-bar-container">
+                            <div 
+                                className="percentage-bar present" 
+                                style={{ width: `${presentPercentage}%` }}
+                            ></div>
+                            <span className="percentage-text">{presentPercentage.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                    <div className="attendance-header-item">
+                        <h3>Inasistencias</h3>
+                        <div className="percentage-bar-container">
+                            <div 
+                                className="percentage-bar absent" 
+                                style={{ width: `${absentPercentage}%` }}
+                            ></div>
+                            <span className="percentage-text">{absentPercentage.toFixed(1)}%</span>
+                        </div>
+                    </div>
                 </div>
 
-                {error && (
-                    <p className="error-message">
-                        {error}
-                    </p>
-                )}
-
-                {loading ? (
-                    <p>Cargando...</p>
-                ) : !error ? (
-                    <div className="attendance-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Participante</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {participants.map(participant => {
-                                    const record = attendanceRecords.find(
-                                        r => r.aprendiz.ID === participant.aprendiz.ID
-                                    );
-                                    const isReadOnly = selectedOption === 'view';
-
-                                    return (
-                                        <tr key={participant.aprendiz.ID}>
-                                            <td>
-                                                {participant.aprendiz.nombres} {participant.aprendiz.apellidos}
-                                            </td>
-                                            <td>
-                                                <span className={`status-badge ${record?.estado_asistencia?.toLowerCase() || 'pendiente'}`}>
-                                                    {record?.estado_asistencia || 'Pendiente'}
-                                                </span>
-                                            </td>
-                                            <td className="action-buttons">
-                                                {!isReadOnly && (
-                                                    <>
-                                                        <button
-                                                            className={`status-button ${record?.estado_asistencia === 'Presente' ? 'active' : ''}`}
-                                                            onClick={() => handleAttendanceChange(participant.aprendiz.ID, 'Presente')}
-                                                        >
-                                                            Presente
-                                                        </button>
-                                                        <button
-                                                            className={`status-button ${record?.estado_asistencia === 'Ausente' ? 'active' : ''}`}
-                                                            onClick={() => handleAttendanceChange(participant.aprendiz.ID, 'Ausente')}
-                                                        >
-                                                            Ausente
-                                                        </button>
-                                                        <button
-                                                            className={`status-button ${record?.estado_asistencia === 'Justificado' ? 'active' : ''}`}
-                                                            onClick={() => handleAttendanceChange(participant.aprendiz.ID, 'Justificado')}
-                                                        >
-                                                            Justificado
-                                                        </button>
-                                                    </>
-                                                )}
-                                                {record && (
-                                                    <button
-                                                        className="details-button"
-                                                        onClick={() => handleViewDetails(record)}
-                                                    >
-                                                        Ver Detalles
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                ) : null}
-
-                {showDetails && selectedRecord && (
-                    <Modal_General closeModal={handleCloseDetails}>
-                        <div className="attendance-details">
-                            <h3>Detalles de Asistencia</h3>
-                            <div className="details-content">
-                                <p>
-                                    <strong>Participante:</strong> {selectedRecord.aprendiz.nombre} {selectedRecord.aprendiz.apellido}
-                                </p>
-                                <p>
-                                    <strong>Curso:</strong> {selectedRecord.Sesion?.Curso?.nombre_curso}
-                                </p>
-                                <p>
-                                    <strong>Fecha:</strong> {format(new Date(selectedRecord.fecha), 'dd/MM/yyyy HH:mm', { locale: es })}
-                                </p>
-                                <p>
-                                    <strong>Estado:</strong> {selectedRecord.estado_asistencia}
-                                </p>
-                            </div>
+                <div className="attendance-report-container">
+                    <div className="attendance-column">
+                        <div className="attendance-list">
+                            {presentRecords.length === 0 ? (
+                                <p className="no-records">No hay asistencias registradas</p>
+                            ) : (
+                                presentRecords.map((record) => (
+                                    <div key={record.ID} className="attendance-card">
+                                        <div className="attendance-card-info">
+                                            <p className="attendance-name">{record.aprendiz?.nombres} {record.aprendiz?.apellidos}</p>
+                                            <p className="attendance-document">{record.aprendiz?.documento || 'Sin documento'}</p>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
-                    </Modal_General>
-                )}
-            </div>
-        </Modal_General>
-    );
+                    </div>
+
+                    <div className="attendance-column">
+                        <div className="attendance-list">
+                            {absentRecords.length === 0 ? (
+                                <p className="no-records">No hay inasistencias registradas</p>
+                            ) : (
+                                absentRecords.map((record) => (
+                                    <div key={record.ID} className="attendance-card">
+                                        <div className="attendance-card-info">
+                                            <p className="attendance-name">{record.aprendiz?.nombres} {record.aprendiz?.apellidos}</p>
+                                            <p className="attendance-document">{record.aprendiz?.documento || 'Sin documento'}</p>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </Modal_General>
+        );
+    }
+
+    if (showApprenticeDetails && selectedApprentice) {
+        return (
+            <Modal_General className="modal-apprentice-details" closeModal={handleCloseApprenticeDetails}>
+                <div className="apprentice-details-container">
+                            <h2>Actualizar estado</h2>
+                    <div className='container-card-details'>
+                            
+                                <div className="participant-image-details">
+                                    <img
+                                        src={selectedApprentice.aprendiz?.foto_perfil ?
+                                            selectedApprentice.aprendiz.foto_perfil.includes('googleusercontent.com') ?
+                                                `${selectedApprentice.aprendiz.foto_perfil}=s400-c-rw` :
+                                                selectedApprentice.aprendiz.foto_perfil
+                                            : "/src/assets/Icons/usuario.png"}
+                                        alt={`Foto de ${selectedApprentice.aprendiz?.nombres}`}
+                                        onError={(e) => {
+                                            console.log('Error cargando imagen:', e);
+                                            e.target.onerror = null;
+                                            e.target.src = "/src/assets/Icons/usuario.png";
+                                        }}
+                                    />
+                                </div>
+                           
+                    </div>
+                            <p className="participant-name-details">
+                                {selectedApprentice.aprendiz?.nombres} {selectedApprentice.aprendiz?.apellidos}
+                            </p>
+
+                            <div className="attendance-status-details">
+                                Estado: <span className={`status-details ${selectedApprentice.attendanceStatus.toLowerCase()}`}>
+                                    {selectedApprentice.attendanceStatus}
+                                </span>
+                            </div>
+
+                            <div className="attendance-actions">
+                                <button
+                                    className={`toggle-attendance-button ${selectedApprentice.attendanceStatus === 'Presente' ? 'present' : 'absent'}`}
+                                    onClick={handleToggleAttendance}
+                                >
+                                    {selectedApprentice.attendanceStatus === 'Presente' ? 'Quitar asistencia' : 'Agregar asistencia'}
+                                </button>
+                            </div>
+                </div>
+            </Modal_General>
+        );
+    }
+
+    return null;
 }; 
