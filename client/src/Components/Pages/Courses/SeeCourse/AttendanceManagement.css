@@ -1473,3 +1473,172 @@
     color: #ffffff !important;
     margin-bottom: 1.5rem;
 }
+
+.simple-attendance-container {
+    width: 90%;
+    height: 15rem;
+    display: flex;
+    gap: 6rem;
+
+}
+
+
+.simple-attendance-item:last-child {
+    border-bottom: none;
+}
+
+/* Estilos para el scrollbar */
+.simple-attendance-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.simple-attendance-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.simple-attendance-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.simple-attendance-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.modal-attendance-register .simple-attendance-container {
+    width: 100% !important;
+    height: 15rem !important;
+    display: flex !important;
+    gap: 6rem !important;
+    margin-left: 1rem !important;
+    position: relative !important;
+}
+
+.modal-attendance-register .simple-attendance-container::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: 0.1rem !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    height: 19rem !important;
+    width: 1px !important;
+    background-color: rgba(255, 255, 255, 0.30) !important;
+}
+
+.modal-attendance-register .simple-attendance-column {
+    width: auto !important;
+    height: auto !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.modal-attendance-register .simple-attendance-list {
+    width: auto !important;
+    height: 15rem !important;
+    overflow-y: auto !important;
+    background-color: #0b2e1b !important;
+    border-radius: 8px !important;
+    padding: 0.3rem 1rem !important;
+}
+
+.modal-attendance-register .simple-attendance-item {
+    width: auto !important;
+    height: auto !important;
+    padding: 0.8rem !important;
+    border-bottom: 1px solid rgb(255 255 255 / 100%) !important;
+}
+
+.modal-attendance-register .simple-attendance-info {
+    height: 2rem !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    color: white !important;
+    text-align: left !important;
+    position: relative !important;
+}
+
+.modal-attendance-register .simple-attendance-name {
+    font-size: 1.2rem !important;
+    color: white !important;
+    order: 2 !important;
+    position: relative !important;
+    right: 12rem !important;
+    width: 8rem !important;
+    height: auto !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
+}
+
+.modal-attendance-register .simple-attendance-name-2 {
+    font-size: 1.2rem !important;
+    color: white !important;
+    order: 2 !important;
+    position: relative !important;
+    right: 11rem !important;
+    width: 8rem !important;
+    height: auto !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
+}
+
+
+.modal-attendance-register .simple-attendance-document {
+    font-size: 0.9rem !important;
+    margin-bottom: 0.5rem !important;
+    color: white !important;
+    position: relative !important;
+    right: 7rem !important;
+    top: 0.8rem !important;
+    order: 1 !important;
+}
+
+.modal-attendance-register .simple-attendance-document-2 {
+    font-size: 0.9rem !important;
+    margin-bottom: 0.5rem !important;
+    color: white !important;
+    position: relative !important;
+    right: 6rem !important;
+    top: 0.8rem !important;
+    order: 1 !important;
+}
+
+
+.modal-attendance-register .simple-attendance-status {
+    font-size: 0.9rem !important;
+    margin: 0 !important;
+    position: relative !important;
+    top: 0 !important;
+    left: 10rem !important;
+    color: white !important;
+}
+
+.modal-attendance-register .simple-attendance-status-2 {
+    font-size: 0.9rem !important;
+    margin: 0 !important;
+    position: relative !important;
+    top: 0 !important;
+    left: 11rem !important;
+    color: white !important;
+}
+
+/* Estilos para el scrollbar */
+.modal-attendance-register .simple-attendance-list::-webkit-scrollbar {
+    width: 8px !important;
+}
+
+.modal-attendance-register .simple-attendance-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 4px !important;
+}
+
+.modal-attendance-register .simple-attendance-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-radius: 4px !important;
+}
+
+.modal-attendance-register .simple-attendance-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4) !important;
+}

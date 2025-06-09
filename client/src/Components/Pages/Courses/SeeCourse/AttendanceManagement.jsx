@@ -688,17 +688,21 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                     </div>
                 </div>
 
-                <div className="attendance-report-container">
-                    <div className="attendance-column">
-                        <div className="attendance-list">
+                <div className="simple-attendance-container">
+                    <div className="simple-attendance-column">
+                       
+                        <div className="simple-attendance-list">
                             {presentRecords.length === 0 ? (
                                 <p className="no-records">No hay asistencias registradas</p>
                             ) : (
                                 presentRecords.map((record) => (
-                                    <div key={record.ID} className="attendance-card">
-                                        <div className="attendance-card-info">
-                                            <p className="attendance-name">{record.aprendiz?.nombres} {record.aprendiz?.apellidos}</p>
-                                            <p className="attendance-document">{record.aprendiz?.documento || 'Sin documento'}</p>
+                                    <div key={record.ID} className="simple-attendance-item">
+                                        <div className="simple-attendance-info">
+                                            <p className="simple-attendance-name">{record.aprendiz?.nombres} {record.aprendiz?.apellidos}</p>
+                                            <p className="simple-attendance-document">{record.aprendiz?.documento || 'Sin documento'}</p>
+                                            <p className="simple-attendance-status"> Estado: 
+                                                {record.aprendiz?.estado || 'Activo'}
+                                            </p>
                                         </div>
                                     </div>
                                 ))
@@ -706,16 +710,20 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                         </div>
                     </div>
 
-                    <div className="attendance-column">
-                        <div className="attendance-list">
+                    <div className="simple-attendance-column">
+                
+                        <div className="simple-attendance-list">
                             {absentRecords.length === 0 ? (
                                 <p className="no-records">No hay inasistencias registradas</p>
                             ) : (
                                 absentRecords.map((record) => (
-                                    <div key={record.ID} className="attendance-card">
-                                        <div className="attendance-card-info">
-                                            <p className="attendance-name">{record.aprendiz?.nombres} {record.aprendiz?.apellidos}</p>
-                                            <p className="attendance-document">{record.aprendiz?.documento || 'Sin documento'}</p>
+                                    <div key={record.ID} className="simple-attendance-item">
+                                        <div className="simple-attendance-info">
+                                            <p className="simple-attendance-name-2">{record.aprendiz?.nombres} {record.aprendiz?.apellidos}</p>
+                                            <p className="simple-attendance-document-2">{record.aprendiz?.documento || 'Sin documento'}</p>
+                                            <p className="simple-attendance-status-2"> Estado:
+                                                {record.aprendiz?.estado || 'Activo'}
+                                            </p>
                                         </div>
                                     </div>
                                 ))
