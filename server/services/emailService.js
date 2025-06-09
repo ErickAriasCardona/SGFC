@@ -324,4 +324,12 @@ const sendStudentsInstructorAssignedEmail = (emails, curso, instructor) => {
 
 
 // Exportar ambas funciones
-module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirmationEmail, sendCourseCreatedEmail, sendCursoUpdatedNotification,sendStudentsInstructorAssignedEmail, sendInstructorAssignedEmail };
+ module.exports = {
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+  sendPasswordChangeConfirmationEmail,
+  sendCourseCreatedEmail,
+  sendCursoUpdatedNotification,
+  sendStudentsInstructorAssignedEmail,
+  sendInstructorAssignedEmail 
+ };
