@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 
 // Función para enviar el correo de verificación
 const sendVerificationEmail = (email, token) => {
-    const enlaceVerificacion = `http://localhost:5173/verificarCorreo?token=${token}`;
+    const enlaceVerificacion = `https://sgfc-seven.vercel.app/verificarCorreo?token=${token}`;
     const mailOptions = {
         from: "eariassena19@gmail.com",
         to: email,

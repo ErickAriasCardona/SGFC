@@ -6,22 +6,12 @@ const { crearOActualizarInscripcion } = require('../controllers/inscripcionCurso
 
 const router = express.Router();
 
-/*
-// Ruta para crear un curso (con subida de imagen)
-router.post("/cursos", authenticateUser, upload.single("imagen"), createCurso);
-*/
-
-
 
 // ruta para carga de imagenes en base64
 router.post("/cursos", authenticateUser, upload.single("imagen"), createCurso);
 
-
 // Ruta para actualizar un curso (solo administradores)
 router.put("/cursos/:id", authenticateUser, upload.single("imagen"), updateCurso);
-/*
-router.put("/cursos/:id", authenticateUser, updateCurso);
-*/
 
 // Ruta para obtener todos los cursos
 router.get("/cursos", getAllCursos);
@@ -40,5 +30,8 @@ router.get('/cursos-asignados/:instructor_ID', obtenerCursosAsignadosAInstructor
 
 // Ruta para crear o actualizar el estado de una inscripción (solo administradores)
 router.put('/inscripciones', authenticateUser, crearOActualizarInscripcion);
+
+// Ruta para actualizar la programación de un curso
+router.put('/cursos/:id/programacion', authenticateUser, updateCurso);
 
 module.exports = router;

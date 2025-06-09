@@ -112,7 +112,7 @@ export const EditCalendar = ({ closeModal, onSave, initialData }) => {
             </tbody>
           </table></div>
 
-          <button className="save-button organized-save-button" onClick={handleSave}>Guardar</button>
+          <button className="save-button-calendar organized-save-button" onClick={handleSave}>Guardar</button>
         </div>
       </div>
     </div>
