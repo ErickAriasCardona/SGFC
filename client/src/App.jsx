@@ -7,10 +7,10 @@ import React from "react";
 import { useModal } from './Context/ModalContext';
 
 // Importación de iconos
-import companyGreen from './assets/Icons/companyGreen.png';
-import companyGrey from './assets/Icons/companyGrey.png';
-import userGreen from './assets/Icons/userGreen.png';
-import userGrey from './assets/Icons/userGrey.png';
+import companyGreen from "./assets/Icons/companyGreen.png";
+import companyGrey from "./assets/Icons/companyGrey.png";
+import userGreen from "./assets/Icons/userGreen.png";
+import userGrey from "./assets/Icons/userGrey.png";
 
 // Importación de páginas
 import { Start } from './Components/Pages/Start/Start';
@@ -43,7 +43,8 @@ import { CreateEmploye } from './Components/Pages/GestionsEmployes/CreateEmploye
 import { UpdateInstructor } from './Components/Pages/GestionsInstructor/UpdateInstructor/UpdateInstructor';
 
 // Importación de estilos
-import './App.css';
+import "./App.css";
+import { ProtectedRoute } from "./utils/ProtectedRoute";
 
 function App() {
   const navigate = useNavigate();
@@ -66,19 +67,19 @@ function App() {
 
   useEffect(() => {
     if (window.gapi) {
-      window.gapi.load('auth2', () => {
+      window.gapi.load("auth2", () => {
         window.gapi.auth2.init({
-          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
         });
       });
     }
   }, []);
 
   useEffect(() => {
-    const userSession = localStorage.getItem('userSession');
+    const userSession = localStorage.getItem("userSession");
     if (userSession) {
       const { accountType } = JSON.parse(userSession);
-      navigate('/Inicio', { state: { accountType } });
+      navigate("/Inicio", { state: { accountType } });
     }
   }, [navigate]);
 
@@ -175,13 +176,27 @@ function App() {
           <Route path="/Cursos/CrearCurso" element={<CreateCourse />} />
           <Route path="/Cursos/BuscarCursos" element={<ConsultCourses />} />
           <Route path="/Cursos/:id" element={<SeeCourse />} />
-          <Route path="/Cursos/ActualizarCurso/:id" element={<UpdateCourse />} />
-          <Route path="/Gestiones/Instructor" element={<GestionsInstructor />} />
+          <Route
+            path="/Cursos/ActualizarCurso/:id"
+            element={<UpdateCourse />}
+          />
+          <Route
+            path="/Gestiones/Instructor"
+            element={<GestionsInstructor />}
+          />
           <Route path="/Gestiones/Gestor" element={<GestionsGestor />} />
           <Route path="/MiPerfil" element={<SeeMyProfile />} />
           <Route path="/Gestiones/Empresas" element={<GestionsCompany />} />
-          <Route path="/Empleados/MisEmpleados" element={<GestionsEmployes />} />
-          <Route path="/Empleados/ActualizarEmpleado/:id" element={<UpdateEmploye />} />
+          <Route
+            path="/Empleados/MisEmpleados"
+            element={<GestionsEmployes />}
+          />
+          <Route path="/Empleados/CrearEmpleado" element={<CreateEmploye />} />
+          <Route
+            path="/Empleados/ActualizarEmpleado/:id"
+            element={<UpdateEmploye />}
+          />
+          <Route path="/ProtectedRoute" element={<ProtectedRoute />} />
         </Routes>
       </>
     </GoogleOAuthProvider>
