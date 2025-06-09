@@ -697,12 +697,29 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                             ) : (
                                 presentRecords.map((record) => (
                                     <div key={record.ID} className="simple-attendance-item">
+                                       
                                         <div className="simple-attendance-info">
+                                            <div className='container-document'>
                                             <p className="simple-attendance-name">{record.aprendiz?.nombres} {record.aprendiz?.apellidos}</p>
                                             <p className="simple-attendance-document">{record.aprendiz?.documento || 'Sin documento'}</p>
+                                            </div>
                                             <p className="simple-attendance-status"> Estado: 
                                                 {record.aprendiz?.estado || 'Activo'}
                                             </p>
+                                        </div>
+                                        <div className='iconFilterAttendance' onClick={() => {
+                                            setSelectedApprentice({
+                                                ...record,
+                                                attendanceStatus: record.estado_asistencia || 'Pendiente'
+                                            });
+                                            setShowApprenticeDetails(true);
+                                            setSelectedOption(null);
+                                        }}>
+                                            <img 
+                                                src="/src/assets/Icons/boton-editar-gris.png" 
+                                                alt="Actualizar" 
+                                                className="IconAttendance"
+                                            />
                                         </div>
                                     </div>
                                 ))
@@ -719,11 +736,27 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                                 absentRecords.map((record) => (
                                     <div key={record.ID} className="simple-attendance-item">
                                         <div className="simple-attendance-info">
+                                            <div className='container-document-2'>
                                             <p className="simple-attendance-name-2">{record.aprendiz?.nombres} {record.aprendiz?.apellidos}</p>
                                             <p className="simple-attendance-document-2">{record.aprendiz?.documento || 'Sin documento'}</p>
+                                            </div>
                                             <p className="simple-attendance-status-2"> Estado:
                                                 {record.aprendiz?.estado || 'Activo'}
                                             </p>
+                                        </div>
+                                        <div className='iconFilterAttendance' onClick={() => {
+                                            setSelectedApprentice({
+                                                ...record,
+                                                attendanceStatus: record.estado_asistencia || 'Pendiente'
+                                            });
+                                            setShowApprenticeDetails(true);
+                                            setSelectedOption(null);
+                                        }}>
+                                            <img 
+                                                src="/src/assets/Icons/boton-editar-gris.png" 
+                                                alt="Actualizar" 
+                                                className="IconAttendance"
+                                            />
                                         </div>
                                     </div>
                                 ))

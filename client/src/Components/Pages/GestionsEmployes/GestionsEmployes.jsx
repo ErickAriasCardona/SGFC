@@ -70,7 +70,7 @@ const fetchEmployes = async () => {
             const filtered = employes.filter((employe) =>
                 employe.nombres.toLowerCase().includes(value) ||
                 employe.apellidos.toLowerCase().includes(value) ||
-                employe.cedula.toLowerCase().includes(value)
+                employe.documento.toLowerCase().includes(value)
             );
     
             // Aplicar también el filtro de estado
@@ -92,7 +92,7 @@ const fetchEmployes = async () => {
         const filtered = employes.filter((employe) =>
             (employe.nombres || '').toLowerCase().includes(filter.toLowerCase()) ||
             (employe.apellidos || '').toLowerCase().includes(filter.toLowerCase()) ||
-            (employe.cedula || '').toLowerCase().includes(filter.toLowerCase())
+            (employe.documento || '').toLowerCase().includes(filter.toLowerCase())
         );
 
         const filteredByState = filtered.filter((employe) => {

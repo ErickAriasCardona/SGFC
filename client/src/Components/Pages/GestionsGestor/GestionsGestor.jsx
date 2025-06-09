@@ -57,7 +57,7 @@ export const GestionsGestor = () => {
         const filtered = gestor.filter((gestor) =>
             gestor.nombres.toLowerCase().includes(value) ||
             gestor.apellidos.toLowerCase().includes(value) ||
-            gestor.cedula.toLowerCase().includes(value)
+            gestor.documento.toLowerCase().includes(value)
         );
 
         // Aplicar también el filtro de estado
@@ -80,7 +80,7 @@ export const GestionsGestor = () => {
         const filtered = gestores.filter((gestor) =>
             gestor.nombres.toLowerCase().includes(filter) ||
             gestor.apellidos.toLowerCase().includes(filter) ||
-            gestor.cedula.toLowerCase().includes(filter)
+            gestor.documento.toLowerCase().includes(filter)
         );
 
         // Aplicar también el filtro de estado

@@ -9,10 +9,10 @@ export const CreateGestor = ({ onClose }) => {
     const [formData, setFormData] = useState({
         nombres: '',
         apellidos: '',
-        cedula: '',
+        documento: '',
         celular: '',
         email: '',
-        estado: 'Inactivo', // Valor predeterminado
+        estado: 'inactivo', // Valor predeterminado en minúsculas
     });
     const [file, setFile] = useState(null);
 
@@ -49,7 +49,7 @@ export const CreateGestor = ({ onClose }) => {
         data.append('foto_perfil', file);
         data.append('nombres', formData.nombres);
         data.append('apellidos', formData.apellidos);
-        data.append('cedula', formData.cedula);
+        data.append('documento', formData.documento);
         data.append('celular', formData.celular);
         data.append('email', formData.email);
         data.append('estado', formData.estado);
@@ -99,11 +99,11 @@ export const CreateGestor = ({ onClose }) => {
                         />
                     </label>
                     <label>
-                        Cédula
+                        Documento
                         <input
                             type="text"
-                            name="cedula"
-                            value={formData.cedula}
+                            name="documento"
+                            value={formData.documento}
                             onChange={handleInputChange}
                             required
                         />
@@ -158,15 +158,15 @@ export const CreateGestor = ({ onClose }) => {
                         <div className="status-buttons">
                             <button
                                 type="button"
-                                className={`status ${formData.estado === 'Activo' ? 'active' : ''}`}
-                                onClick={() => setFormData({ ...formData, estado: 'Activo' })}
+                                className={`status ${formData.estado === 'activo' ? 'active' : ''}`}
+                                onClick={() => setFormData({ ...formData, estado: 'activo' })}
                             >
                                 Activo
                             </button>
                             <button
                                 type="button"
-                                className={`status ${formData.estado === 'Inactivo' ? 'active' : ''}`}
-                                onClick={() => setFormData({ ...formData, estado: 'Inactivo' })}
+                                className={`status ${formData.estado === 'inactivo' ? 'active' : ''}`}
+                                onClick={() => setFormData({ ...formData, estado: 'inactivo' })}
                             >
                                 Inactivo
                             </button>

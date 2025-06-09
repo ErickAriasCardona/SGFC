@@ -15,7 +15,7 @@ const Ciudad = require('../models/ciudad'); // Importar el modelo Ciudad
 
 const registerUser = async (req, res) => {
     try {
-        const { email, password, accountType, cedula, nombres, apellidos, celular, titulo_profesional } = req.body;
+        const { email, password, accountType, documento, nombres, apellidos, celular, titulo_profesional } = req.body;
 
         // Validar datos obligatorios
         if (!email || !password || !accountType) {
@@ -45,7 +45,7 @@ const registerUser = async (req, res) => {
             email,
             password: hashedPassword,
             accountType,
-            cedula: cedula || null,
+            documento: documento || null,
             nombres: nombres || null,
             apellidos: apellidos || null,
             celular: celular || null,
@@ -369,7 +369,7 @@ const getInstructores = async (req, res) => {
     try {
         const instructores = await User.findAll({
             where: { accountType: 'Instructor' },
-            attributes: ['ID', 'email', 'nombres', 'apellidos', 'estado', 'celular', 'cedula', 'foto_perfil', 'titulo_profesional'],
+            attributes: ['ID', 'email', 'nombres', 'apellidos', 'estado', 'celular', 'documento', 'foto_perfil', 'titulo_profesional'],
         });
 
         // Transformar el campo foto_perfil para devolver una URL
@@ -394,7 +394,7 @@ const getGestores = async (req, res) => {
     try {
         const gestores = await User.findAll({
             where: { accountType: 'Gestor' },
-            attributes: ['ID', 'email', 'nombres', 'apellidos', 'estado', 'celular', 'cedula', 'foto_perfil'],
+            attributes: ['ID', 'email', 'nombres', 'apellidos', 'estado', 'celular', 'documento', 'foto_perfil'],
         });
 
         // Transformar el campo foto_perfil para devolver una URL
@@ -424,7 +424,7 @@ const updateUserProfile = async (req, res) => {
             nombres,
             apellidos,
             celular,
-            cedula,
+            documento,
             estado,
             titulo_profesional,
             password,
@@ -483,10 +483,10 @@ const updateUserProfile = async (req, res) => {
                     }
                 }
 
-                if (cedula && cedula !== user.cedula) {
-                    const existingCedula = await User.findOne({ where: { cedula } });
-                    if (existingCedula) {
-                        return res.status(400).json({ message: "La cédula ya está registrada." });
+                if (documento && documento !== user.documento) {
+                    const existingDocumento = await User.findOne({ where: { documento } });
+                    if (existingDocumento) {
+                        return res.status(400).json({ message: "El documento ya está registrado." });
                     }
                 }
 
@@ -502,7 +502,7 @@ const updateUserProfile = async (req, res) => {
                 if (nombres) user.nombres = nombres;
                 if (apellidos) user.apellidos = apellidos;
                 if (celular) user.celular = celular;
-                if (cedula) user.cedula = cedula;
+                if (documento) user.documento = documento;
                 if (estado) user.estado = estado;
                 if (titulo_profesional) user.titulo_profesional = titulo_profesional;
 
@@ -524,7 +524,7 @@ const updateUserProfile = async (req, res) => {
             if (nombres) user.nombres = nombres;
             if (apellidos) user.apellidos = apellidos;
             if (celular) user.celular = celular;
-            if (cedula) user.cedula = cedula;
+            if (documento) user.documento = documento;
             if (estado) user.estado = estado;
 
             // Empresa viene como string JSON en el campo 'empresa'
@@ -576,7 +576,7 @@ const updateUserProfile = async (req, res) => {
             if (nombres) user.nombres = nombres;
             if (apellidos) user.apellidos = apellidos;
             if (celular) user.celular = celular;
-            if (cedula) user.cedula = cedula;
+            if (documento) user.documento = documento;
             if (estado) user.estado = estado;
             if (titulo_profesional) user.titulo_profesional = titulo_profesional;
             if (password) {
@@ -640,10 +640,10 @@ const updateProfilePicture = async (req, res) => {
 // Crear Instructor
 const createInstructor = async (req, res) => {
     try {
-        console.log("Cuerpo de la solicitud:", req.body); // Verifica los datos enviados
-        console.log("Archivo recibido:", req.file); // Verifica si el archivo fue recibido
+        console.log("Cuerpo de la solicitud:", req.body);
+        console.log("Archivo recibido:", req.file);
 
-        const { nombres, apellidos, titulo_profesional, celular, email, cedula, estado } = req.body;
+        const { nombres, apellidos, titulo_profesional, celular, email, documento, estado } = req.body;
 
         // Procesar imagen de perfil si se sube
         let foto_perfil = null;
@@ -661,7 +661,7 @@ const createInstructor = async (req, res) => {
         }
 
         // Validar datos obligatorios
-        if (!nombres || !apellidos || !titulo_profesional || !celular || !email || !cedula || !estado) {
+        if (!nombres || !apellidos || !titulo_profesional || !celular || !email || !documento || !estado) {
             return res.status(400).json({ message: "Todos los campos son obligatorios." });
         }
 
@@ -671,10 +671,10 @@ const createInstructor = async (req, res) => {
             return res.status(400).json({ message: "El correo ya está registrado." });
         }
 
-        // Verificar si la cédula ya está registrada
-        const existingCedula = await User.findOne({ where: { cedula } });
-        if (existingCedula) {
-            return res.status(400).json({ message: "La cédula ya está registrada." });
+        // Verificar si el documento ya está registrado
+        const existingDocumento = await User.findOne({ where: { documento } });
+        if (existingDocumento) {
+            return res.status(400).json({ message: "El documento ya está registrado." });
         }
 
         // Generar token de verificación
@@ -690,7 +690,7 @@ const createInstructor = async (req, res) => {
             titulo_profesional,
             celular,
             email,
-            cedula,
+            documento,
             estado,
             foto_perfil,
             sena_ID: 1, //ID Sena 
@@ -717,10 +717,10 @@ const createInstructor = async (req, res) => {
 // Crear Gestor
 const createGestor = async (req, res) => {
     try {
-        console.log("Cuerpo de la solicitud:", req.body); // Verifica los datos enviados
-        console.log("Archivo recibido:", req.file); // Verifica si el archivo fue recibido
+        console.log("Cuerpo de la solicitud:", req.body);
+        console.log("Archivo recibido:", req.file);
 
-        const { nombres, apellidos, celular, email, cedula, estado } = req.body;
+        const { nombres, apellidos, celular, email, documento, estado } = req.body;
 
         // Procesar imagen de perfil si se sube
         let foto_perfil = null;
@@ -738,7 +738,7 @@ const createGestor = async (req, res) => {
         }
 
         // Validar datos obligatorios
-        if (!nombres || !apellidos || !celular || !email || !cedula || !estado) {
+        if (!nombres || !apellidos || !celular || !email || !documento || !estado) {
             return res.status(400).json({ message: "Todos los campos son obligatorios." });
         }
 
@@ -748,10 +748,10 @@ const createGestor = async (req, res) => {
             return res.status(400).json({ message: "El correo ya está registrado." });
         }
 
-        // Verificar si la cédula ya está registrada
-        const existingCedula = await User.findOne({ where: { cedula } });
-        if (existingCedula) {
-            return res.status(400).json({ message: "La cédula ya está registrada." });
+        // Verificar si el documento ya está registrado
+        const existingDocumento = await User.findOne({ where: { documento } });
+        if (existingDocumento) {
+            return res.status(400).json({ message: "El documento ya está registrado." });
         }
 
         // Generar token de verificación
@@ -766,7 +766,7 @@ const createGestor = async (req, res) => {
             apellidos,
             celular,
             email,
-            cedula,
+            documento,
             estado,
             foto_perfil,
             sena_ID: 1, // Asignar la sede por defecto

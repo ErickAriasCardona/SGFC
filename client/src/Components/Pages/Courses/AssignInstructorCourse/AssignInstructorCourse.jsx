@@ -42,7 +42,7 @@ export const AssignInstructorCourse = ({ curso_ID, onClose, onAssign }) => {
         const filtered = instructors.filter((instructor) =>
             (instructor.nombres || '').toLowerCase().includes(value) ||
             (instructor.apellidos || '').toLowerCase().includes(value) ||
-            (instructor.cedula || '').toLowerCase().includes(value)
+            (instructor.documento || '').toLowerCase().includes(value)
         );
 
         const filteredByState = filtered.filter((instructor) => {

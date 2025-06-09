@@ -83,7 +83,7 @@ export const UpdateGestor = ({ gestor }) => {
         <div id="modal-overlayUpdateGestor" style={{ display: 'flex' }}>
             <form className="modal-bodyUpdateGestor" onSubmit={handleButtonClick}>
                 <div className="modal-left-update">
-                    {['nombres', 'apellidos', 'cedula', 'celular', 'email'].map((field) => (
+                    {['nombres', 'apellidos', 'documento', 'celular', 'email'].map((field) => (
                         <label key={field}>
                             {field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ')}
                             <input

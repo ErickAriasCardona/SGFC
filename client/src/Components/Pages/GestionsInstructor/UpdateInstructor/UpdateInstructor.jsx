@@ -105,7 +105,7 @@ export const UpdateInstructor = ({ instructor }) => {
         <div id="modal-overlayUpdateInstructor" style={{ display: 'flex' }}>
             <form className="modal-bodyUpdateInstructor" onSubmit={handleButtonClick}>
                 <div className="modal-left-update">
-                    {['nombres', 'apellidos', 'cedula', 'titulo_profesional', 'celular', 'email'].map((field) => (
+                    {['nombres', 'apellidos', 'documento', 'titulo_profesional', 'celular', 'email'].map((field) => (
                         <label key={field}>
                             {field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ')}
                             <input

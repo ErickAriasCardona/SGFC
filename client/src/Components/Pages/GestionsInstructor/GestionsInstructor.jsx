@@ -55,7 +55,7 @@ export const GestionsInstructor = () => {
         const filtered = instructors.filter((instructor) =>
             instructor.nombres.toLowerCase().includes(value) ||
             instructor.apellidos.toLowerCase().includes(value) ||
-            instructor.cedula.toLowerCase().includes(value)
+            instructor.documento.toLowerCase().includes(value)
         );
 
         // Aplicar también el filtro de estado
@@ -77,7 +77,7 @@ export const GestionsInstructor = () => {
         const filtered = instructors.filter((instructor) =>
             (instructor.nombres || '').toLowerCase().includes(filter.toLowerCase()) ||
             (instructor.apellidos || '').toLowerCase().includes(filter.toLowerCase()) ||
-            (instructor.cedula || '').toLowerCase().includes(filter.toLowerCase())
+            (instructor.documento || '').toLowerCase().includes(filter.toLowerCase())
         );
 
         const filteredByState = filtered.filter((instructor) => {
