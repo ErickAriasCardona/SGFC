@@ -29,9 +29,11 @@
     width: 50%;
     height: auto;
     display: flex;
-    position: absolute;
-    right: 30%;
-    top: 35%;
+    justify-content: left;
+    align-items: end;
+    margin-top: 3rem;
+    margin-right: 7rem;
+
 }
 
 
@@ -40,12 +42,10 @@
     width: 50%;
     height: auto;
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: start;
-    position: absolute;
-    top: 44%;
-    left: 55%;
+    justify-content: right;
+    align-items: end;
+    margin-top: -14rem;
+    margin-right: -6rem;
 }
 
 .illustration-container img {
@@ -63,8 +63,7 @@
     align-items: center;
     justify-content: center;
     color: #fff;
-    position: absolute;
-    bottom: 7rem;
+    margin-top: 1rem;
 }
 
 .back-button-manageAttendance {
@@ -76,6 +75,5 @@
     color: #fff;
     font-size: 16px;
     cursor: pointer;
-    position: absolute;
-    bottom: 4rem;
+    margin-top: 2rem;
 }

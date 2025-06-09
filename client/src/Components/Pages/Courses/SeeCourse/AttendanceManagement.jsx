@@ -375,11 +375,7 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                     <p className="error-message">{error}</p>
                 )}
 
-                {loading ? (
-                    <div className="loading-container">
-                        <p>Cargando participantes...</p>
-                    </div>
-                ) : participants.length === 0 ? (
+                {participants.length === 0 ? (
                     <div className="no-participants">
                         <p>No hay participantes inscritos en este curso</p>
                     </div>
@@ -565,9 +561,9 @@ export const AttendanceManagement = ({ open, onClose, courseId, selectedDate }) 
                             <p className="error-message">{error}</p>
                         )}
 
-                        {loading ? (
-                            <div className="loading-container">
-                                <p>Cargando participantes...</p>
+                        {participants.length === 0 ? (
+                            <div className="no-participants">
+                                <p>No hay participantes inscritos en este curso</p>
                             </div>
                         ) : filteredParticipants.length === 0 ? (
                             <div className="no-participants">
