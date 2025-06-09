@@ -26,13 +26,25 @@ cron.schedule('0 * * * *', async () => {
 
 const app = express();
 
-// Configuración de CORS
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://sgfc-seven.vercel.app"
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // Cambia esto al dominio de tu frontend
-    credentials: true, // Permitir el envío de cookies y credenciales
+    origin: function (origin, callback) {
+      // Permitir solicitudes sin origin (como Postman) o desde orígenes permitidos
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("No permitido por CORS"));
+      }
+    },
+    credentials: true,
   })
 );
+
 
 app.use(express.json());
 app.use(cookieParser()); // Usar cookie-parser para manejar cookies
