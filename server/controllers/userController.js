@@ -846,14 +846,22 @@ const getAprendicesByEmpresa = async (req, res) => {
 
 const createMasiveUsers = async (req, res) => {
     try {
-        const rutaArchivo = req.file.path;
-
+        if (!req.file || !req.file.buffer) {
+            return res.status(400).json({ message: 'No se ha subido ningún archivo.' });
+        }
+        
+        const Archivo = req.file.buffer;
+        console.log(req.file.buffer)
         // Leer el archivo con xlsx
-        const workbook = xlsx.readFile(rutaArchivo);
+        const workbook = xlsx.read(Archivo, { type: 'buffer' });
 
         // Obtener la primera hoja
         const nombrePrimeraHoja = workbook.SheetNames[0];
         const hoja = workbook.Sheets[nombrePrimeraHoja];
+
+        if (!hoja) {
+            return res.status(400).json({ message: 'El archivo no contiene hojas válidas.' });
+        }
 
         // Obtener el rango de celdas
         const rango = xlsx.utils.decode_range(hoja['!ref']);
@@ -861,7 +869,6 @@ const createMasiveUsers = async (req, res) => {
         // Verificar si la celda C2 existe
         const celdaTitulo = hoja['C2'];
         if (!celdaTitulo) {
-            fs.unlinkSync(rutaArchivo); // Asegurarse de eliminar el archivo
             return res.status(400).json({ message: 'La celda C2 no contiene un título válido.' });
         }
 
@@ -874,6 +881,10 @@ const createMasiveUsers = async (req, res) => {
             }
         }
 
+        if (valoresColumna.length === 0) {
+            return res.status(400).json({ message: 'El archivo no contiene datos en la columna C.' });
+        }
+
         // Verificar si hay usuarios duplicados en el archivo
         const duplicados = valoresColumna.filter((item, index) => valoresColumna.indexOf(item) !== index);
         if (duplicados.length > 0) {
@@ -881,7 +892,6 @@ const createMasiveUsers = async (req, res) => {
             const duplicadosFiltrados = duplicados.filter(item => item !== "");
 
             if (duplicadosFiltrados.length > 0) {
-                fs.unlinkSync(rutaArchivo); // Asegurarse de eliminar el archivo
                 return res.status(400).json({
                     message: "El archivo contiene usuarios duplicados no permitidos.",
                     duplicados: duplicadosFiltrados
@@ -895,7 +905,6 @@ const createMasiveUsers = async (req, res) => {
 
         if (existingUsers.length > 0) {
             const repetidos = existingUsers.map(user => user.email);
-            fs.unlinkSync(rutaArchivo); // Asegurarse de eliminar el archivo
             return res.status(409).json({
                 message: "Existen usuarios repetidos en la base de datos.",
                 repetidos
@@ -923,20 +932,11 @@ const createMasiveUsers = async (req, res) => {
             });
         }
 
-        // Eliminar el archivo después de procesarlo
-        fs.unlinkSync(rutaArchivo);
-
         return res.json({
             message: "Usuarios creados exitosamente.",
         });
     } catch (error) {
         console.error("Error al procesar el archivo:", error);
-
-        // Asegurarse de eliminar el archivo en caso de error
-        if (req.file && req.file.path) {
-            fs.unlinkSync(req.file.path);
-        }
-
         return res.status(500).json({ error: 'Error al procesar el archivo' });
     }
 }
