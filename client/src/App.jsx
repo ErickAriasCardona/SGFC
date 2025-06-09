@@ -1,7 +1,10 @@
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import React, { useState } from "react";
+import React from "react";
+
+// Importación del contexto de los modales
+import { useModal } from './Context/ModalContext';
 
 // Importación de iconos
 import companyGreen from './assets/Icons/companyGreen.png';
@@ -24,7 +27,6 @@ import { GestionsInstructor } from './Components/Pages/GestionsInstructor/Gestio
 import { GestionsGestor } from './Components/Pages/GestionsGestor/GestionsGestor';
 import { SeeMyProfile } from './Components/Pages/SeeMyProfile/SeeMyProfile';
 import { GestionsCompany } from './Components/Pages/GestionsCompany/GestionsCompany';
-import { CreateEmploye } from './Components/Pages/GestionsEmployes/CreateEmploye/CreateEmploye';
 import { UpdateEmploye } from './Components/Pages/GestionsEmployes/UpdateEmploye/UpdateEmploye';
 import { SeachEmployes } from './Components/Pages/GestionsEmployes/SeachEmployes/SeachEmployes';
 import { GestionsEmployes } from './Components/Pages/GestionsEmployes/GestionsEmployes';
@@ -37,17 +39,30 @@ import { Modal_Successful } from './Components/UI/Modal_Successful/Modal_Success
 import { Modal_Failed } from './Components/UI/Modal_Failed/Modal_Failed';
 import { CreateInstructor } from './Components/Pages/GestionsInstructor/CreateInstructor/CreateInstructor';
 import { CreateGestor } from './Components/Pages/GestionsGestor/CreateGestor/CreateGestor';
+import { CreateEmploye } from './Components/Pages/GestionsEmployes/CreateEmploye/CreateEmploye';
 import { UpdateInstructor } from './Components/Pages/GestionsInstructor/UpdateInstructor/UpdateInstructor';
+
 // Importación de estilos
 import './App.css';
 
 function App() {
   const navigate = useNavigate();
-  const [showSignIn, setShowSignIn] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);
-  const [showAccountType, setShowAccountType] = useState(false);
-  const [selectedAccountType, setSelectedAccountType] = useState("");
-  const [hoveredButton, setHoveredButton] = useState("");
+
+  // Estados de los modales desde el contexto global
+  const {
+    showSignIn,
+    setShowSignIn,
+    showSignUp,
+    setShowSignUp,
+    showAccountType,
+    setShowAccountType,
+    selectedAccountType,
+    setSelectedAccountType,
+    showModalCreateEmployee,
+    setShowModalCreateEmployee
+  } = useModal();
+
+  const [hoveredButton, setHoveredButton] = React.useState("");
 
   useEffect(() => {
     if (window.gapi) {
@@ -78,9 +93,10 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <>
+        {/* Renderizado condicional de modales basado en el contexto */}
         {showSignIn && (
-          <Modal_SignIn 
-            showSignIn={showSignIn} 
+          <Modal_SignIn
+            showSignIn={showSignIn}
             setShowSignIn={setShowSignIn}
             setShowSignUp={setShowSignUp}
             setShowAccountType={setShowAccountType}
@@ -137,10 +153,11 @@ function App() {
         <Modal_Failed />
         <CreateInstructor />
         <CreateGestor />
+        {showModalCreateEmployee && <CreateEmploye />}
 
         <Routes>
           <Route path="/" element={
-            <Start 
+            <Start
               setShowSignIn={setShowSignIn}
               setShowSignUp={setShowSignUp}
               setShowAccountType={setShowAccountType}
@@ -148,7 +165,7 @@ function App() {
           } />
           <Route path="/QuienesSomos" element={<Who_we_are />} />
           <Route path="/Inicio" element={
-            <Home 
+            <Home
               handleShowSignUp={handleShowSignUp}
             />
           } />
@@ -164,7 +181,6 @@ function App() {
           <Route path="/MiPerfil" element={<SeeMyProfile />} />
           <Route path="/Gestiones/Empresas" element={<GestionsCompany />} />
           <Route path="/Empleados/MisEmpleados" element={<GestionsEmployes />} />
-          <Route path="/Empleados/CrearEmpleado" element={<CreateEmploye />} />
           <Route path="/Empleados/ActualizarEmpleado/:id" element={<UpdateEmploye />} />
         </Routes>
       </>
