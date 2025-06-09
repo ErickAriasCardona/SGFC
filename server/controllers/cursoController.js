@@ -134,16 +134,7 @@ const createCurso = async (req, res) => {
     // Procesar imagen y convertir a Base64 si se envió
     let image = null;
     if (req.file) {
-      const base64Data = req.file.buffer.toString('base64');
-      const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-      const savePath = path.join(__dirname, '../base64storage', uniqueName);
-
-      if (!fs.existsSync(path.dirname(savePath))) {
-        fs.mkdirSync(path.dirname(savePath), { recursive: true });
-      }
-      fs.writeFileSync(savePath, base64Data);
-
-      image = `/base64storage/${uniqueName}`;
+      image = req.file.buffer.toString('base64'); // Guardar base64 en la base de datos
     }
 
     // Procesar días de formación
@@ -233,21 +224,10 @@ const updateCurso = async (req, res) => {
       return res.status(404).json({ message: "Curso no encontrado." });
     }
 
-
     // Verificar si se envió una nueva imagen
-    //const imagen = req.file ? `/uploads/${req.file.filename}` : curso.imagen;
-    let image = null;
+    let image = curso.imagen;
     if (req.file) {
-      const base64Data = req.file.buffer.toString('base64');
-      const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-      const savePath = path.join(__dirname, '../base64storage', uniqueName);
-
-      if (!fs.existsSync(path.dirname(savePath))) {
-        fs.mkdirSync(path.dirname(savePath), { recursive: true });
-      }
-      fs.writeFileSync(savePath, base64Data);
-
-      image = `/base64storage/${uniqueName}`;
+      image = req.file.buffer.toString('base64'); // Guardar base64 en la base de datos
     }
 
     // Actualizar el curso en la base de datos
@@ -263,7 +243,6 @@ const updateCurso = async (req, res) => {
       dias_formacion,
       lugar_formacion,
       estado,
-
       imagen: image, // Actualizar la imagen si se envió una nueva
     });
 
@@ -273,7 +252,6 @@ const updateCurso = async (req, res) => {
     if (emails.length === 0) {
       console.warn('No hay usuarios aceptados para mandar Email')
     } else {
-
       await sendCursoUpdatedNotification(emails, curso);
     };
 
@@ -287,6 +265,7 @@ const updateCurso = async (req, res) => {
     res.status(500).json({ message: "Error al actualizar el curso." });
   }
 };
+// ...existing code...
 
 // Obtener todos los cursos
 const getAllCursos = async (req, res) => {

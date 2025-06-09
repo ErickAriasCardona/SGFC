@@ -49,3 +49,28 @@
 .complementary {
     color: #00843D;
 }
+
+
+/* mobile */
+@media (max-width: 480px) { 
+    .container_ilustrationStart>img{
+        width: 20rem;
+        height: auto;
+    }
+
+    .container_ilustrationStart{
+        margin-left: 0;
+        height: auto;
+    }
+
+    .container_description{
+        width: 80%;
+        height: auto;
+        margin-left: 0;
+        text-align: center;
+    }
+
+    .container_description>h1 {
+        font-size: 32px;
+    }
+}

@@ -46,4 +46,18 @@
     display: flex;
     justify-content: center;
     margin-top: 10rem;
+    /* flex-wrap: wrap; */
+}
+
+@media (max-width: 768px){
+    .container_main{
+        flex-direction: column-reverse;
+        align-items: center;
+        margin-top: 3rem;
+    }
+
+    
+    .circle , .circle_2{
+        display: none;
+    }
 }

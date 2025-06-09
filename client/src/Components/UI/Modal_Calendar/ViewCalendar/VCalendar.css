@@ -196,7 +196,7 @@
     user-select: none;
   }
   
-  .save-button {
+  .save-button-calendar {
     background-color: #00843D;
     color: white;
     border: none;
@@ -218,6 +218,6 @@
     border-radius: 15px;
   }
   
-  .save-button:hover {
+  .save-button-calendar:hover {
     background-color: #1fac1f;
   }

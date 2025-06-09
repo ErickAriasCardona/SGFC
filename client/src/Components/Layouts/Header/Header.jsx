@@ -47,6 +47,27 @@ export const Header = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Detectar rutas activas para menús con subopciones
+  const isCoursesActive = [
+    '/Cursos/MisCursos',
+    '/Cursos/BuscarCursos',
+    '/Cursos/CrearCurso',
+    '/Cursos/SolicitarCurso'
+  ].some(path => location.pathname.startsWith(path));
+
+  const isGestionesActive = [
+    '/Gestiones/Instructor',
+    '/Gestiones/Gestor'
+  ].some(path => location.pathname.startsWith(path));
+
+  const isEmpresasActive = location.pathname.startsWith('/Gestiones/Empresas');
+
+  const isEmpleadosActive = [
+    '/Empleados/MisEmpleados',
+    '/Empleados/CrearEmpleado',
+    '/Empleados/CrearVariosEmpleados'
+  ].some(path => location.pathname.startsWith(path));
+
   const showDropdown = (optionsCount) => optionsCount > 1;
 
   return (
@@ -60,7 +81,10 @@ export const Header = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => 
           Inicio
         </NavLink>
 
-        <NavLink className="whoWeAre" to="/QuienesSomos">
+        <NavLink
+          to="/QuienesSomos"
+          className={({ isActive }) => (isActive ? 'whoWeAre active' : 'whoWeAre')}
+        >
           Quienes somos
         </NavLink>
 
@@ -70,9 +94,12 @@ export const Header = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => 
 
           if (!isLoggedIn) {
             return (
-              <button className="courses" onClick={() => navigate('/Cursos/BuscarCursos')}>
+              <NavLink
+                to="/Cursos/BuscarCursos"
+                className={({ isActive }) => (isActive ? 'courses active' : 'courses')}
+              >
                 Cursos
-              </button>
+              </NavLink>
             );
           }
 
@@ -88,7 +115,6 @@ export const Header = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => 
               options = [
                 { label: 'Mis cursos', path: '/Cursos/MisCursos' },
                 { label: 'Buscar cursos', path: '/Cursos/BuscarCursos' },
-                // { label: 'Asistencias', path: '/Cursos/Asistencias' },
               ];
               break;
             case 'Gestor':
@@ -102,7 +128,6 @@ export const Header = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => 
               options = [
                 { label: 'Mis cursos', path: '/Cursos/MisCursos' },
                 { label: 'Buscar cursos', path: '/Cursos/BuscarCursos' },
-                // { label: 'Solicitar curso', path: '/Cursos/SolicitarCurso' },
               ];
               break;
             default:
@@ -111,36 +136,61 @@ export const Header = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => 
 
           return showDropdown(options.length) ? (
             <div className="courses-menu" ref={coursesMenuRef}>
-              <button className={`courses ${showCoursesMenu ? 'active' : ''}`} onClick={toggleCoursesMenu}>
+              <button
+                className={`courses${(showCoursesMenu || isCoursesActive) ? ' active' : ''}`}
+                onClick={toggleCoursesMenu}
+              >
                 Cursos
               </button>
               {showCoursesMenu && (
                 <div className="dropdown-courses">
                   <div className="arrow-up" />
                   {options.map((opt, index) => (
-                    <button key={index} onClick={() => handleMenuClick(opt.path)}>{opt.label}</button>
+                    <button
+                      key={index}
+                      className={location.pathname.startsWith(opt.path) ? 'active' : ''}
+                      onClick={() => handleMenuClick(opt.path)}
+                    >
+                      {opt.label}
+                    </button>
                   ))}
                 </div>
               )}
             </div>
           ) : (
-            <button className="courses" onClick={() => handleMenuClick(options[0].path)}>
+            <NavLink
+              to={options[0].path}
+              className={({ isActive }) => (isActive ? 'courses active' : 'courses')}
+            >
               Cursos
-            </button>
+            </NavLink>
           );
         })()}
 
         {/* Gestiones (solo Administrador) */}
         {isLoggedIn && accountType === 'Administrador' && (
           <div className="gestiones-menu" ref={gestionesMenuRef}>
-            <button className={`gestiones ${showGestionesMenu ? 'active' : ''}`} onClick={toggleGestionesMenu}>
+            <button
+              className={`gestiones${(showGestionesMenu || isGestionesActive) ? ' active' : ''}`}
+              onClick={toggleGestionesMenu}
+            >
               Gestiones
             </button>
             {showGestionesMenu && (
               <div className="dropdown-gestiones">
                 <div className="arrow-up" />
-                <button onClick={() => handleMenuClick('/Gestiones/Instructor')}>Gestión de Instructores</button>
-                <button onClick={() => handleMenuClick('/Gestiones/Gestor')}>Gestión de Gestores</button>
+                <button
+                  className={location.pathname.startsWith('/Gestiones/Instructor') ? 'active' : ''}
+                  onClick={() => handleMenuClick('/Gestiones/Instructor')}
+                >
+                  Gestión de Instructores
+                </button>
+                <button
+                  className={location.pathname.startsWith('/Gestiones/Gestor') ? 'active' : ''}
+                  onClick={() => handleMenuClick('/Gestiones/Gestor')}
+                >
+                  Gestión de Gestores
+                </button>
               </div>
             )}
           </div>
@@ -148,23 +198,44 @@ export const Header = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => 
 
         {/* Empresas (solo Administrador) */}
         {isLoggedIn && accountType === 'Administrador' && (
-          <button className="empresas" onClick={() => navigate('/Gestiones/Empresas')}>
+          <NavLink
+            to="/Gestiones/Empresas"
+            className={({ isActive }) => (isActive ? 'empresas active' : 'empresas')}
+          >
             Empresas
-          </button>
+          </NavLink>
         )}
 
         {/* Empleados (solo Empresa) */}
         {isLoggedIn && accountType === 'Empresa' && (
           <div className="empleados-menu" ref={empleadosMenuRef}>
-            <button className={`empleados ${showEmpleadosMenu ? 'active' : ''}`} onClick={toggleEmpleadosMenu}>
+            <button
+              className={`empleados${(showEmpleadosMenu || isEmpleadosActive) ? ' active' : ''}`}
+              onClick={toggleEmpleadosMenu}
+            >
               Empleados
             </button>
             {showEmpleadosMenu && (
               <div className="dropdown-empleados">
                 <div className="arrow-up" />
-                <button onClick={() => handleMenuClick('/Empleados/MisEmpleados')}>Mis empleados</button>
-                <button onClick={() => handleMenuClick('/Empleados/CrearEmpleado')}>Crear empleados</button>
-                <button onClick={() => handleMenuClick('/Empleados/CrearVariosEmpleados')}>Crear varios empleados</button>
+                <button
+                  className={location.pathname.startsWith('/Empleados/MisEmpleados') ? 'active' : ''}
+                  onClick={() => handleMenuClick('/Empleados/MisEmpleados')}
+                >
+                  Mis empleados
+                </button>
+                <button
+                  className={location.pathname.startsWith('/Empleados/CrearEmpleado') ? 'active' : ''}
+                  onClick={() => handleMenuClick('/Empleados/CrearEmpleado')}
+                >
+                  Crear empleados
+                </button>
+                <button
+                  className={location.pathname.startsWith('/Empleados/CrearVariosEmpleados') ? 'active' : ''}
+                  onClick={() => handleMenuClick('/Empleados/CrearVariosEmpleados')}
+                >
+                  Crear varios empleados
+                </button>
               </div>
             )}
           </div>
