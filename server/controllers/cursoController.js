@@ -5,10 +5,11 @@ const AsignacionCursoInstructor = require("../models/AsignacionCursoInstructor")
 const { sendCourseCreatedEmail } = require("../services/emailService");
 const { Router } = require("express");
 const upload = require("../config/multer");
-const { sendCursoUpdatedNotification } = require("../services/emailService");
-const { InscripcionCurso } = require("../models");
-const { Op } = require("sequelize");
-const fs = require("fs");
+const { sendCursoUpdatedNotification,sendInstructorAssignedEmail,sendStudentsInstructorAssignedEmail} = require('../services/emailService');
+const { Op } = require('sequelize');
+const fs = require('fs');
+const InscripcionCurso = require('../models/InscripcionCurso');
+
 
 //Asignar cursos
 const asignarCursoAInstructor = async (req, res) => {
@@ -69,6 +70,49 @@ const asignarCursoAInstructor = async (req, res) => {
       fecha_asignacion: fecha_asignacion || new Date(),
       estado: estado || "aceptada",
     });
+    // Enviar correo al instructor
+    if (instructor.email) {
+      await sendInstructorAssignedEmail(instructor.email, curso);
+    }
+
+    // Buscar aprendices inscritos a ese curso
+  // Obtener aprendices inscritos en el curso
+   const inscripciones = await InscripcionCurso.findAll({ where: { curso_ID } });
+
+    if (inscripciones.length === 0) {
+      console.log("⚠️ No hay aprendices inscritos aún, no se enviaron notificaciones.");
+    } else {
+      const aprendizIDs = inscripciones.map(inscripcion => inscripcion.aprendiz_ID);
+
+      const aprendices = await User.findAll({
+        where: {
+          ID: { [Op.in]: aprendizIDs },
+          email: { [Op.ne]: null },
+          verificacion_email: true
+        }
+      });
+
+      const emailsAprendices = aprendices.map(a => a.email);
+
+      // instructor_ID viene de asignacion_cursos_instructor
+      const instructor = await User.findOne({
+      where: {
+        ID: instructor_ID,
+        accountType: 'Instructor'
+      }
+      });
+
+      let nombreInstructor = 'Instructor asignado';
+      if (instructor) {
+        nombreInstructor = `${instructor.nombres} ${instructor.apellidos}`;
+      }
+
+      // Ahora llama a tu función de email y pásale el nombre del instructor
+      for (const email of emailsAprendices) {
+        await sendStudentsInstructorAssignedEmail (email, curso, nombreInstructor);
+      }
+}
+
 
     res.status(201).json({
       mensaje: "Curso asignado correctamente",
@@ -80,6 +124,8 @@ const asignarCursoAInstructor = async (req, res) => {
       mensaje: "Error interno al asignar el curso",
     });
   }
+  
+
 };
 
 //consultar cursos asignador a un instructor
@@ -497,8 +543,10 @@ const updateCurso = async (req, res) => {
     if (emails.length === 0) {
       console.warn("No hay usuarios aceptados para mandar Email");
     } else {
-      await sendCursoUpdatedNotification(emails, curso);
-    }
+
+      sendCursoUpdatedNotification(emails, curso);
+    };
+
 
     res.status(200).json({
       message: `Curso actualizado con éxito. Notificaciones enviadas a ${emails.length} usuarios.`,
