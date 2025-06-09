@@ -76,7 +76,14 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const userSession = localStorage.getItem("userSession");
+    const userSession = localStorage.getItem('userSession');
+    const userInfo = sessionStorage.getItem('userSession');
+    const { email } = JSON.parse(userInfo || '{}'); // Manejo seguro si userInfo es null
+  
+    if (email?.includes('@example.com')) {
+      setShowAccountType(true);
+    }
+
     if (userSession) {
       const { accountType } = JSON.parse(userSession);
       navigate("/Inicio", { state: { accountType } });

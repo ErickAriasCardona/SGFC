@@ -1,5 +1,5 @@
 const express = require("express");
-const { getAprendicesByEmpresa, registerUser, verifyEmail, loginUser,requestPasswordReset,resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile,createInstructor, createGestor,logoutUser } = require("../controllers/userController");
+const { getAprendicesByEmpresa, registerUser, verifyEmail, loginUser,requestPasswordReset,resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile,createInstructor, createGestor,logoutUser, createMasiveUsers } = require("../controllers/userController");
 const { googleSignIn, googleSignUp } = require("../controllers/authGoogleController"); // Importar controlador de autenticación de Google
 const router = express.Router();
 const upload = require("../config/multer"); // Importar configuración de multer
@@ -22,7 +22,7 @@ router.post('/crearInstructor', upload.single('foto_perfil'), createInstructor);
 router.post('/crearGestor', upload.single('foto_perfil'), createGestor);
 router.post("/logout", logoutUser);
 router.get("/empresa/empleados/:id", getAprendicesByEmpresa); // Obtener aprendices por ID de empresa
-
+router.post('/createMasiveUsers', upload.single('archivo_xlsx'), createMasiveUsers)
 
 router.get("/", (req, res) => {
     res.send("🚀 API funcionando correctamente");

@@ -4,12 +4,15 @@ const { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirm
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
+const xlsx = require("xlsx")
+const fs = require('fs')
 
 // Registrar usuario
 const Empresa = require('../models/empresa'); // Importar el modelo Empresa
 const Sena = require('../models/sena'); // Importar el modelo Sena
 const Departamento = require('../models/departamento'); // Importar el modelo Departamento 
 const Ciudad = require('../models/ciudad'); // Importar el modelo Ciudad
+
 
 
 
@@ -158,6 +161,7 @@ const loginUser = async (req, res) => {
             message: "Inicio de sesión exitoso",
             id: user.ID,
             accountType: user.accountType,
+            email: user.email
         });
     } catch (error) {
         console.error(error);
@@ -201,7 +205,7 @@ const requestPasswordReset = async (req, res) => {
     } catch (error) {
         console.error("Error al solicitar recuperación de contraseña:", error);
         res.status(500).json({ message: "Error al procesar la solicitud de recuperación de contraseña." });
-    } 
+    }
 };
 
 // Cambiar contraseña con token
@@ -560,7 +564,22 @@ const updateUserProfile = async (req, res) => {
 
         // APRENDIZ
         if (loggedInUser.accountType === "Aprendiz" && user.accountType === "Aprendiz") {
-            if (email) user.email = email;
+            if (email && email !== user.email) {
+                const existingEmail = await User.findOne({ where: { email } });
+                if (existingEmail) {
+                    return res.status(400).json({ message: "El correo electrónico ya está registrado." });
+                }
+
+                // Generar token de verificación
+                const verificationToken = crypto.randomBytes(32).toString('hex');
+                user.token = verificationToken;
+                user.verificacion_email = false;
+
+                // Enviar correo de verificación
+                await sendVerificationEmail(email, verificationToken);
+
+                user.email = email;
+            }
             if (nombres) user.nombres = nombres;
             if (apellidos) user.apellidos = apellidos;
             if (celular) user.celular = celular;
@@ -573,7 +592,7 @@ const updateUserProfile = async (req, res) => {
             }
             if (foto_perfil) user.foto_perfil = foto_perfil;
             await user.save();
-            return res.status(200).json({ message: "Perfil de aprendiz actualizado con éxito." });
+            return res.status(200).json({ message: "Perfil de aprendiz actualizado con éxito. Por favor verifica tu nuevo correo." });
         }
 
         return res.status(403).json({ message: "No tienes permiso para actualizar este perfil." });
@@ -756,5 +775,102 @@ const getAprendicesByEmpresa = async (req, res) => {
     }
 };
 
+const createMasiveUsers = async (req, res) => {
+    try {
+        if (!req.file || !req.file.buffer) {
+            return res.status(400).json({ message: 'No se ha subido ningún archivo.' });
+        }
+        
+        const Archivo = req.file.buffer;
+        console.log(req.file.buffer)
+        // Leer el archivo con xlsx
+        const workbook = xlsx.read(Archivo, { type: 'buffer' });
 
-module.exports = {getAprendicesByEmpresa,  registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens };
+        // Obtener la primera hoja
+        const nombrePrimeraHoja = workbook.SheetNames[0];
+        const hoja = workbook.Sheets[nombrePrimeraHoja];
+
+        if (!hoja) {
+            return res.status(400).json({ message: 'El archivo no contiene hojas válidas.' });
+        }
+
+        // Obtener el rango de celdas
+        const rango = xlsx.utils.decode_range(hoja['!ref']);
+
+        // Verificar si la celda C2 existe
+        const celdaTitulo = hoja['C2'];
+        if (!celdaTitulo) {
+            return res.status(400).json({ message: 'La celda C2 no contiene un título válido.' });
+        }
+
+        // Extraer los valores de la columna C desde la fila 3 hacia abajo
+        const valoresColumna = [];
+        for (let fila = 2; fila <= rango.e.r; fila++) { // Comienza desde la fila 2 (índice 1 en base 0)
+            const celda = hoja[`C${fila + 1}`]; // Celdas C3, C4, etc.
+            if (celda) {
+                valoresColumna.push(celda.v);
+            }
+        }
+
+        if (valoresColumna.length === 0) {
+            return res.status(400).json({ message: 'El archivo no contiene datos en la columna C.' });
+        }
+
+        // Verificar si hay usuarios duplicados en el archivo
+        const duplicados = valoresColumna.filter((item, index) => valoresColumna.indexOf(item) !== index);
+        if (duplicados.length > 0) {
+            // Excepción: permitir duplicados si son valores vacíos ("")
+            const duplicadosFiltrados = duplicados.filter(item => item !== "");
+
+            if (duplicadosFiltrados.length > 0) {
+                return res.status(400).json({
+                    message: "El archivo contiene usuarios duplicados no permitidos.",
+                    duplicados: duplicadosFiltrados
+                });
+            }
+        }
+
+        // Verificar si hay usuarios repetidos en la base de datos antes de crear
+        const emails = valoresColumna.map(identificacion => `${identificacion}@example.com`);
+        const existingUsers = await User.findAll({ where: { email: emails } });
+
+        if (existingUsers.length > 0) {
+            const repetidos = existingUsers.map(user => user.email);
+            return res.status(409).json({
+                message: "Existen usuarios repetidos en la base de datos.",
+                repetidos
+            });
+        }
+
+        // Crear usuarios con los datos extraídos
+        for (const identificacion of valoresColumna) {
+            if (!identificacion || identificacion === '') {
+                console.warn(`Número de identificación inválido: ${identificacion}`);
+                continue; // Saltar si el Número de Identificación no es válido
+            }
+
+            const email = `${identificacion}@example.com`;
+            const password = `${identificacion.toString()}example`;
+
+            // Crear el usuario
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await User.create({
+                email,
+                password: hashedPassword,
+                accountType: 'Aprendiz', // Tipo de cuenta por defecto
+                cedula: identificacion,
+                verificacion_email: true,
+            });
+        }
+
+        return res.json({
+            message: "Usuarios creados exitosamente.",
+        });
+    } catch (error) {
+        console.error("Error al procesar el archivo:", error);
+        return res.status(500).json({ error: 'Error al procesar el archivo' });
+    }
+}
+
+
+module.exports = {getAprendicesByEmpresa,  registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers };
