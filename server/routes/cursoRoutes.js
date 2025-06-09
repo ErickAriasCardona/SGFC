@@ -27,4 +27,7 @@ router.post('/asignaciones', asignarCursoAInstructor);
 //cursos asignados a un isntructor
 router.get('/cursos-asignados/:instructor_ID', obtenerCursosAsignadosAInstructor);
 
+// Ruta para actualizar la programación de un curso
+router.put('/cursos/:id/programacion', authenticateUser, updateCurso);
+
 module.exports = router;
