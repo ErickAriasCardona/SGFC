@@ -92,7 +92,7 @@ export const ConsultCourses = () => {
 
           <div className='options_Search'>
 
-          <div className="custom-select-container">
+            <div className="custom-select-container">
               <select className="custom-select" defaultValue="">
                 <option value="" disabled hidden>Categoría</option>
                 <option value="desarrollo">Desarrollo</option>
@@ -125,11 +125,11 @@ export const ConsultCourses = () => {
                 {cursos.map((curso) => (
                   <div
                     className="carousel-card"
-                    key={curso.ID} // Usar el campo ID en mayúsculas
-                    onClick={() => handleCardClick(curso.ID)} // Usar el campo ID en mayúsculas
+                    key={curso.ID}
+                    onClick={() => handleCardClick(curso.ID)}
                   >
                     <img
-                      src={`http://localhost:3001${curso.imagen}` || "ruta/imagen/por/defecto.jpg"} // Construir la URL completa
+                      className='img_course' src={curso.imagen ? `data:image/jpeg;base64,${curso.imagen}` : "ruta/imagen/por/defecto.jpg"}
                       alt={curso.nombre_curso}
                     />
                     <div className="card-text">

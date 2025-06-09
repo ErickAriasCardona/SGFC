@@ -197,7 +197,7 @@ const requestPasswordReset = async (req, res) => {
         // 👉 Imprimir el token en consola
         console.log(`Token generado para ${email}: ${resetToken}`);
 
-        const resetLink = `http://localhost:5173/resetPassword?token=${resetToken}`;
+        const resetLink = `https://sgfc-seven.vercel.app/resetPassword?token=${resetToken}`;
         console.log(`Enviando correo de recuperación a: ${email}`);
         await sendPasswordResetEmail(email, resetLink);
 
@@ -246,7 +246,7 @@ const resetPassword = async (req, res) => {
         await user.save();
 
         // Enlace para volver a cambiar la contraseña
-        const resetLink = `http://localhost:5173/resetPassword?token=${newResetToken}`;
+        const resetLink = `https://sgfc-seven.vercel.app/resetPassword?token=${newResetToken}`;
         await sendPasswordChangeConfirmationEmail(user.email, resetLink);
 
         res.status(200).json({ message: "Contraseña restablecida con éxito" });
@@ -380,7 +380,7 @@ const getInstructores = async (req, res) => {
             return {
                 ...instructor.toJSON(),
                 foto_perfil: instructor.foto_perfil
-                    ? `http://localhost:3001/${instructor.foto_perfil}` // Construir la URL completa
+                    ? `https://sgfc-production.up.railway.app/${instructor.foto_perfil}` // Construir la URL completa
                     : null, // Si no hay foto, devolver null
             };
         });
@@ -405,7 +405,7 @@ const getGestores = async (req, res) => {
             return {
                 ...gestor.toJSON(),
                 foto_perfil: gestor.foto_perfil
-                    ? `http://localhost:3001/${gestor.foto_perfil}` // Construir la URL completa
+                    ? `https://sgfc-production.up.railway.app//${gestor.foto_perfil}` // Construir la URL completa
                     : null, // Si no hay foto, devolver null
             };
         });
@@ -436,19 +436,8 @@ const updateUserProfile = async (req, res) => {
         // Procesar imagen de perfil si se sube
         let foto_perfil = null;
         if (req.file) {
-            const path = require('path');
-            const fs = require('fs');
-            const base64Data = req.file.buffer.toString('base64');
-            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-            const savePath = path.join(__dirname, '../base64storage', uniqueName);
-            if (!fs.existsSync(path.dirname(savePath))) {
-                fs.mkdirSync(path.dirname(savePath), { recursive: true });
-            }
-            fs.writeFileSync(savePath, base64Data);
-            foto_perfil = `/base64storage/${uniqueName}`;
-        } else if (req.file && req.file.path) {
-            // Compatibilidad con imágenes subidas como archivo normal
-            foto_perfil = req.file.path;
+            // Guardar la imagen en base64 directamente en la base de datos
+            foto_perfil = req.file.buffer.toString('base64');
         }
 
         const token = req.cookies.token;
@@ -613,48 +602,6 @@ const updateUserProfile = async (req, res) => {
     }
 };
 
-// Actualizar foto de perfil
-const updateProfilePicture = async (req, res) => {
-    try {
-        const { id } = req.params; // Obtener el ID del usuario desde los parámetros de la URL
-
-        // Verificar si se subió un archivo
-        if (!req.file) {
-            console.log("Archivo no recibido en la solicitud.");
-            return res.status(400).json({ message: "No se ha subido ninguna imagen." });
-        }
-
-        console.log("Archivo recibido:", req.file); // Verificar qué archivo se recibió
-
-        const path = require('path');
-        const fs = require('fs');
-        const base64Data = req.file.buffer.toString('base64');
-        const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-        const savePath = path.join(__dirname, '../base64storage', uniqueName);
-        if (!fs.existsSync(path.dirname(savePath))) {
-            fs.mkdirSync(path.dirname(savePath), { recursive: true });
-        }
-        fs.writeFileSync(savePath, base64Data);
-        const filePath = `/base64storage/${uniqueName}`; // Ruta de la imagen subida
-
-        // Buscar el usuario por ID
-        const user = await User.findByPk(id);
-
-        if (!user) {
-            return res.status(404).json({ message: "Usuario no encontrado." });
-        }
-
-        // Actualizar la foto de perfil
-        user.foto_perfil = filePath;
-        await user.save();
-
-        res.status(200).json({ message: "Foto de perfil actualizada con éxito.", foto_perfil: filePath });
-    } catch (error) {
-        console.error("Error al actualizar la foto de perfil:", error);
-        res.status(500).json({ message: "Error al actualizar la foto de perfil." });
-    }
-};
-
 // Crear Instructor
 const createInstructor = async (req, res) => {
     try {
@@ -666,16 +613,8 @@ const createInstructor = async (req, res) => {
         // Procesar imagen de perfil si se sube
         let foto_perfil = null;
         if (req.file) {
-            const path = require('path');
-            const fs = require('fs');
-            const base64Data = req.file.buffer.toString('base64');
-            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-            const savePath = path.join(__dirname, '../base64storage', uniqueName);
-            if (!fs.existsSync(path.dirname(savePath))) {
-                fs.mkdirSync(path.dirname(savePath), { recursive: true });
-            }
-            fs.writeFileSync(savePath, base64Data);
-            foto_perfil = `/base64storage/${uniqueName}`;
+            // Guardar la imagen en base64 directamente en la base de datos
+            foto_perfil = req.file.buffer.toString('base64');
         }
 
         // Validar datos obligatorios
@@ -721,7 +660,6 @@ const createInstructor = async (req, res) => {
         // Enviar correo de verificación
         await sendVerificationEmail(email, token);
 
-
         res.status(201).json({
             message: "Instructor creado con éxito. Por favor verifica tu correo.",
             instructor: newInstructor
@@ -743,16 +681,8 @@ const createGestor = async (req, res) => {
         // Procesar imagen de perfil si se sube
         let foto_perfil = null;
         if (req.file) {
-            const path = require('path');
-            const fs = require('fs');
-            const base64Data = req.file.buffer.toString('base64');
-            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-            const savePath = path.join(__dirname, '../base64storage', uniqueName);
-            if (!fs.existsSync(path.dirname(savePath))) {
-                fs.mkdirSync(path.dirname(savePath), { recursive: true });
-            }
-            fs.writeFileSync(savePath, base64Data);
-            foto_perfil = `/base64storage/${uniqueName}`;
+            // Guardar la imagen en base64 directamente en la base de datos
+            foto_perfil = req.file.buffer.toString('base64');
         }
 
         // Validar datos obligatorios
@@ -790,7 +720,7 @@ const createGestor = async (req, res) => {
             sena_ID: 1, // Asignar la sede por defecto
             accountType: "Gestor", // Tipo de cuenta
             password: hashedPassword, // Contraseña encriptada
-            verificacion_email: false, // Estado de verificació
+            verificacion_email: false, // Estado de verificación
             sena_ID: 1,
             token, // Token de verificación
         });
@@ -804,6 +734,7 @@ const createGestor = async (req, res) => {
         res.status(500).json({ message: "Error al crear el gestor." });
     }
 };
+// ...existing code...
 
 // Consultar Empleados por Empresa
 const getAprendicesByEmpresa = async (req, res) => {
@@ -942,5 +873,4 @@ const createMasiveUsers = async (req, res) => {
 }
 
 
-
-module.exports = { getAprendicesByEmpresa, registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers };
+module.exports = {getAprendicesByEmpresa,  registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers };

@@ -1,9 +1,8 @@
 const express = require("express");
-const { getAprendicesByEmpresa, registerUser, verifyEmail, loginUser,requestPasswordReset,resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile,updateProfilePicture,createInstructor, createGestor,logoutUser, createMasiveUsers } = require("../controllers/userController");
+const { getAprendicesByEmpresa, registerUser, verifyEmail, loginUser,requestPasswordReset,resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile,createInstructor, createGestor,logoutUser, createMasiveUsers } = require("../controllers/userController");
 const { googleSignIn, googleSignUp } = require("../controllers/authGoogleController"); // Importar controlador de autenticación de Google
 const router = express.Router();
 const upload = require("../config/multer"); // Importar configuración de multer
-
 
 router.post("/createUser", registerUser); // Ruta para registrar usuario
 router.get("/verificarCorreo", verifyEmail); // Ruta para verificar correo
@@ -19,7 +18,6 @@ router.get('/empresas', getEmpresas); // Obtener todas las empresas
 router.get('/instructores', getInstructores); // Obtener todos los instructores
 router.get('/gestores', getGestores); // Obtener todos los gestores
 router.put('/perfil/actualizar/:id', upload.single('foto_perfil'), updateUserProfile);
-router.put('/perfil/actualizarFoto/:id', updateProfilePicture); // Actualizar foto de perfil de usuario por ID
 router.post('/crearInstructor', upload.single('foto_perfil'), createInstructor);
 router.post('/crearGestor', upload.single('foto_perfil'), createGestor);
 router.post("/logout", logoutUser);
