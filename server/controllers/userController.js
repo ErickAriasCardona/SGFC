@@ -4,12 +4,15 @@ const { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirm
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
+const xlsx = require("xlsx")
+const fs = require('fs')
 
 // Registrar usuario
 const Empresa = require('../models/empresa'); // Importar el modelo Empresa
 const Sena = require('../models/sena'); // Importar el modelo Sena
 const Departamento = require('../models/departamento'); // Importar el modelo Departamento 
 const Ciudad = require('../models/ciudad'); // Importar el modelo Ciudad
+
 
 
 
@@ -158,7 +161,7 @@ const loginUser = async (req, res) => {
             message: "Inicio de sesión exitoso",
             id: user.ID,
             accountType: user.accountType,
-            token: token // Enviar el token en la respuesta
+            email: user.email
         });
     } catch (error) {
         console.error(error);
@@ -194,7 +197,7 @@ const requestPasswordReset = async (req, res) => {
         // 👉 Imprimir el token en consola
         console.log(`Token generado para ${email}: ${resetToken}`);
 
-        const resetLink = `http://localhost:5173/resetPassword?token=${resetToken}`;
+        const resetLink = `https://sgfc-seven.vercel.app/resetPassword?token=${resetToken}`;
         console.log(`Enviando correo de recuperación a: ${email}`);
         await sendPasswordResetEmail(email, resetLink);
 
@@ -202,7 +205,7 @@ const requestPasswordReset = async (req, res) => {
     } catch (error) {
         console.error("Error al solicitar recuperación de contraseña:", error);
         res.status(500).json({ message: "Error al procesar la solicitud de recuperación de contraseña." });
-    } 
+    }
 };
 
 // Cambiar contraseña con token
@@ -243,7 +246,7 @@ const resetPassword = async (req, res) => {
         await user.save();
 
         // Enlace para volver a cambiar la contraseña
-        const resetLink = `http://localhost:5173/resetPassword?token=${newResetToken}`;
+        const resetLink = `https://sgfc-seven.vercel.app/resetPassword?token=${newResetToken}`;
         await sendPasswordChangeConfirmationEmail(user.email, resetLink);
 
         res.status(200).json({ message: "Contraseña restablecida con éxito" });
@@ -377,7 +380,7 @@ const getInstructores = async (req, res) => {
             return {
                 ...instructor.toJSON(),
                 foto_perfil: instructor.foto_perfil
-                    ? `http://localhost:3001/${instructor.foto_perfil}` // Construir la URL completa
+                    ? `https://sgfc-production.up.railway.app/${instructor.foto_perfil}` // Construir la URL completa
                     : null, // Si no hay foto, devolver null
             };
         });
@@ -402,7 +405,7 @@ const getGestores = async (req, res) => {
             return {
                 ...gestor.toJSON(),
                 foto_perfil: gestor.foto_perfil
-                    ? `http://localhost:3001/${gestor.foto_perfil}` // Construir la URL completa
+                    ? `https://sgfc-production.up.railway.app//${gestor.foto_perfil}` // Construir la URL completa
                     : null, // Si no hay foto, devolver null
             };
         });
@@ -433,19 +436,8 @@ const updateUserProfile = async (req, res) => {
         // Procesar imagen de perfil si se sube
         let foto_perfil = null;
         if (req.file) {
-            const path = require('path');
-            const fs = require('fs');
-            const base64Data = req.file.buffer.toString('base64');
-            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-            const savePath = path.join(__dirname, '../base64storage', uniqueName);
-            if (!fs.existsSync(path.dirname(savePath))) {
-                fs.mkdirSync(path.dirname(savePath), { recursive: true });
-            }
-            fs.writeFileSync(savePath, base64Data);
-            foto_perfil = `/base64storage/${uniqueName}`;
-        } else if (req.file && req.file.path) {
-            // Compatibilidad con imágenes subidas como archivo normal
-            foto_perfil = req.file.path;
+            // Guardar la imagen en base64 directamente en la base de datos
+            foto_perfil = req.file.buffer.toString('base64');
         }
 
         const token = req.cookies.token;
@@ -572,7 +564,22 @@ const updateUserProfile = async (req, res) => {
 
         // APRENDIZ
         if (loggedInUser.accountType === "Aprendiz" && user.accountType === "Aprendiz") {
-            if (email) user.email = email;
+            if (email && email !== user.email) {
+                const existingEmail = await User.findOne({ where: { email } });
+                if (existingEmail) {
+                    return res.status(400).json({ message: "El correo electrónico ya está registrado." });
+                }
+
+                // Generar token de verificación
+                const verificationToken = crypto.randomBytes(32).toString('hex');
+                user.token = verificationToken;
+                user.verificacion_email = false;
+
+                // Enviar correo de verificación
+                await sendVerificationEmail(email, verificationToken);
+
+                user.email = email;
+            }
             if (nombres) user.nombres = nombres;
             if (apellidos) user.apellidos = apellidos;
             if (celular) user.celular = celular;
@@ -585,55 +592,13 @@ const updateUserProfile = async (req, res) => {
             }
             if (foto_perfil) user.foto_perfil = foto_perfil;
             await user.save();
-            return res.status(200).json({ message: "Perfil de aprendiz actualizado con éxito." });
+            return res.status(200).json({ message: "Perfil de aprendiz actualizado con éxito. Por favor verifica tu nuevo correo." });
         }
 
         return res.status(403).json({ message: "No tienes permiso para actualizar este perfil." });
     } catch (error) {
         console.error("Error al actualizar el perfil del usuario:", error);
         return res.status(500).json({ message: "Error al actualizar el perfil del usuario." });
-    }
-};
-
-// Actualizar foto de perfil
-const updateProfilePicture = async (req, res) => {
-    try {
-        const { id } = req.params; // Obtener el ID del usuario desde los parámetros de la URL
-
-        // Verificar si se subió un archivo
-        if (!req.file) {
-            console.log("Archivo no recibido en la solicitud.");
-            return res.status(400).json({ message: "No se ha subido ninguna imagen." });
-        }
-
-        console.log("Archivo recibido:", req.file); // Verificar qué archivo se recibió
-
-        const path = require('path');
-        const fs = require('fs');
-        const base64Data = req.file.buffer.toString('base64');
-        const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-        const savePath = path.join(__dirname, '../base64storage', uniqueName);
-        if (!fs.existsSync(path.dirname(savePath))) {
-            fs.mkdirSync(path.dirname(savePath), { recursive: true });
-        }
-        fs.writeFileSync(savePath, base64Data);
-        const filePath = `/base64storage/${uniqueName}`; // Ruta de la imagen subida
-
-        // Buscar el usuario por ID
-        const user = await User.findByPk(id);
-
-        if (!user) {
-            return res.status(404).json({ message: "Usuario no encontrado." });
-        }
-
-        // Actualizar la foto de perfil
-        user.foto_perfil = filePath;
-        await user.save();
-
-        res.status(200).json({ message: "Foto de perfil actualizada con éxito.", foto_perfil: filePath });
-    } catch (error) {
-        console.error("Error al actualizar la foto de perfil:", error);
-        res.status(500).json({ message: "Error al actualizar la foto de perfil." });
     }
 };
 
@@ -648,16 +613,8 @@ const createInstructor = async (req, res) => {
         // Procesar imagen de perfil si se sube
         let foto_perfil = null;
         if (req.file) {
-            const path = require('path');
-            const fs = require('fs');
-            const base64Data = req.file.buffer.toString('base64');
-            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-            const savePath = path.join(__dirname, '../base64storage', uniqueName);
-            if (!fs.existsSync(path.dirname(savePath))) {
-                fs.mkdirSync(path.dirname(savePath), { recursive: true });
-            }
-            fs.writeFileSync(savePath, base64Data);
-            foto_perfil = `/base64storage/${uniqueName}`;
+            // Guardar la imagen en base64 directamente en la base de datos
+            foto_perfil = req.file.buffer.toString('base64');
         }
 
         // Validar datos obligatorios
@@ -703,7 +660,6 @@ const createInstructor = async (req, res) => {
         // Enviar correo de verificación
         await sendVerificationEmail(email, token);
 
-
         res.status(201).json({
             message: "Instructor creado con éxito. Por favor verifica tu correo.",
             instructor: newInstructor
@@ -725,16 +681,8 @@ const createGestor = async (req, res) => {
         // Procesar imagen de perfil si se sube
         let foto_perfil = null;
         if (req.file) {
-            const path = require('path');
-            const fs = require('fs');
-            const base64Data = req.file.buffer.toString('base64');
-            const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-            const savePath = path.join(__dirname, '../base64storage', uniqueName);
-            if (!fs.existsSync(path.dirname(savePath))) {
-                fs.mkdirSync(path.dirname(savePath), { recursive: true });
-            }
-            fs.writeFileSync(savePath, base64Data);
-            foto_perfil = `/base64storage/${uniqueName}`;
+            // Guardar la imagen en base64 directamente en la base de datos
+            foto_perfil = req.file.buffer.toString('base64');
         }
 
         // Validar datos obligatorios
@@ -772,7 +720,7 @@ const createGestor = async (req, res) => {
             sena_ID: 1, // Asignar la sede por defecto
             accountType: "Gestor", // Tipo de cuenta
             password: hashedPassword, // Contraseña encriptada
-            verificacion_email: false, // Estado de verificació
+            verificacion_email: false, // Estado de verificación
             sena_ID: 1,
             token, // Token de verificación
         });
@@ -786,6 +734,7 @@ const createGestor = async (req, res) => {
         res.status(500).json({ message: "Error al crear el gestor." });
     }
 };
+// ...existing code...
 
 // Consultar Empleados por Empresa
 const getAprendicesByEmpresa = async (req, res) => {
@@ -826,5 +775,102 @@ const getAprendicesByEmpresa = async (req, res) => {
     }
 };
 
+const createMasiveUsers = async (req, res) => {
+    try {
+        if (!req.file || !req.file.buffer) {
+            return res.status(400).json({ message: 'No se ha subido ningún archivo.' });
+        }
+        
+        const Archivo = req.file.buffer;
+        console.log(req.file.buffer)
+        // Leer el archivo con xlsx
+        const workbook = xlsx.read(Archivo, { type: 'buffer' });
 
-module.exports = {getAprendicesByEmpresa,  registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, updateProfilePicture, createInstructor, createGestor, logoutUser, cleanExpiredTokens };
+        // Obtener la primera hoja
+        const nombrePrimeraHoja = workbook.SheetNames[0];
+        const hoja = workbook.Sheets[nombrePrimeraHoja];
+
+        if (!hoja) {
+            return res.status(400).json({ message: 'El archivo no contiene hojas válidas.' });
+        }
+
+        // Obtener el rango de celdas
+        const rango = xlsx.utils.decode_range(hoja['!ref']);
+
+        // Verificar si la celda C2 existe
+        const celdaTitulo = hoja['C2'];
+        if (!celdaTitulo) {
+            return res.status(400).json({ message: 'La celda C2 no contiene un título válido.' });
+        }
+
+        // Extraer los valores de la columna C desde la fila 3 hacia abajo
+        const valoresColumna = [];
+        for (let fila = 2; fila <= rango.e.r; fila++) { // Comienza desde la fila 2 (índice 1 en base 0)
+            const celda = hoja[`C${fila + 1}`]; // Celdas C3, C4, etc.
+            if (celda) {
+                valoresColumna.push(celda.v);
+            }
+        }
+
+        if (valoresColumna.length === 0) {
+            return res.status(400).json({ message: 'El archivo no contiene datos en la columna C.' });
+        }
+
+        // Verificar si hay usuarios duplicados en el archivo
+        const duplicados = valoresColumna.filter((item, index) => valoresColumna.indexOf(item) !== index);
+        if (duplicados.length > 0) {
+            // Excepción: permitir duplicados si son valores vacíos ("")
+            const duplicadosFiltrados = duplicados.filter(item => item !== "");
+
+            if (duplicadosFiltrados.length > 0) {
+                return res.status(400).json({
+                    message: "El archivo contiene usuarios duplicados no permitidos.",
+                    duplicados: duplicadosFiltrados
+                });
+            }
+        }
+
+        // Verificar si hay usuarios repetidos en la base de datos antes de crear
+        const emails = valoresColumna.map(identificacion => `${identificacion}@example.com`);
+        const existingUsers = await User.findAll({ where: { email: emails } });
+
+        if (existingUsers.length > 0) {
+            const repetidos = existingUsers.map(user => user.email);
+            return res.status(409).json({
+                message: "Existen usuarios repetidos en la base de datos.",
+                repetidos
+            });
+        }
+
+        // Crear usuarios con los datos extraídos
+        for (const identificacion of valoresColumna) {
+            if (!identificacion || identificacion === '') {
+                console.warn(`Número de identificación inválido: ${identificacion}`);
+                continue; // Saltar si el Número de Identificación no es válido
+            }
+
+            const email = `${identificacion}@example.com`;
+            const password = `${identificacion.toString()}example`;
+
+            // Crear el usuario
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await User.create({
+                email,
+                password: hashedPassword,
+                accountType: 'Aprendiz', // Tipo de cuenta por defecto
+                cedula: identificacion,
+                verificacion_email: true,
+            });
+        }
+
+        return res.json({
+            message: "Usuarios creados exitosamente.",
+        });
+    } catch (error) {
+        console.error("Error al procesar el archivo:", error);
+        return res.status(500).json({ error: 'Error al procesar el archivo' });
+    }
+}
+
+
+module.exports = {getAprendicesByEmpresa,  registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers };

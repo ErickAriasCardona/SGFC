@@ -1,7 +1,20 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'  //router
-import { BrowserRouter } from 'react-router-dom' //router
-import App from './App.jsx'
-import './index.css'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom'; // Permite usar rutas
+import App from './App.jsx';
+import './index.css';
 
-ReactDOM.createRoot(document.getElementById('root')).render(<BrowserRouter><App /></BrowserRouter>) 
+// Importa el provider del contexto de los modales
+import { ModalProvider } from './Context/ModalContext.jsx'; // Ajusta la ruta si es necesario
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    {/* Envolvemos toda la app con ModalProvider para usar el contexto en cualquier componente */}
+    <ModalProvider>
+      {/* Envolvemos con BrowserRouter para manejar las rutas */}
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </ModalProvider>
+  </React.StrictMode>
+);

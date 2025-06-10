@@ -119,7 +119,7 @@ export const Modal_SignIn = ({
     <div id="container_signIn">
       <div className="modalSignIn">
         <div className="option_signUp">
-          <div className="logo">Logo</div>
+          <div className="logo">SGFC</div>
           <h3>Lorem Ipsum es simplemente el texto</h3>
           <p>Lorem Ipsum es simplemente</p>
           <button className="goTo_register" onClick={showModalAccountType}>

@@ -50,38 +50,27 @@
     color: #00843D;
 }
 
-.start-buttons {
-  display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
-}
 
-.btn-signin,
-.btn-signup {
-  padding: 0.8rem 2rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-}
+/* mobile */
+@media (max-width: 480px) { 
+    .container_ilustrationStart>img{
+        width: 20rem;
+        height: auto;
+    }
 
-.btn-signin {
-  background-color: var(--primary-color);
-  color: white;
-}
+    .container_ilustrationStart{
+        margin-left: 0;
+        height: auto;
+    }
 
-.btn-signin:hover {
-  background-color: var(--primary-color-dark);
-}
+    .container_description{
+        width: 80%;
+        height: auto;
+        margin-left: 0;
+        text-align: center;
+    }
 
-.btn-signup {
-  background-color: transparent;
-  border: 2px solid var(--primary-color);
-  color: var(--primary-color);
-}
-
-.btn-signup:hover {
-  background-color: var(--primary-color);
-  color: white;
+    .container_description>h1 {
+        font-size: 32px;
+    }
 }

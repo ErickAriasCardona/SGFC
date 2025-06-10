@@ -1,80 +1,93 @@
-import React, { useRef, useState } from 'react';
-import './CreateGestor.css';
-import addIMG from '../../../../assets/Icons/addImg.png';
-import axiosInstance from '../../../../config/axiosInstance';
+import React, { useRef, useState } from "react";
+import "./CreateGestor.css";
+import addIMG from "../../../../assets/Icons/addImg.png";
+import axiosInstance from "../../../../config/axiosInstance";
+import { Routes, Route, useNavigate } from "react-router-dom";
 
 export const CreateGestor = ({ onClose }) => {
-    const fileInputRef = useRef(null);
-    const [preview, setPreview] = useState(null);
-    const [formData, setFormData] = useState({
-        nombres: '',
-        apellidos: '',
-        documento: '',
-        celular: '',
-        email: '',
-        estado: 'inactivo', // Valor predeterminado en minúsculas
-    });
-    const [file, setFile] = useState(null);
+  const navigate = useNavigate();
+  // Validación de sesión de usuario y rol de administrador
+  const userSessionString = sessionStorage.getItem("userSession");
+  const userSession = userSessionString ? JSON.parse(userSessionString) : null;
+  const acces_granted =
+    userSessionString &&
+    (userSession.accountType === "Administrador" ||
+      userSession.accountType === "Instructor");
 
-    // Manejar cambios en los campos del formulario
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+  const fileInputRef = useRef(null);
+  const [preview, setPreview] = useState(null);
+  const [formData, setFormData] = useState({
+    nombres: "",
+    apellidos: "",
+    cedula: "",
+    celular: "",
+    email: "",
+    estado: "Inactivo", // Valor predeterminado
+  });
+  const [file, setFile] = useState(null);
+
+  // Manejar cambios en los campos del formulario
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  // Manejar la selección de archivo
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (!selectedFile) return;
+
+    setFile(selectedFile);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPreview(reader.result);
     };
+    reader.readAsDataURL(selectedFile);
+  };
 
-    // Manejar la selección de archivo
-    const handleFileChange = (e) => {
-        const selectedFile = e.target.files[0];
-        if (!selectedFile) return;
+  const closeModalCreateGestor = () => {
+    document.getElementById("modal-overlayCreateGestor").style.display = "none";
+  };
 
-        setFile(selectedFile);
+  // Enviar datos al backend
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        const reader = new FileReader();
-        reader.onload = () => {
-            setPreview(reader.result);
-        };
-        reader.readAsDataURL(selectedFile);
-    };
+    // Crear un objeto FormData
+    const data = new FormData();
+    data.append("foto_perfil", file);
+    data.append("nombres", formData.nombres);
+    data.append("apellidos", formData.apellidos);
+    data.append("cedula", formData.cedula);
+    data.append("celular", formData.celular);
+    data.append("email", formData.email);
+    data.append("estado", formData.estado);
 
-    const closeModalCreateGestor = () => {
-        document.getElementById("modal-overlayCreateGestor").style.display = "none";
-    };
+    try {
+      const response = await axiosInstance.post("/crearGestor", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-    // Enviar datos al backend
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+      alert("Gestor creado con éxito");
+      console.log(response.data);
 
-        // Crear un objeto FormData
-        const data = new FormData();
-        data.append('foto_perfil', file);
-        data.append('nombres', formData.nombres);
-        data.append('apellidos', formData.apellidos);
-        data.append('documento', formData.documento);
-        data.append('celular', formData.celular);
-        data.append('email', formData.email);
-        data.append('estado', formData.estado);
-
-        try {
-            const response = await axiosInstance.post('/api/users/crearGestor', data, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            alert('Gestor creado con éxito');
-            console.log(response.data);
-
-            // Cerrar el modal y recargar la página
-            document.getElementById("modal-overlayCreateGestor").style.display = "none";
-            window.location.reload();
-        } catch (error) {
-            console.error('Error al crear el gestor:', error);
-            const errorMsg = error.response?.data?.message || 'Hubo un problema al crear el gestor.';
-            alert(`Error: ${errorMsg}`);
-        }
-    };
-
+      // Cerrar el modal y recargar la página
+      document.getElementById("modal-overlayCreateGestor").style.display =
+        "none";
+      window.location.reload();
+    } catch (error) {
+      console.error("Error al crear el gestor:", error);
+      const errorMsg =
+        error.response?.data?.message || "Hubo un problema al crear el gestor.";
+      alert(`Error: ${errorMsg}`);
+    }
+  };
+  if (acces_granted) {
     return (
+
         <div id="modal-overlayCreateGestor">
             <form className="modal-bodyCreateGestor" onSubmit={handleSubmit}>
                 <div className="modal-left">
@@ -144,11 +157,20 @@ export const CreateGestor = ({ onClose }) => {
                         onClick={() => fileInputRef.current.click()}
                     >
                         {preview ? (
-                            <img src={preview} alt="Vista previa" className="preview-image" />
+                            <img
+                                src={preview}
+                                alt="Vista previa"
+                                className="preview-image"
+                            />
                         ) : (
                             <div className="upload-placeholder">
-                                <img src={addIMG} alt="icono agregar imagen" className="icon" />
+                                <img
+                                    src={addIMG}
+                                    alt="icono agregar imagen"
+                                    className="icon"
+                                />
                                 <p>Arrastra o sube la foto del curso aquí.</p>
+
                             </div>
                         )}
                     </label>
@@ -158,15 +180,21 @@ export const CreateGestor = ({ onClose }) => {
                         <div className="status-buttons">
                             <button
                                 type="button"
-                                className={`status ${formData.estado === 'activo' ? 'active' : ''}`}
-                                onClick={() => setFormData({ ...formData, estado: 'activo' })}
+                                className={`status ${
+                                    formData.estado === "Activo" ? "active" : ""
+                                }`}
+                                onClick={() => setFormData({ ...formData, estado: "Activo" })}
                             >
                                 Activo
                             </button>
                             <button
                                 type="button"
-                                className={`status ${formData.estado === 'inactivo' ? 'active' : ''}`}
-                                onClick={() => setFormData({ ...formData, estado: 'inactivo' })}
+                                className={`status ${
+                                    formData.estado === "Inactivo" ? "active" : ""
+                                }`}
+                                onClick={() =>
+                                    setFormData({ ...formData, estado: "Inactivo" })
+                                }
                             >
                                 Inactivo
                             </button>
@@ -178,11 +206,20 @@ export const CreateGestor = ({ onClose }) => {
                     </button>
                 </div>
 
+
                 <div className="container_return_CreateGestor">
                     <h5>Volver</h5>
-                    <button type="button" onClick={closeModalCreateGestor} className="closeModal"></button>
+                    <button
+                        type="button"
+                        onClick={closeModalCreateGestor}
+                        className="closeModal"
+                    ></button>
                 </div>
             </form>
         </div>
+
     );
+  } else {
+    navigate("/ProtectedRoute"); // Redirigir a la página de inicio si no es administrador
+  }
 };

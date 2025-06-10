@@ -168,13 +168,7 @@ export const EditCalendar = ({ closeModal, onSave, initialData }) => {
             </table>
           </div>
 
-          <button 
-            className="save-button organized-save-button" 
-            onClick={handleSave}
-            disabled={!startDate || !endDate || selectedSlots.size === 0}
-          >
-            Guardar
-          </button>
+          <button className="save-button-calendar organized-save-button" onClick={handleSave}>Guardar</button>
         </div>
       </div>
     </div>

@@ -1,13 +1,16 @@
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import React, { useState } from "react";
+import React from "react";
+
+// Importación del contexto de los modales
+import { useModal } from './Context/ModalContext';
 
 // Importación de iconos
-import companyGreen from './assets/Icons/companyGreen.png';
-import companyGrey from './assets/Icons/companyGrey.png';
-import userGreen from './assets/Icons/userGreen.png';
-import userGrey from './assets/Icons/userGrey.png';
+import companyGreen from "./assets/Icons/companyGreen.png";
+import companyGrey from "./assets/Icons/companyGrey.png";
+import userGreen from "./assets/Icons/userGreen.png";
+import userGrey from "./assets/Icons/userGrey.png";
 
 // Importación de páginas
 import { Start } from './Components/Pages/Start/Start';
@@ -25,7 +28,6 @@ import { GestionsInstructor } from './Components/Pages/GestionsInstructor/Gestio
 import { GestionsGestor } from './Components/Pages/GestionsGestor/GestionsGestor';
 import { SeeMyProfile } from './Components/Pages/SeeMyProfile/SeeMyProfile';
 import { GestionsCompany } from './Components/Pages/GestionsCompany/GestionsCompany';
-import { CreateEmploye } from './Components/Pages/GestionsEmployes/CreateEmploye/CreateEmploye';
 import { UpdateEmploye } from './Components/Pages/GestionsEmployes/UpdateEmploye/UpdateEmploye';
 import { SeachEmployes } from './Components/Pages/GestionsEmployes/SeachEmployes/SeachEmployes';
 import { GestionsEmployes } from './Components/Pages/GestionsEmployes/GestionsEmployes';
@@ -40,38 +42,37 @@ import { Modal_Successful } from './Components/UI/Modal_Successful/Modal_Success
 import { Modal_Failed } from './Components/UI/Modal_Failed/Modal_Failed';
 import { CreateInstructor } from './Components/Pages/GestionsInstructor/CreateInstructor/CreateInstructor';
 import { CreateGestor } from './Components/Pages/GestionsGestor/CreateGestor/CreateGestor';
+import { CreateEmploye } from './Components/Pages/GestionsEmployes/CreateEmploye/CreateEmploye';
 import { UpdateInstructor } from './Components/Pages/GestionsInstructor/UpdateInstructor/UpdateInstructor';
-// Importación de estilos
-import './App.css';
-import { Header } from './Components/Layouts/Header/Header';
 
-// Crear un componente Layout que envuelva las páginas con Header y Footer
-const Layout = ({ children, setShowSignIn, setShowSignUp, setShowAccountType }) => {
-  return (
-    <>
-      <Header 
-        setShowSignIn={setShowSignIn}
-        setShowSignUp={setShowSignUp}
-        setShowAccountType={setShowAccountType}
-      />
-      {children}
-    </>
-  );
-};
+// Importación de estilos
+import "./App.css";
+import { ProtectedRoute } from "./utils/ProtectedRoute";
 
 function App() {
   const navigate = useNavigate();
-  const [showSignIn, setShowSignIn] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);
-  const [showAccountType, setShowAccountType] = useState(false);
-  const [selectedAccountType, setSelectedAccountType] = useState("");
-  const [hoveredButton, setHoveredButton] = useState("");
+
+  // Estados de los modales desde el contexto global
+  const {
+    showSignIn,
+    setShowSignIn,
+    showSignUp,
+    setShowSignUp,
+    showAccountType,
+    setShowAccountType,
+    selectedAccountType,
+    setSelectedAccountType,
+    showModalCreateEmployee,
+    setShowModalCreateEmployee
+  } = useModal();
+
+  const [hoveredButton, setHoveredButton] = React.useState("");
 
   useEffect(() => {
     if (window.gapi) {
-      window.gapi.load('auth2', () => {
+      window.gapi.load("auth2", () => {
         window.gapi.auth2.init({
-          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
         });
       });
     }
@@ -79,9 +80,16 @@ function App() {
 
   useEffect(() => {
     const userSession = localStorage.getItem('userSession');
+    const userInfo = sessionStorage.getItem('userSession');
+    const { email } = JSON.parse(userInfo || '{}'); // Manejo seguro si userInfo es null
+
+    if (email?.includes('@example.com')) {
+      setShowAccountType(true);
+    }
+
     if (userSession) {
       const { accountType } = JSON.parse(userSession);
-      navigate('/Inicio', { state: { accountType } });
+      navigate("/Inicio", { state: { accountType } });
     }
   }, [navigate]);
 
@@ -96,9 +104,10 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <>
+        {/* Renderizado condicional de modales basado en el contexto */}
         {showSignIn && (
-          <Modal_SignIn 
-            showSignIn={showSignIn} 
+          <Modal_SignIn
+            showSignIn={showSignIn}
             setShowSignIn={setShowSignIn}
             setShowSignUp={setShowSignUp}
             setShowAccountType={setShowAccountType}
@@ -155,62 +164,30 @@ function App() {
         <Modal_Failed />
         <CreateInstructor />
         <CreateGestor />
+        {showModalCreateEmployee && <CreateEmploye />}
 
         <Routes>
           <Route path="/" element={
-            <Layout 
+            <Start
               setShowSignIn={setShowSignIn}
               setShowSignUp={setShowSignUp}
               setShowAccountType={setShowAccountType}
-            >
-              <Start 
-                setShowSignIn={setShowSignIn}
-                setShowSignUp={setShowSignUp}
-                setShowAccountType={setShowAccountType}
-              />
-            </Layout>
+            />
           } />
-          <Route path="/QuienesSomos" element={
-            <Layout 
-              setShowSignIn={setShowSignIn}
-              setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
-            >
-              <Who_we_are />
-            </Layout>
-          } />
+          <Route path="/QuienesSomos" element={<Who_we_are />} />
           <Route path="/Inicio" element={
-            <Layout 
-              setShowSignIn={setShowSignIn}
-              setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
-            >
-              <Home handleShowSignUp={handleShowSignUp} />
-            </Layout>
+            <Home
+              handleShowSignUp={handleShowSignUp}
+            />
           } />
           <Route path="/verificarCorreo" element={<EmailVerification />} />
           <Route path="/forgotPassword" element={<ForgotPassword />} />
           <Route path="/resetPassword" element={<ResetPassword />} />
-          <Route path="/Cursos/CrearCurso" element={
-            <Layout 
-              setShowSignIn={setShowSignIn}
-              setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
-            >
-              <CreateCourse />
-            </Layout>
-          } />
-          <Route path="/Cursos/BuscarCursos" element={
-            <Layout 
-              setShowSignIn={setShowSignIn}
-              setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
-            >
-              <ConsultCourses />
-            </Layout>
-          } />
+          <Route path="/Cursos/CrearCurso" element={<CreateCourse />} />
+          <Route path="/Cursos/BuscarCursos" element={<ConsultCourses />} />
+          <Route path="/Cursos/:id" element={<SeeCourse />} />
           <Route path="/Cursos/MisCursos" element={
-            <Layout 
+            <Layout
               setShowSignIn={setShowSignIn}
               setShowSignUp={setShowSignUp}
               setShowAccountType={setShowAccountType}
@@ -218,17 +195,8 @@ function App() {
               <MisCursos />
             </Layout>
           } />
-          <Route path="/Cursos/:id" element={
-            <Layout 
-              setShowSignIn={setShowSignIn}
-              setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
-            >
-              <SeeCourse />
-            </Layout>
-          } />
           <Route path="/Cursos/:id/gestionar-asistencia" element={
-            <Layout 
+            <Layout
               setShowSignIn={setShowSignIn}
               setShowSignUp={setShowSignUp}
               setShowAccountType={setShowAccountType}
@@ -236,80 +204,29 @@ function App() {
               <ManageAttendance />
             </Layout>
           } />
-          <Route path="/Cursos/ActualizarCurso/:id" element={
-            <Layout 
-              setShowSignIn={setShowSignIn}
-              setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
-            >
-              <UpdateCourse />
-            </Layout>
-          } />
-          <Route path="/Gestiones/Instructor" element={
-            <Layout 
-              setShowSignIn={setShowSignIn}
-              setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
-            >
-              <GestionsInstructor />
-            </Layout>
-          } />
-          <Route path="/Gestiones/Gestor" element={
-            <Layout 
-              setShowSignIn={setShowSignIn}
-              setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
-            >
-              <GestionsGestor />
-            </Layout>
-          } />
-          <Route path="/MiPerfil" element={
-            <Layout 
-              setShowSignIn={setShowSignIn}
-              setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
-            >
-              <SeeMyProfile />
-            </Layout>
-          } />
-          <Route path="/Gestiones/Empresas" element={
-            <Layout 
-              setShowSignIn={setShowSignIn}
-              setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
-            >
-              <GestionsCompany />
-            </Layout>
-          } />
-          <Route path="/Empleados/MisEmpleados" element={
-            <Layout 
-              setShowSignIn={setShowSignIn}
-              setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
-            >
-              <GestionsEmployes />
-            </Layout>
-          } />
-          <Route path="/Empleados/CrearEmpleado" element={
-            <Layout 
-              setShowSignIn={setShowSignIn}
-              setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
-            >
-              <CreateEmploye />
-            </Layout>
-          } />
-          <Route path="/Empleados/ActualizarEmpleado/:id" element={
-            <Layout 
-              setShowSignIn={setShowSignIn}
-              setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
-            >
-              <UpdateEmploye />
-            </Layout>
-          } />
+          <Route
+            path="/Cursos/ActualizarCurso/:id"
+            element={<UpdateCourse />}
+          />
+          <Route
+            path="/Gestiones/Instructor"
+            element={<GestionsInstructor />}
+          />
+          <Route path="/Gestiones/Gestor" element={<GestionsGestor />} />
+          <Route path="/MiPerfil" element={<SeeMyProfile />} />
+          <Route path="/Gestiones/Empresas" element={<GestionsCompany />} />
+          <Route
+            path="/Empleados/MisEmpleados"
+            element={<GestionsEmployes />}
+          />
+
+          <Route path="/Empleados/CrearEmpleado" element={<CreateEmploye />} />
+          <Route
+            path="/Empleados/ActualizarEmpleado/:id"
+            element={<UpdateEmploye />}
+          />
           <Route path="/Asistencias" element={
-            <Layout 
+            <Layout
               setShowSignIn={setShowSignIn}
               setShowSignUp={setShowSignUp}
               setShowAccountType={setShowAccountType}
@@ -317,6 +234,8 @@ function App() {
               <AttendanceRecords />
             </Layout>
           } />
+
+          <Route path="/ProtectedRoute" element={<ProtectedRoute />} />
         </Routes>
       </>
     </GoogleOAuthProvider>

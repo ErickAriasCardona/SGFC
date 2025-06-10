@@ -139,7 +139,7 @@ export const SeeMyProfile = () => {
                         <button
                             className={`updateProfile ${editMode ? 'cancel' : ''}`}
                             onClick={() => setEditMode(!editMode)}
-                            >
+                        >
                             {editMode ? '' : ''}
                         </button>
 
@@ -152,14 +152,39 @@ export const SeeMyProfile = () => {
 
                     {(tipoCuenta === 'Administrador' || tipoCuenta === 'Instructor' || tipoCuenta === 'Gestor') && perfil?.Sena && (
                         <div className='container_data_company'>
-                            <div className='name_company'>
-                                <img src="" alt="" />
-                                <div>
-                                    <h3>{perfil.Sena.nombre_sede || '-'}</h3>
-                                    <p>
-                                        NIT: {perfil.Sena.NIT || '-'}
-                                    </p>
+
+                            <div className='container_nameCompany-Status'>
+                                <div className='name_company'>
+                                    <img src="" alt="" />
+                                    <div>
+                                        <h3>{perfil.Sena.nombre_sede || '-'}</h3>
+                                        <p>
+                                            NIT: {perfil.Sena.NIT || '-'}
+                                        </p>
+                                    </div>
                                 </div>
+
+                                {/* elemento gestion de estado */}
+                                <div className='status-company'>
+                                    <div
+                                        className={`color_status ${perfil?.estado === 'activo' ? 'status-green' : perfil?.estado === 'inactivo' ? 'status-red' : ''}`}
+                                    ></div>
+                                    <h3>Estado</h3>
+                                    {editMode ? (
+                                        <select
+                                            name="estado"
+                                            className="input_updateStatus"
+                                            value={perfil?.estado || ''}
+                                            onChange={handleInputChange}
+                                        >
+                                            <option value="activo">Activo</option>
+                                            <option value="inactivo">Inactivo</option>
+                                        </select>
+                                    ) : (
+                                        <h4>{perfil?.estado === 'activo' ? 'Activo' : perfil?.estado === 'inactivo' ? 'Inactivo' : '-'}</h4>
+                                    )}
+                                </div>
+
                             </div>
                             <div className='container_data'>
                                 <div className='data_company'>
@@ -198,37 +223,38 @@ export const SeeMyProfile = () => {
 
                     {tipoCuenta === 'Empresa' && (
                         <div className='container_data_company'>
-                            <div className='name_company'>
-                                <img src="" alt="" />
-                                <div>
-                                    <h3>
-                                        {editMode ? (
-                                            <input
-                                                type="text"
-                                                name="Empresa.nombre_empresa"
-                                                className='input_updateData'
-                                                value={perfil?.Empresa?.nombre_empresa || ''}
-                                                onChange={handleInputChange}
-                                            />
-                                        ) : (
-                                            perfil?.Empresa?.nombre_empresa || ''
-                                        )}
-                                    </h3>
-                                    <p>
-                                        Nit: <br />
-                                        {editMode ? (
-                                            <input
-                                                type="text"
-                                                name="Empresa.NIT"
-                                                className='input_updateData'
-                                                value={perfil?.Empresa?.NIT || ''}
-                                                onChange={handleInputChange}
-                                            />
-                                        ) : (
-                                            perfil?.Empresa?.NIT || ''
-                                        )}
-                                    </p>
+                            <div className='container_nameCompany-Status'>
+                                <div className='name_company'>
+                                    <img src="" alt="" />
+                                    <div>
+                                        <h3>{perfil.Empresa.nombre_empresa || '-'}</h3>
+                                        <p>
+                                            NIT: {perfil.Empresa.NIT || '-'}
+                                        </p>
+                                    </div>
                                 </div>
+
+                                {/* elemento gestion de estado */}
+                                <div className='status-company'>
+                                    <div
+                                        className={`color_status ${perfil?.estado === 'activo' ? 'status-green' : perfil?.estado === 'inactivo' ? 'status-red' : ''}`}
+                                    ></div>
+                                    <h3>Estado</h3>
+                                    {editMode ? (
+                                        <select
+                                            name="estado"
+                                            className="input_updateStatus"
+                                            value={perfil?.estado || ''}
+                                            onChange={handleInputChange}
+                                        >
+                                            <option value="activo">Activo</option>
+                                            <option value="inactivo">Inactivo</option>
+                                        </select>
+                                    ) : (
+                                        <h4>{perfil?.estado === 'activo' ? 'Activo' : perfil?.estado === 'inactivo' ? 'Inactivo' : '-'}</h4>
+                                    )}
+                                </div>
+
                             </div>
 
                             <div className='container_data'>

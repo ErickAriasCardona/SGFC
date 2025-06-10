@@ -20,29 +20,26 @@
     gap: 0.5rem;
 }
 
-.container_profile>h3, .container_profile>h4{
+.container_profile>h3,
+.container_profile>h4 {
     width: 100%;
     height: auto;
     font-size: 18px;
 }
 
-.container_profile>img{
+.container_profile>img {
     width: 8rem;
     height: 8rem;
     object-fit: cover;
     border-radius: 25%;
 }
 
-.container_profile>p{
+.container_profile>p {
     width: 100%;
     height: auto;
     font-size: 16px;
     text-align: center;
 }
-
-
-
-
 
 .container_data_company {
     width: 60%;
@@ -61,7 +58,7 @@
     border-radius: 20px;
     display: flex;
     justify-content: center;
-    align-items: center;    
+    align-items: center;
     gap: 1.5rem;
 
 }
@@ -89,7 +86,7 @@
     gap: 1rem;
 }
 
-.data_company>p{
+.data_company>p {
     width: 100%;
     height: auto;
     font-size: 16px;
@@ -118,7 +115,7 @@
     background-color: #00843e3f;
 }
 
-.name_company>img{
+.name_company>img {
     width: 4rem;
     height: 4rem;
     object-fit: cover;
@@ -131,21 +128,24 @@
     height: auto;
     display: flex;
     flex-direction: column;
-}   
-.name_company>div>h3, .name_company>div>p{
+}
+
+.name_company>div>h3,
+.name_company>div>p {
     width: auto;
     height: auto;
     font-size: 24px;
 }
 
-.name_company>div>p{
+.name_company>div>p {
     font-size: 14px;
 }
 
-.updateProfile{
+.updateProfile {
     position: absolute;
+
     z-index: 999999999;
-    top:6.1rem;
+    top: 6.1rem;
     right: 3rem;
     width: 4rem;
     height: 4rem;
@@ -153,19 +153,19 @@
     border-radius: 10px;
     border-style: none;
     background: center / 70% no-repeat url('../../../assets/Icons/buttonEdit.png'),
-    #b0b0b0;
-    
+        #b0b0b0;
+
 }
 
 .updateProfile.cancel {
-  background-image: url('../../../assets/Icons/cerca.png');
-  background-size: 60%;
+    background-image: url('../../../assets/Icons/cerca.png');
+    background-size: 60%;
 }
 
-.updateProfile1{
+.updateProfile1 {
     position: absolute;
     z-index: 999999999;
-    top:11rem;
+    top: 11rem;
     right: 3rem;
     width: 4rem;
     height: 4rem;
@@ -173,11 +173,12 @@
     border-radius: 10px;
     border-style: none;
     background: center / 70% no-repeat url('../../../assets/Icons/marca-de-verificacion.png'),
-    #b0b0b0;
-    
+        #b0b0b0;
+
+
 }
 
-.input_updateData{
+.input_updateData {
     width: 9rem;
     height: auto;
     background-color: transparent;
@@ -185,3 +186,68 @@
     border-style: none;
     border: 1px solid #b0b0b0;
 }
+
+.container_nameCompany-Status {
+    width: 100%;
+    height: auto;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.status-company {
+    width: 7rem;
+    height: 7rem;
+    background-color: #00843e3f;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.color_status {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: #ef3c3c;
+    margin-top: 1rem;
+}
+
+.status-green {
+    background-color: #00843e !important;
+}
+.status-red {
+    background-color: #ef3c3c !important;
+}
+
+.status-company>h3{
+    width: 100%;
+    height: auto;
+    font-size: 16px;
+    text-align: center;
+}
+
+.status-company>h4 {
+    width: 100%;
+    height: auto;
+    font-size: 14px;
+    text-align: center;
+}
+
+.input_updateStatus{
+    width: 5rem;
+    height: auto;
+    background-color: transparent;
+    border-radius: 10px;
+    border-style: none;
+    border: 1px solid #b0b0b0;
+    text-align: center;
+}
+
+/* Para los options en la mayoría de navegadores */
+.input_updateStatus option {
+    background-color: #007736;
+    color: #fff;
+    
+}
+

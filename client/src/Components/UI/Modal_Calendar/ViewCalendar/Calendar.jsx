@@ -86,6 +86,41 @@ export const ViewCalendar = ({ calendarData, closeModal }) => {
               />
             </div>
           </div>
+          <div className="calendar-card-wrapper">
+            <div className="calendar-card layered-card card1"></div>
+            <div className="calendar-card layered-card card2"></div>
+            <div className="calendar-card layered-card card3"></div>
+          </div>
+          <div className="calendar-container">
+            <table className="calendar-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  {days.map((day) => (
+                    <th key={day}>{day}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {times.map((time) => (
+                  <tr key={time}>
+                    <td>{time}</td>
+                    {days.map((day) => {
+                      const slot = `${day}-${time}`;
+                      const isSelected = selectedSlots.has(slot);
+                      return (
+                        <td
+                          key={slot}
+                          className={`slot-cell ${isSelected ? 'selected' : ''}`}
+                        >
+                          {isSelected ? <span className="approve-icon">✓</span> : <span className="empty-slot"></span>}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table> </div>
 
           {/* Horario del curso */}
           <div className="schedule-section">

@@ -60,9 +60,16 @@ export const ConsultCourses = () => {
     }
 
     try {
+<<<<<<< HEAD
       const response = await publicAxiosInstance.get(`/api/courses/cursos/${searchTerm}`);
       setCursos([response.data]);
       setErrorMessage("");
+=======
+      const response = await axiosInstance.get(`/searchCurso?input=${searchTerm}`); // Solicitud al endpoint de búsqueda por ID
+      console.log(searchTerm)
+      setCursos([response.data]); // Mostrar solo el curso encontrado
+      setErrorMessage(""); // Limpiar el mensaje de error
+>>>>>>> fdf88aeded74558a458e4ea7c6e500d82a36bace
     } catch (error) {
       console.error("Error al buscar el curso:", error);
       setCursos([]);
@@ -90,7 +97,7 @@ export const ConsultCourses = () => {
 
           <div className='options_Search'>
 
-          <div className="custom-select-container">
+            <div className="custom-select-container">
               <select className="custom-select" defaultValue="">
                 <option value="" disabled hidden>Categoría</option>
                 <option value="desarrollo">Desarrollo</option>
@@ -123,11 +130,11 @@ export const ConsultCourses = () => {
                 {cursos.map((curso) => (
                   <div
                     className="carousel-card"
-                    key={curso.ID} // Usar el campo ID en mayúsculas
-                    onClick={() => handleCardClick(curso.ID)} // Usar el campo ID en mayúsculas
+                    key={curso.ID}
+                    onClick={() => handleCardClick(curso.ID)}
                   >
                     <img
-                      src={`http://localhost:3001${curso.imagen}` || "ruta/imagen/por/defecto.jpg"} // Construir la URL completa
+                      className='img_course' src={curso.imagen ? `data:image/jpeg;base64,${curso.imagen}` : "ruta/imagen/por/defecto.jpg"}
                       alt={curso.nombre_curso}
                     />
                     <div className="card-text">

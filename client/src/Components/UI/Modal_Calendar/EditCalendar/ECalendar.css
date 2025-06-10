@@ -187,8 +187,8 @@
   user-select: none;
 }
 
-.save-button {
-  background-color: #00843D;
+.save-button-calendar{
+  background-color: #007700;
   color: white;
   border: none;
   padding: 12px 30px;
@@ -200,16 +200,6 @@
   display: block;
 }
 
-.save-button:disabled {
-  background-color: #666;
-  cursor: not-allowed;
-}
-
-.save-button:not(:disabled):hover {
-  background-color: #006633;
-  transform: translateY(-2px);
-}
-
-.save-button:not(:disabled):active {
-  transform: translateY(0);
+.save-button-calendar:hover {
+  background-color: #00aa00;
 }

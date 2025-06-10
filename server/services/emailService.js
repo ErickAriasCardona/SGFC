@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 
 // Función para enviar el correo de verificación
 const sendVerificationEmail = (email, token) => {
-    const enlaceVerificacion = `http://localhost:5173/verificarCorreo?token=${token}`;
+    const enlaceVerificacion = `https://sgfc-seven.vercel.app/verificarCorreo?token=${token}`;
     const mailOptions = {
         from: "eariassena19@gmail.com",
         to: email,
@@ -265,34 +265,73 @@ const sendCourseCreatedEmail = (emails, nombre_curso, courseLink) => {
     })
 }
 
-// Función genérica para enviar correos
-const sendEmail = (email, subject, html) => {
-    const mailOptions = {
-        from: "eariassena19@gmail.com",
-        to: email,
-        subject: subject,
-        html: html
-    };
+// Enviar correo al instructor notificando su asignación
+const sendInstructorAssignedEmail = (email, curso) => {
+  const mailOptions = {
+    from: 'eariassena19@gmail.com',
+    to: email,
+    subject: `Has sido asignado al curso: ${curso.nombre_curso}`,
+    html: `
+      <h2>¡Hola instructor!</h2>
+      <p>Has sido asignado al curso: <strong>${curso.nombre_curso}</strong>.</p>
+      <p>Fecha de inicio: ${curso.fecha_inicio}</p>
+    
+      <p>Por favor, revisa tu panel para más información.</p>
+    `,
+  };
 
-    return new Promise((resolve, reject) => {
-        transporter.sendMail(mailOptions, (err, info) => {
-            if (err) {
-                console.error("Error al enviar el correo:", err);
-                reject(err);
-            } else {
-                console.log("Correo enviado:", info.response);
-                resolve(info);
-            }
-        });
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error("Error al enviar el correo al instructor:", err);
+        reject(err);
+      } else {
+        console.log("Correo enviado al instructor:", info.response);
+        resolve(info);
+      }
     });
+  });
 };
 
-// Exportar todas las funciones
-module.exports = { 
-    sendVerificationEmail, 
-    sendPasswordResetEmail, 
-    sendPasswordChangeConfirmationEmail, 
-    sendCourseCreatedEmail, 
-    sendCursoUpdatedNotification,
-    sendEmail 
+
+// Enviar correo al aprendiz notificando su instructor asignado
+const sendStudentsInstructorAssignedEmail = (emails, curso,nombreInstructor) => {
+  const mailOptions = {
+    from: 'eariassena19@gmail.com',
+    to: emails, // puede ser un string o un array de emails
+    subject: `Tu curso ${curso.nombre_curso} ya tiene instructor asignado`,
+    html: `
+      <h2>¡Buenas noticias!</h2>
+      <p>El curso <strong>${curso.nombre_curso}</strong> al que estás inscrito ya tiene un instructor asignado.</p>
+      <p><strong>Instructor:</strong> ${nombreInstructor}</p>
+      <p>Prepárate para iniciar el aprendizaje. Revisa los detalles en la plataforma.</p>
+    `,
+  };
+
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error("Error al enviar el correo a los aprendices:", err);
+        reject(err);
+      } else {
+        console.log("Correo enviado a los aprendices:", info.response);
+        resolve(info);
+      }
+    });
+  });
 };
+
+
+
+// Exportar ambas funciones
+
+ module.exports = {
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+  sendPasswordChangeConfirmationEmail,
+  sendCourseCreatedEmail,
+  sendCursoUpdatedNotification,
+  sendStudentsInstructorAssignedEmail,
+  sendInstructorAssignedEmail 
+ };
+
