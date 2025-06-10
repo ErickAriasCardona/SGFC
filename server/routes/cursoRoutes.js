@@ -1,34 +1,32 @@
-const express = require("express"); const express = require("express");
-const { createCurso, updateCurso, getAllCursos, getCursoByNameOrFicha, asignarCursoAInstructor, obtenerCursosAsignadosAInstructor } = require("../controllers/cursoController");
-const { authenticateUser } = require("../middlewares/authMiddleware"); // Middleware para autenticar al usuario
+const express = require("express");
+const router = express.Router();
+const cursoController = require("../controllers/cursoController");
+const authMiddleware = require("../middlewares/authMiddleware");
 const upload = require("../config/multer");
 const { crearOActualizarInscripcion } = require('../controllers/inscripcionCursoController');
 
-const router = express.Router();
+// Rutas públicas (no requieren autenticación)
+router.get("/cursos", cursoController.getAllCursos);
+router.get('/searchCurso', cursoController.getCursoByNameOrFicha)
+
+router.use(authMiddleware);
+
+router.post("/cursos", upload.single("imagen"), cursoController.createCurso);
+
+// Actualizar un curso
+router.put("/cursos/:id", upload.single("imagen"), cursoController.updateCurso);
+
+// Asignar curso a instructor
+router.post('/asignaciones', cursoController.asignarCursoAInstructor);
+
+// Obtener cursos asignados a un instructor
+router.get('/cursos-asignados/:instructor_ID', cursoController.obtenerCursosAsignadosAInstructor);
 
 
-// ruta para carga de imagenes en base64
-router.post("/cursos", authenticateUser, upload.single("imagen"), createCurso);
-
-// Ruta para actualizar un curso (solo administradores)
-router.put("/cursos/:id", authenticateUser, upload.single("imagen"), updateCurso);
-
-// Ruta para obtener todos los cursos
-router.get("/cursos", getAllCursos);
-
-// POST /asignaciones
-router.post('/asignaciones', asignarCursoAInstructor);
-
-//cursos asignados a un isntructor
-router.get('/cursos-asignados/:instructor_ID', obtenerCursosAsignadosAInstructor);
-
-//ruta para buscar curso por nombre o ficha
-router.get('/searchCurso', getCursoByNameOrFicha)
+// Obtener participantes de un curso
+router.get('/cursos/:courseId/participants', cursoController.getCursoParticipants);
 
 // Ruta para crear o actualizar el estado de una inscripción (solo administradores)
-router.put('/inscripciones', authenticateUser, crearOActualizarInscripcion);
-
-// Ruta para actualizar la programación de un curso
-router.put('/cursos/:id/programacion', authenticateUser, updateCurso);
+router.put('/inscripciones', crearOActualizarInscripcion);
 
 module.exports = router;

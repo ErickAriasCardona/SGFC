@@ -53,29 +53,7 @@ export const CreateInstructor = ({ onClose }) => {
       "none";
   };
 
-  // Enviar datos al backend
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Crear un objeto FormData
-    const data = new FormData();
-    data.append("foto_perfil", file);
-    data.append("nombres", formData.nombres);
-    data.append("apellidos", formData.apellidos);
-    data.append("cedula", formData.cedula);
-    data.append("titulo_profesional", formData.titulo_profesional);
-    data.append("celular", formData.celular);
-    data.append("email", formData.email);
-    data.append("estado", formData.estado);
-
-    try {
-      const response = await axiosInstance.post("/crearInstructor", data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-<<<<<<< HEAD
+ 
     // Enviar datos al backend
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -110,23 +88,7 @@ export const CreateInstructor = ({ onClose }) => {
             alert(`Error: ${errorMsg}`);
         }
     };
-=======
-      alert("Instructor creado con éxito");
-      console.log(response.data);
->>>>>>> fdf88aeded74558a458e4ea7c6e500d82a36bace
 
-      // Cerrar el modal y recargar la página
-      document.getElementById("modal-overlayCreateInstructor").style.display =
-        "none";
-      window.location.reload();
-    } catch (error) {
-      console.error("Error al crear el instructor:", error);
-      const errorMsg =
-        error.response?.data?.message ||
-        "Hubo un problema al crear el instructor.";
-      alert(`Error: ${errorMsg}`);
-    }
-  };
   if (acces_granted) {
     return (
       <div id="modal-overlayCreateInstructor">

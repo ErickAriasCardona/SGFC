@@ -994,5 +994,4 @@ module.exports = {
   uploadImagesBase64,
   getCursoParticipants,
   actualizarProgramacion,
-
 };

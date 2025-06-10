@@ -17,20 +17,14 @@ export const UpdateInstructor = ({ instructor }) => {
     (userSession.accountType === "Administrador" ||
       userSession.accountType === "Instructor");
 
-<<<<<<< HEAD
-                const response = await axiosInstance.get(`/api/courses/cursos-asignados/${instructor.ID}`);
-                console.log('Cursos asignados:', response.data); // 👈 Aquí puedes ver lo que devuelve el backend
-=======
   useEffect(() => {
     const obtenerCursosAsignados = async () => {
       try {
         console.log("ID del instructor seleccionado:", instructor.ID); // 👈 Valida el ID aquí
->>>>>>> fdf88aeded74558a458e4ea7c6e500d82a36bace
 
-        const response = await axiosInstance.get(
-          `/cursos-asignados/${instructor.ID}`
-        );
-        console.log("Cursos asignados:", response.data); // 👈 Aquí puedes ver lo que devuelve el backend
+
+        const response = await axiosInstance.get(`/api/courses/cursos-asignados/${instructor.ID}`);
+        console.log('Cursos asignados:', response.data); // 👈 Aquí puedes ver lo que devuelve el backend
 
         if (Array.isArray(response.data)) {
           setCantidadCursos(response.data.length);
@@ -97,7 +91,7 @@ export const UpdateInstructor = ({ instructor }) => {
       }
 
       const response = await axiosInstance.put(
-        `/perfil/actualizar/${formData.ID}`,
+        `/api/users/perfil/actualizar/${instructor.ID}}`,
         formDataToSend,
         {
           headers: {
@@ -109,54 +103,6 @@ export const UpdateInstructor = ({ instructor }) => {
       alert(response.data.message || "Perfil actualizado");
       setIsEditing(false);
 
-<<<<<<< HEAD
-    const handleButtonClick = async (e) => {
-        e.preventDefault();
-
-        if (!isEditing) {
-            // Activar edición
-            setIsEditing(true);
-            return;
-        }
-
-        // Guardar cambios
-        try {
-            const formDataToSend = new FormData();
-            for (const key in formData) {
-                if (formData.hasOwnProperty(key)) {
-                    if (key === 'foto_perfil') {
-                        if (formData[key] instanceof File) {
-                            formDataToSend.append(key, formData[key]);
-                        }
-                    } else {
-                        formDataToSend.append(key, formData[key]);
-                    }
-                }
-            }
-
-            const response = await axiosInstance.put(`/api/users/perfil/actualizar/${instructor.ID}`, {
-                ...formDataToSend,
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                }
-            });
-
-            alert(response.data.message || 'Perfil actualizado');
-            setIsEditing(false);
-
-            //Recargar la página para reflejar cambios
-            window.location.reload();
-            //Ocultar el modal
-            document.getElementById("modal-overlayUpdateInstructor").style.display = "none";
-
-
-        } catch (error) {
-            console.error("Error al actualizar el perfil:", error.response?.data || error.message);
-            alert("Hubo un error al actualizar el perfil.");
-        }
-
-    };
-=======
       //Recargar la página para reflejar cambios
       window.location.reload();
       //Ocultar el modal
@@ -170,55 +116,27 @@ export const UpdateInstructor = ({ instructor }) => {
       alert("Hubo un error al actualizar el perfil.");
     }
   };
->>>>>>> fdf88aeded74558a458e4ea7c6e500d82a36bace
+
 
   if (acces_granted) {
     return (
-<<<<<<< HEAD
-        <div id="modal-overlayUpdateInstructor" style={{ display: 'flex' }}>
-            <form className="modal-bodyUpdateInstructor" onSubmit={handleButtonClick}>
-                <div className="modal-left-update">
-                    {['nombres', 'apellidos', 'documento', 'titulo_profesional', 'celular', 'email'].map((field) => (
-                        <label key={field}>
-                            {field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ')}
-                            <input
-                                type={field === 'email' ? 'email' : 'text'}
-                                name={field}
-                                value={formData[field] || ''}
-                                readOnly={!isEditing}
-                                onChange={handleChange}
-                                className={`form-input ${!isEditing ? 'read-only' : ''}`}
-                            />
-=======
-      <div id="modal-overlayUpdateInstructor" style={{ display: "flex" }}>
-        <form
-          className="modal-bodyUpdateInstructor"
-          onSubmit={handleButtonClick}
-        >
+      <div id="modal-overlayUpdateInstructor" style={{ display: 'flex' }}>
+        <form className="modal-bodyUpdateInstructor" onSubmit={handleButtonClick}>
           <div className="modal-left-update">
-            {[
-              "nombres",
-              "apellidos",
-              "cedula",
-              "titulo_profesional",
-              "celular",
-              "email",
-            ].map((field) => (
+            {['nombres', 'apellidos', 'documento', 'titulo_profesional', 'celular', 'email'].map((field) => (
               <label key={field}>
-                {field.charAt(0).toUpperCase() +
-                  field.slice(1).replace("_", " ")}
+                {field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ')}
                 <input
-                  type={field === "email" ? "email" : "text"}
+                  type={field === 'email' ? 'email' : 'text'}
                   name={field}
-                  value={formData[field] || ""}
+                  value={formData[field] || ''}
                   readOnly={!isEditing}
                   onChange={handleChange}
-                  className={`form-input ${!isEditing ? "read-only" : ""}`}
+                  className={`form-input ${!isEditing ? 'read-only' : ''}`}
                 />
               </label>
             ))}
           </div>
->>>>>>> fdf88aeded74558a458e4ea7c6e500d82a36bace
 
           <div className="modal-right">
             <input
@@ -231,9 +149,8 @@ export const UpdateInstructor = ({ instructor }) => {
             />
 
             <label
-              className={`upload-area-update ${
-                !isEditing ? "read-only-border" : ""
-              }`}
+              className={`upload-area-update ${!isEditing ? "read-only-border" : ""
+                }`}
               htmlFor="imageUpload"
             >
               {" "}
@@ -264,9 +181,8 @@ export const UpdateInstructor = ({ instructor }) => {
                     <button
                       key={estado}
                       type="button"
-                      className={`status ${
-                        formData.estado === estado ? "active" : ""
-                      }`}
+                      className={`status ${formData.estado === estado ? "active" : ""
+                        }`}
                       onClick={() => handleEstadoChange(estado)}
                     >
                       {estado}
