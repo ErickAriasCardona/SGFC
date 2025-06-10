@@ -6,7 +6,7 @@ import { Main } from "../../../Layouts/Main/Main";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosInstance from "../../../../config/axiosInstance";
 import addIMG from "../../../../assets/Icons/addImg.png";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 export const UpdateCourse = () => {
   const navigate = useNavigate();

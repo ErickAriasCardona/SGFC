@@ -10,7 +10,7 @@ import calendar from '../../../../assets/Icons/calendar.png';
 import axiosInstance from '../../../../config/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { AssignInstructorCourse } from '../AssignInstructorCourse/AssignInstructorCourse';
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 export const CreateCourse = () => {
   const navigate = useNavigate();

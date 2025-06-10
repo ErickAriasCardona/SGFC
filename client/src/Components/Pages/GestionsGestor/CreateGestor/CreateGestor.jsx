@@ -1,18 +1,28 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./CreateGestor.css";
 import addIMG from "../../../../assets/Icons/addImg.png";
 import axiosInstance from "../../../../config/axiosInstance";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export const CreateGestor = ({ onClose }) => {
   const navigate = useNavigate();
-  // Validación de sesión de usuario y rol de administrador
+  const mounted = useRef(false);
   const userSessionString = sessionStorage.getItem("userSession");
   const userSession = userSessionString ? JSON.parse(userSessionString) : null;
-  const acces_granted =
-    userSessionString &&
-    (userSession.accountType === "Administrador" ||
-      userSession.accountType === "Instructor");
+  const acces_granted = userSessionString && userSession.accountType === "Administrador";
+
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      if (!acces_granted) {
+        navigate("/ProtectedRoute");
+      }
+    }
+  }, []); // Empty dependency array since we only want this to run once
+
+  if (!acces_granted) {
+    return null;
+  }
 
   const fileInputRef = useRef(null);
   const [preview, setPreview] = useState(null);
@@ -85,141 +95,134 @@ export const CreateGestor = ({ onClose }) => {
       alert(`Error: ${errorMsg}`);
     }
   };
-  if (acces_granted) {
-    return (
 
-        <div id="modal-overlayCreateGestor">
-            <form className="modal-bodyCreateGestor" onSubmit={handleSubmit}>
-                <div className="modal-left">
-                    <label>
-                        Nombres
-                        <input
-                            type="text"
-                            name="nombres"
-                            value={formData.nombres}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </label>
-                    <label>
-                        Apellidos
-                        <input
-                            type="text"
-                            name="apellidos"
-                            value={formData.apellidos}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </label>
-                    <label>
-                        Documento
-                        <input
-                            type="text"
-                            name="documento"
-                            value={formData.documento}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </label>
-                    <label>
-                        Celular
-                        <input
-                            type="text"
-                            name="celular"
-                            value={formData.celular}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </label>
-                    <label>
-                        Email
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </label>
-                </div>
-
-                <div className="modal-right">
-                    <input
-                        type="file"
-                        accept="image/*"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        hidden
-                    />
-
-                    <label
-                        className="upload-area"
-                        onClick={() => fileInputRef.current.click()}
-                    >
-                        {preview ? (
-                            <img
-                                src={preview}
-                                alt="Vista previa"
-                                className="preview-image"
-                            />
-                        ) : (
-                            <div className="upload-placeholder">
-                                <img
-                                    src={addIMG}
-                                    alt="icono agregar imagen"
-                                    className="icon"
-                                />
-                                <p>Arrastra o sube la foto del curso aquí.</p>
-
-                            </div>
-                        )}
-                    </label>
-
-                    <div className="status-container">
-                        <span>Estado:</span>
-                        <div className="status-buttons">
-                            <button
-                                type="button"
-                                className={`status ${
-                                    formData.estado === "Activo" ? "active" : ""
-                                }`}
-                                onClick={() => setFormData({ ...formData, estado: "Activo" })}
-                            >
-                                Activo
-                            </button>
-                            <button
-                                type="button"
-                                className={`status ${
-                                    formData.estado === "Inactivo" ? "active" : ""
-                                }`}
-                                onClick={() =>
-                                    setFormData({ ...formData, estado: "Inactivo" })
-                                }
-                            >
-                                Inactivo
-                            </button>
-                        </div>
-                    </div>
-
-                    <button type="submit" className="save-button">
-                        Guardar
-                    </button>
-                </div>
-
-
-                <div className="container_return_CreateGestor">
-                    <h5>Volver</h5>
-                    <button
-                        type="button"
-                        onClick={closeModalCreateGestor}
-                        className="closeModal"
-                    ></button>
-                </div>
-            </form>
+  return (
+    <div id="modal-overlayCreateGestor">
+      <form className="modal-bodyCreateGestor" onSubmit={handleSubmit}>
+        <div className="modal-left">
+          <label>
+            Nombres
+            <input
+              type="text"
+              name="nombres"
+              value={formData.nombres}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+          <label>
+            Apellidos
+            <input
+              type="text"
+              name="apellidos"
+              value={formData.apellidos}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+          <label>
+            Documento
+            <input
+              type="text"
+              name="documento"
+              value={formData.documento}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+          <label>
+            Celular
+            <input
+              type="text"
+              name="celular"
+              value={formData.celular}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+          <label>
+            Email
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
         </div>
 
-    );
-  } else {
-    navigate("/ProtectedRoute"); // Redirigir a la página de inicio si no es administrador
-  }
+        <div className="modal-right">
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            hidden
+          />
+
+          <label
+            className="upload-area"
+            onClick={() => fileInputRef.current.click()}
+          >
+            {preview ? (
+              <img
+                src={preview}
+                alt="Vista previa"
+                className="preview-image"
+              />
+            ) : (
+              <div className="upload-placeholder">
+                <img
+                  src={addIMG}
+                  alt="icono agregar imagen"
+                  className="icon"
+                />
+                <p>Arrastra o sube la foto del curso aquí.</p>
+              </div>
+            )}
+          </label>
+
+          <div className="status-container">
+            <span>Estado:</span>
+            <div className="status-buttons">
+              <button
+                type="button"
+                className={`status ${
+                  formData.estado === "Activo" ? "active" : ""
+                }`}
+                onClick={() => setFormData({ ...formData, estado: "Activo" })}
+              >
+                Activo
+              </button>
+              <button
+                type="button"
+                className={`status ${
+                  formData.estado === "Inactivo" ? "active" : ""
+                }`}
+                onClick={() =>
+                  setFormData({ ...formData, estado: "Inactivo" })
+                }
+              >
+                Inactivo
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" className="save-button">
+            Guardar
+          </button>
+        </div>
+
+        <div className="container_return_CreateGestor">
+          <h5>Volver</h5>
+          <button
+            type="button"
+            onClick={closeModalCreateGestor}
+            className="closeModal"
+          ></button>
+        </div>
+      </form>
+    </div>
+  );
 };

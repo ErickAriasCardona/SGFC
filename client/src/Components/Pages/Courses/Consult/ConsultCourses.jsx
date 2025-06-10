@@ -60,16 +60,9 @@ export const ConsultCourses = () => {
     }
 
     try {
-<<<<<<< HEAD
       const response = await publicAxiosInstance.get(`/api/courses/cursos/${searchTerm}`);
       setCursos([response.data]);
       setErrorMessage("");
-=======
-      const response = await axiosInstance.get(`/searchCurso?input=${searchTerm}`); // Solicitud al endpoint de búsqueda por ID
-      console.log(searchTerm)
-      setCursos([response.data]); // Mostrar solo el curso encontrado
-      setErrorMessage(""); // Limpiar el mensaje de error
->>>>>>> fdf88aeded74558a458e4ea7c6e500d82a36bace
     } catch (error) {
       console.error("Error al buscar el curso:", error);
       setCursos([]);

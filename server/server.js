@@ -34,7 +34,8 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://sgfc-seven.vercel.app"
+  "https://sgfc-seven.vercel.app",
+  "https://sgfc-production.up.railway.app"
 ];
 
 app.use(
@@ -48,6 +49,8 @@ app.use(
       }
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   })
 );
 

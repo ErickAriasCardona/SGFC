@@ -44,10 +44,26 @@ import { CreateInstructor } from './Components/Pages/GestionsInstructor/CreateIn
 import { CreateGestor } from './Components/Pages/GestionsGestor/CreateGestor/CreateGestor';
 import { CreateEmploye } from './Components/Pages/GestionsEmployes/CreateEmploye/CreateEmploye';
 import { UpdateInstructor } from './Components/Pages/GestionsInstructor/UpdateInstructor/UpdateInstructor';
+import { NoAutorizado } from './Components/Pages/NoAutorizado/NoAutorizado';
 
 // Importación de estilos
 import "./App.css";
 import { ProtectedRoute } from "./utils/ProtectedRoute";
+import { Header } from './Components/Layouts/Header/Header';
+
+// Crear un componente Layout que envuelva las páginas con Header y Footer
+const Layout = ({ children, setShowSignIn, setShowSignUp, setShowAccountType }) => {
+  return (
+    <>
+      <Header 
+        setShowSignIn={setShowSignIn}
+        setShowSignUp={setShowSignUp}
+        setShowAccountType={setShowAccountType}
+      />
+      {children}
+    </>
+  );
+};
 
 function App() {
   const navigate = useNavigate();
@@ -236,6 +252,7 @@ function App() {
           } />
 
           <Route path="/ProtectedRoute" element={<ProtectedRoute />} />
+          <Route path="/no-autorizado" element={<NoAutorizado />} />
         </Routes>
       </>
     </GoogleOAuthProvider>
