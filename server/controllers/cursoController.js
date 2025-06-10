@@ -5,11 +5,18 @@ const AsignacionCursoInstructor = require("../models/AsignacionCursoInstructor")
 const { sendCourseCreatedEmail } = require("../services/emailService");
 const { Router } = require("express");
 const upload = require("../config/multer");
-const { sendCursoUpdatedNotification,sendInstructorAssignedEmail,sendStudentsInstructorAssignedEmail} = require('../services/emailService');
+const { sendCursoUpdatedNotification, sendInstructorAssignedEmail, sendStudentsInstructorAssignedEmail } = require('../services/emailService');
 const { Op } = require('sequelize');
 const fs = require('fs');
 const InscripcionCurso = require('../models/InscripcionCurso');
 
+
+let dbInstance;
+
+// Función para inyectar la instancia de la base de datos
+const setDb = (databaseInstance) => {
+  dbInstance = databaseInstance;
+};
 
 //Asignar cursos
 const asignarCursoAInstructor = async (req, res) => {
@@ -76,8 +83,8 @@ const asignarCursoAInstructor = async (req, res) => {
     }
 
     // Buscar aprendices inscritos a ese curso
-  // Obtener aprendices inscritos en el curso
-   const inscripciones = await InscripcionCurso.findAll({ where: { curso_ID } });
+    // Obtener aprendices inscritos en el curso
+    const inscripciones = await InscripcionCurso.findAll({ where: { curso_ID } });
 
     if (inscripciones.length === 0) {
       console.log("⚠️ No hay aprendices inscritos aún, no se enviaron notificaciones.");
@@ -96,10 +103,10 @@ const asignarCursoAInstructor = async (req, res) => {
 
       // instructor_ID viene de asignacion_cursos_instructor
       const instructor = await User.findOne({
-      where: {
-        ID: instructor_ID,
-        accountType: 'Instructor'
-      }
+        where: {
+          ID: instructor_ID,
+          accountType: 'Instructor'
+        }
       });
 
       let nombreInstructor = 'Instructor asignado';
@@ -109,9 +116,9 @@ const asignarCursoAInstructor = async (req, res) => {
 
       // Ahora llama a tu función de email y pásale el nombre del instructor
       for (const email of emailsAprendices) {
-        await sendStudentsInstructorAssignedEmail (email, curso, nombreInstructor);
+        await sendStudentsInstructorAssignedEmail(email, curso, nombreInstructor);
       }
-}
+    }
 
 
     res.status(201).json({
@@ -124,7 +131,7 @@ const asignarCursoAInstructor = async (req, res) => {
       mensaje: "Error interno al asignar el curso",
     });
   }
-  
+
 
 };
 
@@ -144,9 +151,9 @@ const obtenerCursosAsignadosAInstructor = async (req, res) => {
       include: [
         {
           model: Curso,
-          attributes: ["id", "nombre_curso", "descripcion", "imagen"], // ajusta campos según tu modelo
-        },
-      ],
+          attributes: ["id", "nombre_curso", "descripcion", "imagen"],
+        }
+      ]
     });
 
     res.status(200).json(asignaciones);
@@ -160,12 +167,11 @@ const obtenerCursosAsignadosAInstructor = async (req, res) => {
 
 // Crear un curso (solo para administradores)
 const createCurso = async (req, res) => {
+
   try {
     const { accountType } = req.user;
     if (accountType !== "Administrador") {
-      return res
-        .status(403)
-        .json({ message: "No tienes permisos para crear cursos." });
+      return res.status(403).json({ message: "No tienes permisos para crear cursos." });
     }
 
     const {
@@ -185,26 +191,39 @@ const createCurso = async (req, res) => {
     // Validar campos obligatorios
     if (!ficha || !nombre_curso || !descripcion || !tipo_oferta || !estado) {
       return res.status(400).json({
-        message:
-          "Los campos nombre_curso, tipo_oferta, ficha, descripcion y estado son obligatorios.",
+        message: "Los campos nombre_curso, tipo_oferta, ficha, descripcion y estado son obligatorios.",
+      });
+    }
+
+    // Validar que la fecha de inicio sea anterior a la fecha de fin
+    if (new Date(fecha_inicio) >= new Date(fecha_fin)) {
+      return res.status(400).json({
+        message: "La fecha de inicio debe ser anterior a la fecha de fin.",
       });
     }
 
     // Procesar imagen y convertir a Base64 si se envió
     let image = null;
     if (req.file) {
-      image = req.file.buffer.toString('base64'); // Guardar base64 en la base de datos
+      const base64Data = req.file.buffer.toString('base64');
+      const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
+      const savePath = path.join(__dirname, '../base64storage', uniqueName);
+
+      if (!fs.existsSync(path.dirname(savePath))) {
+        fs.mkdirSync(path.dirname(savePath), { recursive: true });
+      }
+      fs.writeFileSync(savePath, base64Data);
+
+      image = `/base64storage/${uniqueName}`;
     }
 
     // Procesar días de formación
     let diasFormacionParsed = dias_formacion;
-    if (typeof dias_formacion === "string") {
+    if (typeof dias_formacion === 'string') {
       try {
         diasFormacionParsed = JSON.parse(dias_formacion);
       } catch (e) {
-        return res.status(400).json({
-          message: "El formato de los días de formación no es válido.",
-        });
+        return res.status(400).json({ message: "El formato de los días de formación no es válido." });
       }
     }
 
@@ -224,37 +243,36 @@ const createCurso = async (req, res) => {
       imagen: image,
     });
 
+
     // Responder con éxito
     res.status(201).json({ message: "Curso creado con éxito." });
 
-    // Buscar usuarios verificados
+    // Buscar usuarios verificados para enviar notificación
     const usuarios = await User.findAll({
       where: {
         verificacion_email: true,
-        accountType: { [Op.or]: ["Empresa", "Aprendiz"] },
+        accountType: { [Op.or]: ['Empresa', 'Aprendiz'] },
       },
-      attributes: ["email"],
+      attributes: ['email'],
     });
 
-    const emails = usuarios.map((user) => user.email);
+    const emails = usuarios.map(user => user.email);
 
-    if (emails.length === 0) {
-      console.warn("No hay usuarios aceptados para mandar Email");
-    } else {
-      const courseLink = `https://sgfc-seven.vercel.app/cursos/${nuevoCurso.id}`;
+    if (emails.length > 0) {
+      const courseLink = `http://localhost:5173/cursos/${nuevoCurso.id}`;
       await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
     }
+
   } catch (error) {
     console.error("Error al crear el curso:", error);
 
     if (error.name === "SequelizeValidationError") {
-      return res
-        .status(400)
-        .json({ message: "Error de validación.", errors: error.errors });
+      return res.status(400).json({ message: "Error de validación.", errors: error.errors });
     }
 
     res.status(500).json({ message: "Error al crear el curso." });
   }
+
 };
 
 // Actualizar un curso (solo para administradores)
@@ -561,7 +579,7 @@ const updateCurso = async (req, res) => {
     res.status(500).json({ message: "Error al actualizar el curso." });
   }
 };
-// ...existing code...
+
 
 // Obtener todos los cursos
 const getAllCursos = async (req, res) => {
@@ -571,6 +589,22 @@ const getAllCursos = async (req, res) => {
   } catch (error) {
     console.error("Error al obtener los cursos:", error);
     res.status(500).json({ message: "Error al obtener los cursos." });
+  }
+};
+// Obtener un curso por ID
+const getCursoById = async (req, res) => {
+  try {
+    const { id } = req.params; // Obtener el ID del curso desde los parámetros de la URL
+    const curso = await Curso.findByPk(id); // Buscar el curso por ID
+
+    if (!curso) {
+      return res.status(404).json({ message: "Curso no encontrado." });
+    }
+
+    res.status(200).json(curso);
+  } catch (error) {
+    console.error("Error al obtener el curso:", error);
+    res.status(500).json({ message: "Error al obtener el curso." });
   }
 };
 
@@ -584,12 +618,12 @@ const getCursoByNameOrFicha = async (req, res) => {
       return res.status(400).json({ message: "El campo 'input' es obligatorio." });
     }
 
-    if(isNaN(Number(input))){
+    if (isNaN(Number(input))) {
       let nombre_curso = input;
-      curso = await Curso.findAll({ where: { nombre_curso }})
-    }else{
+      curso = await Curso.findAll({ where: { nombre_curso } })
+    } else {
       let ficha = input;
-      curso = await Curso.findAll({ where: { ficha }})
+      curso = await Curso.findAll({ where: { ficha } })
     }
 
     if (!curso || curso.length === 0) {
@@ -598,21 +632,6 @@ const getCursoByNameOrFicha = async (req, res) => {
 
     res.status(200).json(curso);
 
-    // const { nombre_curso, ficha } = req.body;
-    // console.log(req.body)
-    // let curso;
-
-    // if (nombre_curso) {
-    //   curso = await Curso.findAll({ where: { nombre_curso } });
-    // } else if (ficha) {
-    //   curso = await Curso.findAll({ where: { ficha } });
-    // }
-
-    // if (!curso || curso.length === 0) {
-    //   return res.status(404).json({ message: "Curso no encontrado" });
-    // }
-
-    // res.status(200).json(curso);
   } catch (error) {
     console.error("Error al obtener curso: ", error);
     res.status(500).json({ message: "Error al obtener el curso." });
@@ -950,13 +969,46 @@ const actualizarProgramacion = async (req, res) => {
   }
 };
 
+// Obtener participantes de un curso
+const getCursoParticipants = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    const participantes = await dbInstance.InscripcionCurso.findAll({
+      where: {
+        curso_ID: courseId,
+        estado_inscripcion: 'activo'
+      },
+      include: [{
+        model: dbInstance.Usuario,
+        as: 'aprendiz',
+        attributes: ['ID', 'nombres', 'apellidos', 'email', 'documento', 'foto_perfil']
+      }]
+    });
+
+    res.status(200).json({
+      success: true,
+      participants: participantes
+    });
+  } catch (error) {
+    console.error('Error al obtener los participantes del curso:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener los participantes del curso'
+    });
+  }
+};
+
 module.exports = {
+  setDb,
   createCurso,
   updateCurso,
   getAllCursos,
+  getCursoById,
   getCursoByNameOrFicha,
   asignarCursoAInstructor,
   obtenerCursosAsignadosAInstructor,
   uploadImagesBase64,
+  getCursoParticipants,
   actualizarProgramacion,
 };

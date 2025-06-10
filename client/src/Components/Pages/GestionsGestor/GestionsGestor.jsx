@@ -31,25 +31,23 @@ export const GestionsGestor = () => {
 
   const showModalSeeProfile = (gestor) => {
     setSelectedGestor(gestor); // Establecer el instructor seleccionado
-    const modalSeeProfile = document.getElementById(
-      "modal-overlayUpdateGestor"
-    );
+    const modalSeeProfile = document.getElementById("modal-overlayUpdateGestor");
     if (modalSeeProfile) {
       modalSeeProfile.style.display = "flex"; // Mostrar el modal
     }
   };
 
+
+
   // Función para obtener los gestores desde el backend
   const fetchGestor = async () => {
     try {
-      const response = await axiosInstance.get("/Gestores"); // Usa la ruta relativa
+      const response = await axiosInstance.get('/api/users/gestores');
       setGestores(response.data); // Guardar los datos en el estado
       setFilteredGestores(response.data); // Inicialmente, los gestores filtrados son todos
     } catch (error) {
-      console.error("Error al obtener los Gestores:", error);
-      alert(
-        "Hubo un problema al cargar los Gestores. Por favor, inténtalo más tarde."
-      );
+      console.error('Error al obtener los Gestores:', error);
+      alert('Hubo un problema al cargar los Gestores. Por favor, inténtalo más tarde.');
     }
   };
 
@@ -62,28 +60,25 @@ export const GestionsGestor = () => {
     applyFilters();
   }, [selectedState, filter, gestores]);
 
+
   // Función para manejar el cambio en el input de filtro
   const handleFilterChange = (e) => {
     const value = e.target.value.toLowerCase();
     setFilter(value);
 
     // Filtrar los instructores según el nombre, apellidos o cédula
-    const filtered = gestor.filter(
-      (gestor) =>
-        gestor.nombres.toLowerCase().includes(value) ||
-        gestor.apellidos.toLowerCase().includes(value) ||
-        gestor.cedula.toLowerCase().includes(value)
+    const filtered = gestor.filter((gestor) =>
+      gestor.nombres.toLowerCase().includes(value) ||
+      gestor.apellidos.toLowerCase().includes(value) ||
+      gestor.documento.toLowerCase().includes(value)
     );
 
     // Aplicar también el filtro de estado
     const filteredByState = filtered.filter((gestor) => {
-      if (selectedState.activo && gestor.estado.toLowerCase() === "activo") {
+      if (selectedState.activo && gestor.estado.toLowerCase() === 'activo') {
         return true;
       }
-      if (
-        selectedState.inactivo &&
-        gestor.estado.toLowerCase() === "inactivo"
-      ) {
+      if (selectedState.inactivo && gestor.estado.toLowerCase() === 'inactivo') {
         return true;
       }
       return false;
@@ -95,22 +90,18 @@ export const GestionsGestor = () => {
 
   const applyFilters = () => {
     // Filtrar los Gestores según el nombre, apellidos o cédula
-    const filtered = gestores.filter(
-      (gestor) =>
-        gestor.nombres.toLowerCase().includes(filter) ||
-        gestor.apellidos.toLowerCase().includes(filter) ||
-        gestor.cedula.toLowerCase().includes(filter)
+    const filtered = gestores.filter((gestor) =>
+      gestor.nombres.toLowerCase().includes(filter) ||
+      gestor.apellidos.toLowerCase().includes(filter) ||
+      gestor.documento.toLowerCase().includes(filter)
     );
 
     // Aplicar también el filtro de estado
     const filteredByState = filtered.filter((gestor) => {
-      if (selectedState.activo && gestor.estado.toLowerCase() === "activo") {
+      if (selectedState.activo && gestor.estado.toLowerCase() === 'activo') {
         return true;
       }
-      if (
-        selectedState.inactivo &&
-        gestor.estado.toLowerCase() === "inactivo"
-      ) {
+      if (selectedState.inactivo && gestor.estado.toLowerCase() === 'inactivo') {
         return true;
       }
       return false;
@@ -121,23 +112,18 @@ export const GestionsGestor = () => {
   };
 
   const next = () => setCurrent((prev) => (prev + 1) % filteredGestor.length);
-  const prev = () =>
-    setCurrent(
-      (prev) => (prev - 1 + filteredGestor.length) % filteredGestor.length
-    );
+  const prev = () => setCurrent((prev) => (prev - 1 + filteredGestor.length) % filteredGestor.length);
 
   const showModalCreateGestor = () => {
-    const modalCreateGestor = document.getElementById(
-      "modal-overlayCreateGestor"
-    );
+    const modalCreateGestor = document.getElementById("modal-overlayCreateGestor");
     if (modalCreateGestor) {
       modalCreateGestor.style.display = "flex"; // Cambia el display a flex para mostrar el modal
     }
   };
+
   if (acces_granted) {
     return (
-      <>
-        <Header />
+      <> <Header />
         <Main>
           <div className="container_GestionsGestor">
             <h2>
@@ -162,9 +148,7 @@ export const GestionsGestor = () => {
                   <label>Estado</label>
                   <div className="statusButtons">
                     <button
-                      className={`inactive ${
-                        selectedState.inactivo ? "selected" : ""
-                      }`}
+                      className={`inactive ${selectedState.inactivo ? 'selected' : ''}`}
                       onClick={() => {
                         setSelectedState((prevState) => ({
                           ...prevState,
@@ -175,9 +159,7 @@ export const GestionsGestor = () => {
                       Inactivos
                     </button>
                     <button
-                      className={`active ${
-                        selectedState.activo ? "selected" : ""
-                      }`}
+                      className={`active ${selectedState.activo ? 'selected' : ''}`}
                       onClick={() => {
                         setSelectedState((prevState) => ({
                           ...prevState,
@@ -189,20 +171,14 @@ export const GestionsGestor = () => {
                     </button>
                   </div>
                 </div>
-                <button
-                  className="btn_createGestor"
-                  onClick={showModalCreateGestor}
-                >
-                  Agregar Gestor
-                </button>
+                <button className="btn_createGestor" onClick={showModalCreateGestor}>Agregar Gestor</button>
+
               </div>
 
               <div className="containerGestionsInstructorResults">
                 {/* Mostrar flecha izquierda solo si hay más de un resultado */}
                 {filteredGestor.length > 1 && (
-                  <button className="arrow left" onClick={prev}>
-                    ❮
-                  </button>
+                  <button className="arrow left" onClick={prev}>❮</button>
                 )}
 
                 <div className="carousel-container_2">
@@ -210,106 +186,77 @@ export const GestionsGestor = () => {
                     {filteredGestor.length === 0 ? (
                       // Mostrar mensaje si no hay resultados
                       <p className="no-results">No hay resultados</p>
-                    ) : // Mostrar una carta si hay un solo resultado
-                    filteredGestor.length === 1 ? (
-                      <div className="carousel-card card-center">
-                        <img
-                          src={
-                            filteredGestor[0]?.foto_perfil ||
-                            "default-profile.png"
-                          } // Imagen del instructor
-                          alt="Gestor"
-                          className="carousel-image"
-                        />
-                        <div className="carousel-card-info">
-                          <h3>
-                            {filteredGestor[0]?.nombres}{" "}
-                            {filteredGestor[0]?.apellidos}
-                          </h3>
-                        </div>
-                      </div>
-                    ) : // Mostrar una carta centrada con flechas si hay dos resultados
-                    filteredGestor.length === 2 ? (
-                      [0].map((offset) => {
-                        const index =
-                          (current + offset) % filteredGestor.length;
-                        const gestor = filteredGestor[index];
-
-                        return (
-                          <div
-                            className="carousel-card card-center"
-                            key={index}
-                          >
-                            <img
-                              src={gestor?.foto_perfil || "default-profile.png"} // Imagen del instructor
-                              alt="Gestor"
-                              className="carousel-image"
-                            />
-                            <div className="carousel-card-info">
-                              <h3>
-                                {gestor?.nombres} {gestor?.apellidos}
-                              </h3>
-                            </div>
-                          </div>
-                        );
-                      })
                     ) : (
-                      // Mostrar tres cartas si hay tres o más resultados
-                      [0, 1, 2].map((offset) => {
-                        const index =
-                          (current + offset) % filteredGestor.length;
-                        const gestor = filteredGestor[index];
-
-                        let positionClass = "";
-                        if (offset === 1) {
-                          positionClass = "card-center";
-                        } else {
-                          positionClass = "card-side";
-                        }
-
-                        return (
-                          <div
-                            className={`carousel-card ${positionClass}`}
-                            key={index}
-                          >
-                            <img
-                              src={gestor?.foto_perfil || "default-profile.png"} // Imagen del instructor
-                              alt="Gestor"
-                              className="carousel-image"
-                            />
-                            <div className="carousel-card-info">
-                              <h3>
-                                {gestor?.nombres} {gestor?.apellidos}
-                              </h3>
-                            </div>
+                      // Mostrar una carta si hay un solo resultado
+                      filteredGestor.length === 1 ? (
+                        <div className="carousel-card card-center">
+                          <img
+                            src={filteredGestor[0]?.foto_perfil || 'default-profile.png'} // Imagen del instructor
+                            alt="Gestor"
+                            className="carousel-image"
+                          />
+                          <div className="carousel-card-info">
+                            <h3>{filteredGestor[0]?.nombres} {filteredGestor[0]?.apellidos}</h3>
                           </div>
-                        );
-                      })
+                        </div>
+                      ) : (
+                        // Mostrar una carta centrada con flechas si hay dos resultados
+                        filteredGestor.length === 2 ? (
+                          [0].map((offset) => {
+                            const index = (current + offset) % filteredGestor.length;
+                            const gestor = filteredGestor[index];
+
+                            return (
+                              <div className="carousel-card card-center" key={index}>
+                                <img
+                                  src={gestor?.foto_perfil || 'default-profile.png'} // Imagen del instructor
+                                  alt="Gestor"
+                                  className="carousel-image"
+                                />
+                                <div className="carousel-card-info">
+                                  <h3>{gestor?.nombres} {gestor?.apellidos}</h3>
+                                </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          // Mostrar tres cartas si hay tres o más resultados
+                          [0, 1, 2].map((offset) => {
+                            const index = (current + offset) % filteredGestor.length;
+                            const gestor = filteredGestor[index];
+
+                            let positionClass = '';
+                            if (offset === 1) {
+                              positionClass = 'card-center';
+                            } else {
+                              positionClass = 'card-side';
+                            }
+
+                            return (
+                              <div className={`carousel-card ${positionClass}`} key={index}>
+                                <img
+                                  src={gestor?.foto_perfil || 'default-profile.png'} // Imagen del instructor
+                                  alt="Gestor"
+                                  className="carousel-image"
+                                />
+                                <div className="carousel-card-info">
+                                  <h3>{gestor?.nombres} {gestor?.apellidos}</h3>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )
+                      )
                     )}
                   </div>
 
                   {/* Mostrar información del gestor actual */}
                   {filteredGestor.length > 0 && (
                     <div className="instructor-info">
-                      <h3>
-                        {
-                          filteredGestor[(current + 1) % filteredGestor.length]
-                            ?.nombres
-                        }{" "}
-                        {
-                          filteredGestor[(current + 1) % filteredGestor.length]
-                            ?.apellidos
-                        }
-                      </h3>
+                      <h3>{filteredGestor[(current + 1) % filteredGestor.length]?.nombres} {filteredGestor[(current + 1) % filteredGestor.length]?.apellidos}</h3>
                       <button
                         className="profile-btn"
-                        onClick={() =>
-                          showModalSeeProfile(
-                            filteredGestor[
-                              (current + 1) % filteredGestor.length
-                            ]
-                          )
-                        }
+                        onClick={() => showModalSeeProfile(filteredGestor[(current + 1) % filteredGestor.length])}
                       >
                         Ver perfil
                       </button>
@@ -319,19 +266,22 @@ export const GestionsGestor = () => {
 
                 {/* Mostrar flecha derecha solo si hay más de un resultado */}
                 {filteredGestor.length > 1 && (
-                  <button className="arrow right" onClick={next}>
-                    ❯
-                  </button>
+                  <button className="arrow right" onClick={next}>❯</button>
                 )}
               </div>
             </div>
           </div>
         </Main>
-        {selectedGestor && <UpdateGestor gestor={selectedGestor} />}
+        {selectedGestor && (
+          <UpdateGestor
+            gestor={selectedGestor}
+          />
+        )}
         <Footer />
       </>
     );
-  } else {
-    navigate("/ProtectedRoute");
   }
+  
+  navigate("/ProtectedRoute");
+  return null;
 };

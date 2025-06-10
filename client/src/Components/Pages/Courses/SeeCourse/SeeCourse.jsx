@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './SeeCourse.css';
 import { useNavigate } from 'react-router-dom'; // Importar useNavigate
-import { Header } from '../../../Layouts/Header/Header';
 import { Footer } from '../../../Layouts/Footer/Footer';
 import { Main } from '../../../Layouts/Main/Main';
 import { useParams } from 'react-router-dom';
@@ -10,12 +9,20 @@ import calendar from '../../../../assets/Icons/calendar.png';
 import buttonEdit from '../../../../assets/Icons/buttonEdit.png';
 import { AssignInstructorCourse } from '../AssignInstructorCourse/AssignInstructorCourse';
 import { ViewCalendar } from '../../../UI/Modal_Calendar/ViewCalendar/Calendar';
+import { AttendanceManagement } from './AttendanceManagement';
+import { Modal_General } from '../../../UI/Modal_General/Modal_General';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { Header } from '../../../Layouts/Header/Header';
 
 export const SeeCourse = () => {
 
     const { id } = useParams(); // Obtener el ID del curso desde la URL
     const [curso, setCurso] = useState(null); // Estado para almacenar los datos del curso
     const [isViewCalendarOpen, setIsViewCalendarOpen] = useState(false);
+    const [showAttendanceDatePicker, setShowAttendanceDatePicker] = useState(false);
+    const [selectedDate, setSelectedDate] = useState('');
+    const [showAttendanceManagement, setShowAttendanceManagement] = useState(false);
     const navigate = useNavigate(); // Hook para redirigir
     const [showModal, setShowModal] = useState(false);
 
@@ -35,8 +42,12 @@ export const SeeCourse = () => {
     useEffect(() => {
         const fetchCurso = async () => {
             try {
-                const response = await axiosInstance.get(`/cursos/${id}`); // Solicitud al endpoint de obtener curso por ID
-                setCurso(response.data); // Guardar los datos del curso en el estado
+                const response = await fetch(`http://localhost:3001/api/courses/cursos/${id}`);
+                if (!response.ok) {
+                    throw new Error('Error al obtener el curso');
+                }
+                const data = await response.json();
+                setCurso(data); // Guardar los datos del curso en el estado
             } catch (error) {
                 console.error("Error al obtener el curso:", error);
             }
@@ -55,13 +66,32 @@ export const SeeCourse = () => {
     const calendarData = {
         startDate: curso.fecha_inicio ? curso.fecha_inicio.split('T')[0] : '',
         endDate: curso.fecha_fin ? curso.fecha_fin.split('T')[0] : '',
-        
-        selectedSlots: curso.dias_formacion ? JSON.parse(curso.dias_formacion) : []
+        selectedSlots: curso.dias_formacion ? JSON.parse(curso.dias_formacion) : [],
+        hora_inicio: curso.hora_inicio || '',
+        hora_fin: curso.hora_fin || ''
+    };
+
+    // Función para redirigir a la página de gestión de asistencia
+    const handleAttendanceClick = () => {
+        navigate(`/Cursos/${id}/gestionar-asistencia`);
+    };
+
+    const handleDateSelect = (e) => {
+        const date = e.target.value;
+        if (date) {
+            setSelectedDate(date);
+            setShowAttendanceDatePicker(false);
+            setShowAttendanceManagement(true);
+        }
+    };
+
+    const handleCloseAttendanceManagement = () => {
+        setShowAttendanceManagement(false);
+        setSelectedDate('');
     };
 
     return (
-        <>
-            <Header />
+        <>  <Header />
             <Main>
                 <div className='container_createCourse'>
                     <h2>
@@ -72,7 +102,7 @@ export const SeeCourse = () => {
                         <label className='upload-area'>
                             {curso.imagen ? (
                                 <img
-                                    src={`https://sgfc-production.up.railway.app/${curso.imagen}`}
+                                    src={`http://localhost:3001/${curso.imagen}`}
                                     alt="Imagen del curso"
                                     className="preview-image"
                                 />
@@ -112,12 +142,14 @@ export const SeeCourse = () => {
                                         )}
                                     </p>
 
-                                    {/* Botón para abrir el modal general */}
                                     <button className='addDate' onClick={() => setIsViewCalendarOpen(true)}>
                                         <img src={calendar} alt="" />
                                         Ver fechas y horarios
                                     </button>
+
+
                                 </div>
+
                             </div>
                         </div>
                     </div>
@@ -131,6 +163,15 @@ export const SeeCourse = () => {
                             Editar Curso
                         </button>
                     )}
+                    {/* Botón de gestión de asistencia (solo para instructores) */}
+                    {userSession?.accountType === 'Instructor' && (
+                        <button
+                            className="manageAttendance"
+                            onClick={handleAttendanceClick}
+                        >
+                            Gestionar asistencias
+                        </button>
+                    )}
                 </div>
 
             </Main>
@@ -138,14 +179,7 @@ export const SeeCourse = () => {
             {showModal && curso && (
                 <AssignInstructorCourse
                     curso_ID={curso.ID}
-                    onClose={() => setShowModal(false)} // Para poder cerrarlo desde dentro
-                />
-
-            )}
-            {isViewCalendarOpen && (
-                <ViewCalendar
-                    calendarData={calendarData}
-                    closeModal={() => setIsViewCalendarOpen(false)}
+                    onClose={() => setShowModal(false)}
                 />
             )}
             {isViewCalendarOpen && (
@@ -155,6 +189,43 @@ export const SeeCourse = () => {
                 />
             )}
 
+            {/* Modal de selección de fecha para asistencia */}
+            {showAttendanceDatePicker && (
+                <Modal_General closeModal={() => setShowAttendanceDatePicker(false)}>
+                    <div className="attendance-date-picker">
+                        <h3>Seleccionar Fecha para Gestionar Asistencia</h3>
+                        <div className="date-input-container">
+                            <label htmlFor="attendanceDate">Fecha:</label>
+                            <input
+                                type="date"
+                                id="attendanceDate"
+                                value={selectedDate}
+                                onChange={handleDateSelect}
+                                min={curso?.fecha_inicio?.split('T')[0]}
+                                max={curso?.fecha_fin?.split('T')[0]}
+                            />
+                        </div>
+                        <div className="modal-buttons">
+                            <button
+                                className="cancel-button"
+                                onClick={() => setShowAttendanceDatePicker(false)}
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </Modal_General>
+            )}
+
+            {/* Modal de gestión de asistencia */}
+            {selectedDate && (
+                <AttendanceManagement
+                    open={showAttendanceManagement}
+                    onClose={handleCloseAttendanceManagement}
+                    courseId={curso.ID}
+                    selectedDate={selectedDate}
+                />
+            )}
         </>
     );
 };

@@ -22,10 +22,9 @@ export const UpdateInstructor = ({ instructor }) => {
       try {
         console.log("ID del instructor seleccionado:", instructor.ID); // 👈 Valida el ID aquí
 
-        const response = await axiosInstance.get(
-          `/cursos-asignados/${instructor.ID}`
-        );
-        console.log("Cursos asignados:", response.data); // 👈 Aquí puedes ver lo que devuelve el backend
+
+        const response = await axiosInstance.get(`/api/courses/cursos-asignados/${instructor.ID}`);
+        console.log('Cursos asignados:', response.data); // 👈 Aquí puedes ver lo que devuelve el backend
 
         if (Array.isArray(response.data)) {
           setCantidadCursos(response.data.length);
@@ -92,7 +91,7 @@ export const UpdateInstructor = ({ instructor }) => {
       }
 
       const response = await axiosInstance.put(
-        `/perfil/actualizar/${formData.ID}`,
+        `/api/users/perfil/actualizar/${instructor.ID}}`,
         formDataToSend,
         {
           headers: {
@@ -118,32 +117,22 @@ export const UpdateInstructor = ({ instructor }) => {
     }
   };
 
+
   if (acces_granted) {
     return (
-      <div id="modal-overlayUpdateInstructor" style={{ display: "flex" }}>
-        <form
-          className="modal-bodyUpdateInstructor"
-          onSubmit={handleButtonClick}
-        >
+      <div id="modal-overlayUpdateInstructor" style={{ display: 'flex' }}>
+        <form className="modal-bodyUpdateInstructor" onSubmit={handleButtonClick}>
           <div className="modal-left-update">
-            {[
-              "nombres",
-              "apellidos",
-              "cedula",
-              "titulo_profesional",
-              "celular",
-              "email",
-            ].map((field) => (
+            {['nombres', 'apellidos', 'documento', 'titulo_profesional', 'celular', 'email'].map((field) => (
               <label key={field}>
-                {field.charAt(0).toUpperCase() +
-                  field.slice(1).replace("_", " ")}
+                {field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ')}
                 <input
-                  type={field === "email" ? "email" : "text"}
+                  type={field === 'email' ? 'email' : 'text'}
                   name={field}
-                  value={formData[field] || ""}
+                  value={formData[field] || ''}
                   readOnly={!isEditing}
                   onChange={handleChange}
-                  className={`form-input ${!isEditing ? "read-only" : ""}`}
+                  className={`form-input ${!isEditing ? 'read-only' : ''}`}
                 />
               </label>
             ))}
@@ -160,9 +149,8 @@ export const UpdateInstructor = ({ instructor }) => {
             />
 
             <label
-              className={`upload-area-update ${
-                !isEditing ? "read-only-border" : ""
-              }`}
+              className={`upload-area-update ${!isEditing ? "read-only-border" : ""
+                }`}
               htmlFor="imageUpload"
             >
               {" "}
@@ -193,9 +181,8 @@ export const UpdateInstructor = ({ instructor }) => {
                     <button
                       key={estado}
                       type="button"
-                      className={`status ${
-                        formData.estado === estado ? "active" : ""
-                      }`}
+                      className={`status ${formData.estado === estado ? "active" : ""
+                        }`}
                       onClick={() => handleEstadoChange(estado)}
                     >
                       {estado}

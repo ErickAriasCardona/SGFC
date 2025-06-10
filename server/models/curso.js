@@ -63,9 +63,9 @@ class Curso extends Model {
         imagen: { // Nuevo campo para la imagen
           type: DataTypes.TEXT, // Almacena la URL o ruta de la imagen
           allowNull: true, // Opcional inicialmente
-        }, 
-      }, 
-      
+        },
+      },
+
       {
         sequelize,
         tableName: "curso",
@@ -75,16 +75,9 @@ class Curso extends Model {
   }
 
   static associate(models) {
-    this.belongsTo(models.Empresa, {
-      foreignKey: "empresa_NIT",
-      onDelete: "NO ACTION",
-      onUpdate: "NO ACTION",
-    });
-    this.belongsTo(models.Sena, {
-      foreignKey: "sena_NIT",
-      onDelete: "NO ACTION",
-      onUpdate: "NO ACTION",
-    });
+    this.belongsTo(models.Empresa, { foreignKey: 'empresa_NIT', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' });
+    this.belongsTo(models.Sena, { foreignKey: 'sena_NIT', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' });
+    this.hasMany(models.AsignacionCursoInstructor, { foreignKey: 'curso_ID', as: 'asignaciones' });
   }
 }
 

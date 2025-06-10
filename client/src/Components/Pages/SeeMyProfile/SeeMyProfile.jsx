@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import './SeeMyProfile.css';
 import { useLocation } from 'react-router-dom';
 
-import { Header } from '../../../Components/Layouts/Header/Header';
 import { Footer } from '../../../Components/Layouts/Footer/Footer';
 import { Main } from '../../../Components/Layouts/Main/Main';
 import axiosInstance from '../../../config/axiosInstance';
+import { Header } from '../../Layouts/Header/Header';
 
 export const SeeMyProfile = () => {
     const location = useLocation();
@@ -18,7 +18,7 @@ export const SeeMyProfile = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await axiosInstance.get(`/perfil/${userId}`);
+                const response = await axiosInstance.get(`/api/users/profile/${userId}`);
                 setPerfil(response.data);
                 setTipoCuenta(response.data.accountType);
             } catch (error) {
@@ -59,7 +59,7 @@ export const SeeMyProfile = () => {
                 payload.empresa = JSON.stringify(perfil.Empresa);
             }
 
-            await axiosInstance.put(`/perfil/actualizar/${userId}`, payload);
+            await axiosInstance.put(`/api/users/profile/${userId}`, payload);
             alert('Perfil actualizado con éxito');
             setEditMode(false);
         } catch (error) {

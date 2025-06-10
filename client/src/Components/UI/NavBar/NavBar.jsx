@@ -29,13 +29,24 @@ export const NavBar = ({ children }) => {
 
   const handleLogout = async () => {
     try {
-      await axiosInstance.post("/logout", {}, { withCredentials: true });
+      const response = await axiosInstance.post("/api/users/logout", {}, { 
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.status === 200) {
+        localStorage.removeItem("userSession");
+        sessionStorage.removeItem("userSession");
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      // Si hay un error, aún así intentamos limpiar la sesión local
       localStorage.removeItem("userSession");
       sessionStorage.removeItem("userSession");
       navigate("/");
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-      alert("Hubo un problema al cerrar sesión.");
     }
   };
 

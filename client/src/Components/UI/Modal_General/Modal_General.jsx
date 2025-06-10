@@ -1,10 +1,10 @@
 import React from "react";
 import "./Modal_General.css";
 
-export const Modal_General = ({ children, closeModal }) => {
+export const Modal_General = ({ children, closeModal, className }) => {
   return (
     <div id="container_modalGeneral" style={{ display: 'flex' }}>
-      <div className="modalGeneral">
+      <div className={`modalGeneral ${className || ''}`}>
         <div className="container_triangles_01">
           <div className="triangle_01"></div>
           <div className="triangle_02"></div>

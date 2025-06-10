@@ -41,25 +41,61 @@ export const Modal_SignIn = ({
   const login = (event) => {
     event.preventDefault();
 
-    axiosInstance.post("/login", {
-      email,
-      password,
+    fetch("http://localhost:3001/api/users/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
     })
-      .then((response) => {
-        alert(response.data.message);
-        sessionStorage.setItem("userSession", JSON.stringify({
-          accountType: response.data.accountType,
-          email: email,
-          id: response.data.id
-        }));
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Respuesta completa del servidor:", data);
+        
+        if (!data.token) {
+          console.error("Datos recibidos sin token:", data);
+          throw new Error("No se recibió el token de autenticación");
+        }
+        
+        const sessionData = {
+          accountType: data.accountType,
+          email: data.email,
+          id: data.id,
+          token: data.token
+        };
+        
+        console.log("Datos de sesión a guardar:", sessionData);
+        
+        if (rememberSession) {
+          localStorage.setItem("userSession", JSON.stringify(sessionData));
+          console.log("Sesión guardada en localStorage");
+        } else {
+          sessionStorage.setItem("userSession", JSON.stringify(sessionData));
+          console.log("Sesión guardada en sessionStorage");
+        }
 
+        // Verificar que los datos se guardaron correctamente
+        const storedSession = JSON.parse(
+          rememberSession 
+            ? localStorage.getItem("userSession") 
+            : sessionStorage.getItem("userSession")
+        );
+        console.log("Datos de sesión guardados:", storedSession);
+
+        alert(data.message || "Inicio de sesión exitoso");
         closeModalSignIn();
         navigate("/", {
-          state: { accountType: response.data.accountType },
+          state: { accountType: data.accountType },
         });
       })
       .catch((error) => {
-        if (error.response && error.response.status === 400) {
+        console.error("Error en el login:", error);
+        if (error.message === "No se recibió el token de autenticación") {
+          alert("Error en la autenticación: No se recibió el token");
+        } else if (error.response && error.response.status === 400) {
           alert("Usuario o contraseña incorrectos");
         } else if (error.response && error.response.status === 403) {
           alert("Por favor verifica tu correo antes de iniciar sesión");
@@ -73,7 +109,7 @@ export const Modal_SignIn = ({
     const idToken = response.credential;
 
     try {
-      const res = await fetch("https://sgfc-production.up.railway.app/auth/googleSignIn", {
+      const res = await fetch("http://localhost:3001/api/users/auth/googleSignIn", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

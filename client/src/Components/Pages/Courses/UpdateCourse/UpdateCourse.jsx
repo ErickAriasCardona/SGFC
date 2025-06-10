@@ -6,12 +6,11 @@ import { Main } from "../../../Layouts/Main/Main";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosInstance from "../../../../config/axiosInstance";
 import addIMG from "../../../../assets/Icons/addImg.png";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 export const UpdateCourse = () => {
   const navigate = useNavigate();
   const { id } = useParams(); // Obtener el ID del curso desde la URL
-  const navigate = useNavigate(); // Hook para redirigir
   const [curso, setCurso] = useState(null); // Estado para almacenar los datos del curso
   const [preview, setPreview] = useState(null); // Vista previa de la imagen
   const fileInputRef = useRef(null);
@@ -24,17 +23,17 @@ export const UpdateCourse = () => {
       userSession.accountType === "Gestor");
 
 
-    // Obtener los datos del curso al cargar la página
-    useEffect(() => {
-        const fetchCurso = async () => {
-            try {
-                const response = await axiosInstance.get(`/cursos/${id}`); // Obtener los datos del curso
-                setCurso(response.data);
-                setPreview(response.data.imagen ? `sgfc.railway.internal${response.data.imagen}` : null);
-            } catch (error) {
-                console.error("Error al obtener el curso:", error);
-            }
-        };
+  // Obtener los datos del curso al cargar la página
+  useEffect(() => {
+    const fetchCurso = async () => {
+      try {
+        const response = await axiosInstance.get(`/api/courses/cursos/${id}`); // Obtener los datos del curso
+        setCurso(response.data);
+        setPreview(response.data.imagen ? `sgfc.railway.internal${response.data.imagen}` : null);
+      } catch (error) {
+        console.error("Error al obtener el curso:", error);
+      }
+    };
 
     fetchCurso();
   }, [id]);
@@ -42,7 +41,6 @@ export const UpdateCourse = () => {
   // Manejar la actualización del curso
   const handleUpdateCourse = async () => {
     try {
-      // Crear el objeto con los datos del curso
       const updatedCurso = {
         ficha: curso.ficha,
         nombre_curso: curso.nombre_curso,
@@ -57,22 +55,19 @@ export const UpdateCourse = () => {
         lugar_formacion: curso.lugar_formacion || "",
       };
 
-      // Verificar los datos antes de enviarlos
       console.log("Datos enviados al backend:", updatedCurso);
 
-      // Enviar la solicitud PUT al backend
-      const response = await axiosInstance.put(`/cursos/${id}`, updatedCurso, {
+      const response = await axiosInstance.put(`/api/courses/cursos/${id}`, updatedCurso, {
         headers: {
           "Content-Type": "application/json",
         },
       });
 
-      // Verificar la respuesta del backend
       console.log("Respuesta del backend:", response.data);
 
       if (response.status === 200) {
         alert("Curso actualizado con éxito");
-        navigate(`/Cursos/${id}`); // Redirigir a la página del curso
+        navigate(`/Cursos/${id}`);
       } else {
         alert("Ocurrió un error al actualizar el curso");
       }
@@ -81,6 +76,7 @@ export const UpdateCourse = () => {
       alert("Ocurrió un error al actualizar el curso");
     }
   };
+
   if (acces_granted) {
     if (!curso) {
       return <p>Cargando...</p>;
@@ -170,9 +166,8 @@ export const UpdateCourse = () => {
                       <span>Tipo de oferta:</span>
                       <div className="offer-options">
                         <button
-                          className={`offer-button ${
-                            curso.tipo_oferta === "Cerrada" ? "active" : ""
-                          }`}
+                          className={`offer-button ${curso.tipo_oferta === "Cerrada" ? "active" : ""
+                            }`}
                           onClick={(e) => {
                             e.preventDefault();
                             setCurso({ ...curso, tipo_oferta: "Cerrada" });
@@ -181,9 +176,8 @@ export const UpdateCourse = () => {
                           Cerrada
                         </button>
                         <button
-                          className={`offer-button ${
-                            curso.tipo_oferta === "Abierta" ? "active" : ""
-                          }`}
+                          className={`offer-button ${curso.tipo_oferta === "Abierta" ? "active" : ""
+                            }`}
                           onClick={(e) => {
                             e.preventDefault();
                             setCurso({ ...curso, tipo_oferta: "Abierta" });
@@ -197,9 +191,8 @@ export const UpdateCourse = () => {
                       <span>Estado:</span>
                       <div className="offer-options">
                         <button
-                          className={`offer-button ${
-                            curso.estado === "Activo" ? "active" : ""
-                          }`}
+                          className={`offer-button ${curso.estado === "Activo" ? "active" : ""
+                            }`}
                           onClick={(e) => {
                             e.preventDefault();
                             setCurso({ ...curso, estado: "Activo" });
@@ -208,9 +201,8 @@ export const UpdateCourse = () => {
                           Activo
                         </button>
                         <button
-                          className={`offer-button ${
-                            curso.estado === "En oferta" ? "active" : ""
-                          }`}
+                          className={`offer-button ${curso.estado === "En oferta" ? "active" : ""
+                            }`}
                           onClick={(e) => {
                             e.preventDefault();
                             setCurso({ ...curso, estado: "En oferta" });

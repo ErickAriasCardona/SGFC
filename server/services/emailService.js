@@ -335,13 +335,3 @@ const sendStudentsInstructorAssignedEmail = (emails, curso,nombreInstructor) => 
   sendInstructorAssignedEmail 
  };
 
-module.exports = { 
-   sendVerificationEmail,
-   sendPasswordResetEmail,
-   sendPasswordChangeConfirmationEmail,
-   sendCourseCreatedEmail,
-   sendCursoUpdatedNotification,
-   sendStudentsInstructorAssignedEmail,
-   sendInstructorAssignedEmail 
-  };
-

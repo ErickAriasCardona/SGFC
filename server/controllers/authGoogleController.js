@@ -41,8 +41,13 @@ const googleSignIn = async (req, res) => {
         const email = payload['email'];
         const nombres = payload['given_name'] || payload['name'];
         const apellidos = payload['family_name'] || '';
-        const foto_perfil = payload['picture'];
+        let foto_perfil = payload['picture'];
         const emailVerified = payload['email_verified'];
+
+        // Limpiar la URL de la foto de perfil
+        if (foto_perfil && foto_perfil.includes('googleusercontent.com')) {
+            foto_perfil = foto_perfil.split('=')[0];
+        }
 
         if (!emailVerified) {
             return res.status(400).json({ success: false, message: 'El correo electrónico de Google no está verificado.' });
@@ -91,8 +96,13 @@ const googleSignUp = async (req, res) => {
         const email = payload['email'];
         const nombres = payload['given_name'] || payload['name'];
         const apellidos = payload['family_name'] || '';
-        const foto_perfil = payload['picture'];
+        let foto_perfil = payload['picture'];
         const emailVerified = payload['email_verified'];
+
+        // Limpiar la URL de la foto de perfil
+        if (foto_perfil && foto_perfil.includes('googleusercontent.com')) {
+            foto_perfil = foto_perfil.split('=')[0];
+        }
 
         if (!emailVerified) {
             return res.status(400).json({ success: false, message: 'El correo electrónico de Google no está verificado.' });

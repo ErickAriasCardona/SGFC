@@ -63,7 +63,7 @@ class Usuario extends Model {
           type: DataTypes.STRING(10),
           allowNull: true,
         },
-        cedula: {
+        documento: {
           type: DataTypes.STRING(15),
           allowNull: true,
           unique: true,
@@ -92,16 +92,21 @@ class Usuario extends Model {
   static associate(models) {
     this.belongsTo(models.Sena, {
       foreignKey: 'sena_ID',
-      as: 'Sena', // Agrega este alias
+      as: 'Sena',
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE'
     });
 
     this.belongsTo(models.Empresa, {
       foreignKey: 'empresa_ID',
-      as: 'Empresa', // Agrega este alias
+      as: 'Empresa',
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE'
+    });
+
+    this.hasMany(models.InscripcionCurso, {
+      foreignKey: 'aprendiz_ID',
+      as: 'inscripciones'
     });
   }
 

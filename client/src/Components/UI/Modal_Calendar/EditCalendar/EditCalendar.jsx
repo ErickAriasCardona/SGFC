@@ -2,15 +2,26 @@ import React, { useState, useEffect } from 'react';
 import './ECalendar.css';
 
 const times = [
-  '6:00', '8:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'
+  '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', 
+  '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', 
+  '20:00', '21:00', '22:00'
 ];
-const days = ['Lun', 'Mar', 'Mier', 'Jue', 'Vier', 'Sab'];
+const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+const dayAbbreviations = {
+  'Lunes': 'Lun',
+  'Martes': 'Mar',
+  'Miércoles': 'Mié',
+  'Jueves': 'Jue',
+  'Viernes': 'Vie',
+  'Sábado': 'Sáb'
+};
 
 export const EditCalendar = ({ closeModal, onSave, initialData }) => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  // Store selected slots as a set of "day-time" strings
   const [selectedSlots, setSelectedSlots] = useState(new Set());
+  const [error, setError] = useState('');
 
   // Initialize state from initialData when modal opens
   useEffect(() => {
@@ -21,7 +32,37 @@ export const EditCalendar = ({ closeModal, onSave, initialData }) => {
     }
   }, [initialData]);
 
+  const validateDates = () => {
+    if (!startDate || !endDate) {
+      setError('Por favor, selecciona las fechas de inicio y fin');
+      return false;
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (start < today) {
+      setError('La fecha de inicio no puede ser anterior a hoy');
+      return false;
+    }
+
+    if (end < start) {
+      setError('La fecha de fin no puede ser anterior a la fecha de inicio');
+      return false;
+    }
+
+    setError('');
+    return true;
+  };
+
   const toggleSlot = (day, time) => {
+    if (!startDate || !endDate) {
+      setError('Por favor, selecciona primero las fechas de inicio y fin');
+      return;
+    }
+
     const slot = `${day}-${time}`;
     const newSelected = new Set(selectedSlots);
     if (newSelected.has(slot)) {
@@ -33,6 +74,15 @@ export const EditCalendar = ({ closeModal, onSave, initialData }) => {
   };
 
   const handleSave = () => {
+    if (!validateDates()) {
+      return;
+    }
+
+    if (selectedSlots.size === 0) {
+      setError('Por favor, selecciona al menos un horario');
+      return;
+    }
+
     // Pass selected data back to parent component
     if (onSave) {
       onSave({
@@ -45,7 +95,6 @@ export const EditCalendar = ({ closeModal, onSave, initialData }) => {
   };
 
   const handleCancel = () => {
-    // Close modal without saving changes
     closeModal();
   };
 
@@ -57,13 +106,18 @@ export const EditCalendar = ({ closeModal, onSave, initialData }) => {
           <h2 className="modal-title">
             Editar Fechas y <span className="highlight">horarios</span>
           </h2>
-          <div className="date-inputs organized-date-inputs">
+
+          <div className="organized-date-inputs">
             <label>
               Fecha inicio:
               <input
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  setError('');
+                }}
+                min={new Date().toISOString().split('T')[0]}
               />
             </label>
             <label>
@@ -71,46 +125,48 @@ export const EditCalendar = ({ closeModal, onSave, initialData }) => {
               <input
                 type="date"
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                onChange={(e) => {
+                  setEndDate(e.target.value);
+                  setError('');
+                }}
+                min={startDate || new Date().toISOString().split('T')[0]}
               />
             </label>
+            {error && <p className="error-message">{error}</p>}
           </div>
-          <div className="calendar-card-wrapper">
-            <div className="calendar-card layered-card card1"></div>
-            <div className="calendar-card layered-card card2"></div>
-            <div className="calendar-card layered-card card3"></div>
-          </div>
+
           <div className="calendar-container">          
             <table className="calendar-table">
-            <thead>
-              <tr>
-                <th></th>
-                {days.map((day) => (
-                  <th key={day}>{day}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {times.map((time) => (
-                <tr key={time}>
-                  <td>{time}</td>
-                  {days.map((day) => {
-                    const slot = `${day}-${time}`;
-                    const isSelected = selectedSlots.has(slot);
-                    return (
-                      <td
-                        key={slot}
-                        className={`slot-cell ${isSelected ? 'selected' : ''}`}
-                        onClick={() => toggleSlot(day, time)}
-                      >
-                        <span className="plus-icon">+</span>
-                      </td>
-                    );
-                  })}
+              <thead>
+                <tr>
+                  <th></th>
+                  {days.map((day) => (
+                    <th key={day}>{dayAbbreviations[day]}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table></div>
+              </thead>
+              <tbody>
+                {times.map((time) => (
+                  <tr key={time}>
+                    <td>{time}</td>
+                    {days.map((day) => {
+                      const slot = `${day}-${time}`;
+                      const isSelected = selectedSlots.has(slot);
+                      return (
+                        <td
+                          key={slot}
+                          className={`slot-cell ${isSelected ? 'selected' : ''}`}
+                          onClick={() => toggleSlot(day, time)}
+                        >
+                          <span className="plus-icon">+</span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           <button className="save-button-calendar organized-save-button" onClick={handleSave}>Guardar</button>
         </div>

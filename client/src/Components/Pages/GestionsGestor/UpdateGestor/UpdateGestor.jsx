@@ -65,31 +65,25 @@ export const UpdateGestor = ({ gestor }) => {
       }
 
       const response = await axiosInstance.put(
-        `/perfil/actualizar/${formData.ID}`,
+        `/api/users/perfil/actualizar/${formData.ID}`,
         formDataToSend,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
-          },
+            'Content-Type': 'multipart/form-data',
+          }
         }
       );
 
-      alert(response.data.message || "Perfil actualizado");
+      alert(response.data.message || 'Perfil actualizado');
       setIsEditing(false);
-
-      //Recargar la página para reflejar cambios
       window.location.reload();
-      //Ocultar el modal
-      document.getElementById("modal-overlayUpdateGestor").style.display =
-        "none";
+      document.getElementById("modal-overlayUpdateGestor").style.display = "none";
     } catch (error) {
-      console.error(
-        "Error al actualizar el perfil:",
-        error.response?.data || error.message
-      );
+      console.error("Error al actualizar el perfil:", error.response?.data || error.message);
       alert("Hubo un error al actualizar el perfil.");
     }
   };
+
   if (acces_granted) {
     return (
       <div id="modal-overlayUpdateGestor" style={{ display: "flex" }}>

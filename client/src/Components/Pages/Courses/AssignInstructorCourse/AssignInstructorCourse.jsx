@@ -26,16 +26,14 @@ export const AssignInstructorCourse = ({ curso_ID, onClose }) => {
   // Obtener instructores del backend
   const fetchInstructors = async () => {
     try {
-      const response = await axiosInstance.get("/instructores");
-      setInstructors(response.data);
-      setFilteredInstructors(response.data);
+        const response = await axiosInstance.get('/api/users/instructores');
+        setInstructors(response.data);
+        setFilteredInstructors(response.data);
     } catch (error) {
-      console.error("Error al obtener los instructores:", error);
-      alert(
-        "Hubo un problema al cargar los instructores. Por favor, inténtalo más tarde."
-      );
+        console.error('Error al obtener los instructores:', error);
+        alert('Hubo un problema al cargar los instructores. Por favor, inténtalo más tarde.');
     }
-  };
+};
 
   useEffect(() => {
     fetchInstructors();

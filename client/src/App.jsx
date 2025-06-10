@@ -23,6 +23,7 @@ import { CreateCourse } from './Components/Pages/Courses/CreateCourse/CreateCour
 import { ConsultCourses } from './Components/Pages/Courses/Consult/ConsultCourses';
 import { SeeCourse } from './Components/Pages/Courses/SeeCourse/SeeCourse';
 import { UpdateCourse } from './Components/Pages/Courses/UpdateCourse/UpdateCourse';
+import { MisCursos } from './Components/Pages/Courses/MisCursos/MisCursos';
 import { GestionsInstructor } from './Components/Pages/GestionsInstructor/GestionsInstructor';
 import { GestionsGestor } from './Components/Pages/GestionsGestor/GestionsGestor';
 import { SeeMyProfile } from './Components/Pages/SeeMyProfile/SeeMyProfile';
@@ -30,6 +31,8 @@ import { GestionsCompany } from './Components/Pages/GestionsCompany/GestionsComp
 import { UpdateEmploye } from './Components/Pages/GestionsEmployes/UpdateEmploye/UpdateEmploye';
 import { SeachEmployes } from './Components/Pages/GestionsEmployes/SeachEmployes/SeachEmployes';
 import { GestionsEmployes } from './Components/Pages/GestionsEmployes/GestionsEmployes';
+import { AttendanceRecords } from './components/Pages/AttendanceRecords/AttendanceRecords';
+import { ManageAttendance } from './Components/Pages/Courses/ManageAttendance/ManageAttendance';
 // Importación de modales
 import { NavBar } from './Components/UI/NavBar/NavBar';
 import { Modal_SignIn } from './Components/UI/Modal_SignIn/Modal_SignIn';
@@ -41,10 +44,26 @@ import { CreateInstructor } from './Components/Pages/GestionsInstructor/CreateIn
 import { CreateGestor } from './Components/Pages/GestionsGestor/CreateGestor/CreateGestor';
 import { CreateEmploye } from './Components/Pages/GestionsEmployes/CreateEmploye/CreateEmploye';
 import { UpdateInstructor } from './Components/Pages/GestionsInstructor/UpdateInstructor/UpdateInstructor';
+import { NoAutorizado } from './Components/Pages/NoAutorizado/NoAutorizado';
 
 // Importación de estilos
 import "./App.css";
 import { ProtectedRoute } from "./utils/ProtectedRoute";
+import { Header } from './Components/Layouts/Header/Header';
+
+// Crear un componente Layout que envuelva las páginas con Header y Footer
+const Layout = ({ children, setShowSignIn, setShowSignUp, setShowAccountType }) => {
+  return (
+    <>
+      <Header 
+        setShowSignIn={setShowSignIn}
+        setShowSignUp={setShowSignUp}
+        setShowAccountType={setShowAccountType}
+      />
+      {children}
+    </>
+  );
+};
 
 function App() {
   const navigate = useNavigate();
@@ -79,7 +98,7 @@ function App() {
     const userSession = localStorage.getItem('userSession');
     const userInfo = sessionStorage.getItem('userSession');
     const { email } = JSON.parse(userInfo || '{}'); // Manejo seguro si userInfo es null
-  
+
     if (email?.includes('@example.com')) {
       setShowAccountType(true);
     }
@@ -172,7 +191,7 @@ function App() {
             />
           } />
           <Route path="/QuienesSomos" element={<Who_we_are />} />
-          <Route path="/Inicio" element={
+          <Route path="/" element={
             <Home
               handleShowSignUp={handleShowSignUp}
             />
@@ -180,9 +199,42 @@ function App() {
           <Route path="/verificarCorreo" element={<EmailVerification />} />
           <Route path="/forgotPassword" element={<ForgotPassword />} />
           <Route path="/resetPassword" element={<ResetPassword />} />
-          <Route path="/Cursos/CrearCurso" element={<CreateCourse />} />
-          <Route path="/Cursos/BuscarCursos" element={<ConsultCourses />} />
+          <Route path="/Cursos/CrearCurso" element={
+            <Layout
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <CreateCourse />
+            </Layout>
+          } />
+          <Route path="/Cursos/BuscarCursos" element={<Layout
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <ConsultCourses />
+            </Layout>
+          } />
           <Route path="/Cursos/:id" element={<SeeCourse />} />
+          <Route path="/Cursos/MisCursos" element={
+            <Layout
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <MisCursos />
+            </Layout>
+          } />
+          <Route path="/Cursos/:id/gestionar-asistencia" element={
+            <Layout
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <ManageAttendance />
+            </Layout>
+          } />
           <Route
             path="/Cursos/ActualizarCurso/:id"
             element={<UpdateCourse />}
@@ -198,12 +250,24 @@ function App() {
             path="/Empleados/MisEmpleados"
             element={<GestionsEmployes />}
           />
+
           <Route path="/Empleados/CrearEmpleado" element={<CreateEmploye />} />
           <Route
             path="/Empleados/ActualizarEmpleado/:id"
             element={<UpdateEmploye />}
           />
+          <Route path="/Asistencias" element={
+            <Layout
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <AttendanceRecords />
+            </Layout>
+          } />
+
           <Route path="/ProtectedRoute" element={<ProtectedRoute />} />
+          <Route path="/no-autorizado" element={<NoAutorizado />} />
         </Routes>
       </>
     </GoogleOAuthProvider>

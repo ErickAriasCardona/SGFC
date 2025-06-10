@@ -1,0 +1,158 @@
+const { sendNotification, sendAbsenceNotifications } = require('../services/notificationService');
+let dbInstance;
+
+// Función para inyectar la instancia de la base de datos
+const setDb = (databaseInstance) => {
+    dbInstance = databaseInstance;
+};
+
+/**
+ * Obtiene las notificaciones de un usuario
+ */
+const getUserNotifications = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { page = 1, limit = 10, type } = req.query;
+
+        const whereClause = { usuario_ID: userId };
+        if (type) {
+            whereClause.tipo = type;
+        }
+
+        const offset = (page - 1) * limit;
+
+        const { count, rows: notifications } = await dbInstance.Notificacion.findAndCountAll({
+            where: whereClause,
+            include: [
+                {
+                    model: dbInstance.Usuario,
+                    as: 'usuario',
+                    attributes: ['ID', 'nombres', 'apellidos', 'email']
+                }
+            ],
+            order: [['fecha_envio', 'DESC']],
+            limit: parseInt(limit),
+            offset: offset
+        });
+
+        res.status(200).json({
+            success: true,
+            notifications,
+            pagination: {
+                total: count,
+                totalPages: Math.ceil(count / limit),
+                currentPage: parseInt(page),
+                limit: parseInt(limit)
+            }
+        });
+    } catch (error) {
+        console.error('Error al obtener notificaciones:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener las notificaciones'
+        });
+    }
+};
+
+/**
+ * Marca una notificación como leída
+ */
+const markNotificationAsRead = async (req, res) => {
+    try {
+        const { notificationId } = req.params;
+        const userId = req.user.id;
+
+        const notification = await dbInstance.Notificacion.findOne({
+            where: {
+                ID: notificationId,
+                usuario_ID: userId
+            }
+        });
+
+        if (!notification) {
+            return res.status(404).json({
+                success: false,
+                message: 'Notificación no encontrada'
+            });
+        }
+
+        await notification.update({ estado: 'leida' });
+
+        res.status(200).json({
+            success: true,
+            message: 'Notificación marcada como leída'
+        });
+    } catch (error) {
+        console.error('Error al marcar notificación como leída:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al actualizar la notificación'
+        });
+    }
+};
+
+/**
+ * Envía una notificación de inasistencia manualmente
+ */
+const sendManualAbsenceNotification = async (req, res) => {
+    try {
+        const { attendanceId } = req.params;
+        const instructorId = req.user.id;
+
+        // Obtener el registro de asistencia
+        const attendance = await dbInstance.Asistencia.findOne({
+            where: {
+                ID: attendanceId,
+                estado: 'Ausente'
+            },
+            include: [
+                {
+                    model: dbInstance.Usuario,
+                    as: 'aprendiz',
+                    attributes: ['ID', 'nombres', 'apellidos', 'email']
+                }
+            ]
+        });
+
+        if (!attendance) {
+            return res.status(404).json({
+                success: false,
+                message: 'Registro de asistencia no encontrado o no es una ausencia'
+            });
+        }
+
+        const title = `Notificación de Inasistencia`;
+        const message = `
+            <h2>Notificación de Inasistencia</h2>
+            <p>Estimado(a) ${attendance.aprendiz.nombres} ${attendance.aprendiz.apellidos},</p>
+            <p>Le informamos que se ha registrado una inasistencia en la fecha ${new Date(attendance.fecha).toLocaleDateString()}.</p>
+            <p>Por favor, asegúrese de asistir a las próximas sesiones programadas.</p>
+            <p>Saludos cordiales,<br>SGFC</p>
+        `;
+
+        await sendNotification(
+            attendance.aprendiz.ID,
+            'inasistencia',
+            title,
+            message
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Notificación de inasistencia enviada correctamente'
+        });
+    } catch (error) {
+        console.error('Error al enviar notificación manualmente:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al enviar la notificación'
+        });
+    }
+};
+
+module.exports = {
+    setDb,
+    getUserNotifications,
+    markNotificationAsRead,
+    sendManualAbsenceNotification
+}; 

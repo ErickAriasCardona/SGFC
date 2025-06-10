@@ -1,21 +1,15 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./CreateInstructor.css";
 import addIMG from "../../../../assets/Icons/addImg.png";
 import axiosInstance from "../../../../config/axiosInstance";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-export const CreateInstructor = ({ onClose }) => {
+export const CreateInstructor = () => {
+  // 1. Todos los Hooks al inicio del componente
   const navigate = useNavigate();
-
-  // Validación de sesión de usuario y rol de administrador
-  const userSessionString = sessionStorage.getItem("userSession");
-  const userSession = userSessionString ? JSON.parse(userSessionString) : null;
-  const acces_granted =
-    userSessionString &&
-    (userSession.accountType === "Administrador" ||
-      userSession.accountType === "Gestor");
-
+  const mounted = useRef(false);
   const fileInputRef = useRef(null);
+  
   const [preview, setPreview] = useState(null);
   const [formData, setFormData] = useState({
     nombres: "",
@@ -24,17 +18,32 @@ export const CreateInstructor = ({ onClose }) => {
     titulo_profesional: "",
     celular: "",
     email: "",
-    estado: "Inactivo", // Valor predeterminado
+    estado: "Inactivo",
   });
   const [file, setFile] = useState(null);
+  const [acces_granted, setAccesGranted] = useState(false);
 
-  // Manejar cambios en los campos del formulario
+  // 2. Efectos después de los estados
+  useEffect(() => {
+    const userSessionString = sessionStorage.getItem("userSession");
+    const userSession = userSessionString ? JSON.parse(userSessionString) : null;
+    const hasAccess = userSessionString && userSession?.accountType === "Administrador";
+    setAccesGranted(hasAccess);
+
+    if (!mounted.current) {
+      mounted.current = true;
+      if (!hasAccess) {
+        navigate("/ProtectedRoute");
+      }
+    }
+  }, [navigate]);
+
+  // 3. Handlers y funciones después de los efectos
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Manejar la selección de archivo
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) return;
@@ -49,188 +58,177 @@ export const CreateInstructor = ({ onClose }) => {
   };
 
   const closeModalCreateInstructor = () => {
-    document.getElementById("modal-overlayCreateInstructor").style.display =
-      "none";
+    document.getElementById("modal-overlayCreateInstructor").style.display = "none";
   };
 
-  // Enviar datos al backend
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Crear un objeto FormData
     const data = new FormData();
-    data.append("foto_perfil", file);
-    data.append("nombres", formData.nombres);
-    data.append("apellidos", formData.apellidos);
-    data.append("cedula", formData.cedula);
-    data.append("titulo_profesional", formData.titulo_profesional);
-    data.append("celular", formData.celular);
-    data.append("email", formData.email);
-    data.append("estado", formData.estado);
+    data.append('foto_perfil', file);
+    data.append('nombres', formData.nombres);
+    data.append('apellidos', formData.apellidos);
+    data.append('cedula', formData.cedula);
+    data.append('titulo_profesional', formData.titulo_profesional);
+    data.append('celular', formData.celular);
+    data.append('email', formData.email);
+    data.append('estado', formData.estado);
 
     try {
-      const response = await axiosInstance.post("/crearInstructor", data, {
+      const response = await axiosInstance.post('/api/users/crearInstructor', data, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          'Content-Type': 'multipart/form-data',
         },
       });
 
-      alert("Instructor creado con éxito");
+      alert('Instructor creado con éxito');
       console.log(response.data);
 
-      // Cerrar el modal y recargar la página
-      document.getElementById("modal-overlayCreateInstructor").style.display =
-        "none";
+      document.getElementById("modal-overlayCreateInstructor").style.display = "none";
       window.location.reload();
     } catch (error) {
-      console.error("Error al crear el instructor:", error);
-      const errorMsg =
-        error.response?.data?.message ||
-        "Hubo un problema al crear el instructor.";
+      console.error('Error al crear el instructor:', error);
+      const errorMsg = error.response?.data?.message || 'Hubo un problema al crear el instructor.';
       alert(`Error: ${errorMsg}`);
     }
   };
-  if (acces_granted) {
-    return (
-      <div id="modal-overlayCreateInstructor">
-        <form className="modal-bodyCreateInstructor" onSubmit={handleSubmit}>
-          <div className="modal-left">
-            <label>
-              Nombres
-              <input
-                type="text"
-                name="nombres"
-                value={formData.nombres}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-            <label>
-              Apellidos
-              <input
-                type="text"
-                name="apellidos"
-                value={formData.apellidos}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-            <label>
-              Cédula
-              <input
-                type="text"
-                name="cedula"
-                value={formData.cedula}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-            <label>
-              Título
-              <input
-                type="text"
-                name="titulo_profesional"
-                value={formData.titulo_profesional}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-            <label>
-              Celular
-              <input
-                type="text"
-                name="celular"
-                value={formData.celular}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-            <label>
-              Email
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-          </div>
 
-          <div className="modal-right">
+  // 4. Renderizado condicional después de toda la lógica
+  if (!acces_granted) {
+    return null;
+  }
+
+  return (
+    <div id="modal-overlayCreateInstructor">
+      <form className="modal-bodyCreateInstructor" onSubmit={handleSubmit}>
+        <div className="modal-left">
+          <label>
+            Nombres
             <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              hidden
+              type="text"
+              name="nombres"
+              value={formData.nombres}
+              onChange={handleInputChange}
+              required
             />
+          </label>
+          <label>
+            Apellidos
+            <input
+              type="text"
+              name="apellidos"
+              value={formData.apellidos}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+          <label>
+            Cédula
+            <input
+              type="text"
+              name="cedula"
+              value={formData.cedula}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+          <label>
+            Título
+            <input
+              type="text"
+              name="titulo_profesional"
+              value={formData.titulo_profesional}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+          <label>
+            Celular
+            <input
+              type="text"
+              name="celular"
+              value={formData.celular}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+          <label>
+            Email
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+        </div>
 
-            <label
-              className="upload-area"
-              onClick={() => fileInputRef.current.click()}
-            >
-              {preview ? (
+        <div className="modal-right">
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            hidden
+          />
+
+          <label
+            className="upload-area"
+            onClick={() => fileInputRef.current.click()}
+          >
+            {preview ? (
+              <img
+                src={preview}
+                alt="Vista previa"
+                className="preview-image"
+              />
+            ) : (
+              <div className="upload-placeholder">
                 <img
-                  src={preview}
-                  alt="Vista previa"
-                  className="preview-image"
+                  src={addIMG}
+                  alt="icono agregar imagen"
+                  className="icon"
                 />
-              ) : (
-                <div className="upload-placeholder">
-                  <img
-                    src={addIMG}
-                    alt="icono agregar imagen"
-                    className="icon"
-                  />
-                  <p>Arrastra o sube la foto del curso aquí.</p>
-                </div>
-              )}
-            </label>
-
-            <div className="status-container">
-              <span>Estado:</span>
-              <div className="status-buttons">
-                <button
-                  type="button"
-                  className={`status ${
-                    formData.estado === "Activo" ? "active" : ""
-                  }`}
-                  onClick={() => setFormData({ ...formData, estado: "Activo" })}
-                >
-                  Activo
-                </button>
-                <button
-                  type="button"
-                  className={`status ${
-                    formData.estado === "Inactivo" ? "active" : ""
-                  }`}
-                  onClick={() =>
-                    setFormData({ ...formData, estado: "Inactivo" })
-                  }
-                >
-                  Inactivo
-                </button>
+                <p>Arrastra o sube la foto del curso aquí.</p>
               </div>
-            </div>
+            )}
+          </label>
 
-            <button type="submit" className="save-button">
-              Guardar
-            </button>
+          <div className="status-container">
+            <span>Estado:</span>
+            <div className="status-buttons">
+              <button
+                type="button"
+                className={formData.estado === "Activo" ? "active" : ""}
+                onClick={() => setFormData(prev => ({ ...prev, estado: "Activo" }))}
+              >
+                Activo
+              </button>
+              <button
+                type="button"
+                className={formData.estado === "Inactivo" ? "active" : ""}
+                onClick={() => setFormData(prev => ({ ...prev, estado: "Inactivo" }))}
+              >
+                Inactivo
+              </button>
+            </div>
           </div>
 
-          <div className="container_return_CreateInstructor">
-            <h5>Volver</h5>
+          <div className="modal-buttons">
+            <button type="submit" className="submit-button">
+              Crear Instructor
+            </button>
             <button
               type="button"
+              className="cancel-button"
               onClick={closeModalCreateInstructor}
-              className="closeModal"
-            ></button>
+            >
+              Cancelar
+            </button>
           </div>
-        </form>
-      </div>
-    );
-  } else {
-    navigate("/ProtectedRoute"); // Redirigir a la página de inicio si no es administrador
-  }
+        </div>
+      </form>
+    </div>
+  );
 };

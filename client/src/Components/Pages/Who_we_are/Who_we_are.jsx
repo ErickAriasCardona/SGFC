@@ -1,13 +1,13 @@
-import { Header } from "../../Layouts/Header/Header";
 import { Footer } from "../../Layouts/Footer/Footer";
 import { Main } from "../../Layouts/Main/Main";
 import ilustration_01 from "../../../assets/Ilustrations/Frame01.svg";
 import "./Who_we_are.css";
+import { Header } from "../../Layouts/Header/Header";
 
 export const Who_we_are = () => {
   return (
-    <div className="who_we_are">
-      <Header />
+    <>
+      <Header/>
       <Main>
         <picture className="ilustration_who">
           <img
@@ -31,6 +31,6 @@ export const Who_we_are = () => {
         </section>
       </Main>
       <Footer />
-    </div>
+    </>
   );
 };
