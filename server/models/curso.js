@@ -52,7 +52,7 @@ class Curso extends Model {
           allowNull: true,
         },
         dias_formacion: {
-          type: DataTypes.STRING(20),
+          type: DataTypes.JSON,
           allowNull: true,
         },
         lugar_formacion: {
