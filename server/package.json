@@ -12,6 +12,7 @@
     "mysql2": "^3.14.0",
     "node": "^18.20.8",
     "nodemailer": "^6.10.0",
+    "pdf-poppler": "^0.2.1",
     "sequelize": "^6.37.7",
     "socket.io": "^4.8.1"
   },

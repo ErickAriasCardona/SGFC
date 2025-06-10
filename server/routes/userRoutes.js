@@ -16,7 +16,6 @@ const {
   createInstructor, 
   createGestor,
   logoutUser,
-  convertPdfToImages,
 } = require("../controllers/userController");
 const router = express.Router();
 const upload = require("../config/multer"); // Importar configuración de multer
@@ -42,7 +41,7 @@ router.put('/perfil/actualizarFoto/:id', updateProfilePicture); // Actualizar fo
 router.post('/crearInstructor', upload.single('foto_perfil'), createInstructor);
 router.post('/crearGestor', upload.single('foto_perfil'), createGestor);
 router.post("/logout", logoutUser);
-router.post('/usuarios/:userId/convertir-pdf', convertPdfToImages);
+
 
 
 router.get("/", (req, res) => {

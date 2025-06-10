@@ -8,6 +8,7 @@ const axios = require('axios');
 const FormData = require('form-data');
 const path = require('path');
 const fs = require('fs');
+const pdfPoppler = require('pdf-poppler');
 
 // Registrar usuario
 const Empresa = require('../models/empresa'); // Importar el modelo Empresa
@@ -63,13 +64,34 @@ const registerUser = async (req, res) => {
         
         const pdfFile = req.files['document_pdf'] ? req.files['document_pdf'][0] : null;
         let pdfPath = null;
+        let pdfImages = []
+        let uniqueName = null;
 
         if (pdfFile) {
-            const uniqueName = `documento_${Date.now()}${path.extname(pdfFile.originalname)}`;
+            uniqueName = `documento_${Date.now()}${path.extname(pdfFile.originalname)}`;
             const savePath = path.join(__dirname, '../uploads', uniqueName);
             fs.writeFileSync(savePath, pdfFile.buffer);
-            pdfPath = `/uploads/${uniqueName}` 
+            pdfPath = `/uploads/${uniqueName}`
         };
+
+        // Convierte el PDF a imagenes
+        if (accountType === 'Aprendiz' && uniqueName) {
+            const pdfAbsPath = path.join(__dirname, '../uploads', uniqueName);
+            const outputDir = path.join(__dirname, '../uploads/pdf_images');
+            if (!fs.existsSync(outputDir)) {
+                fs.mkdirSync(outputDir, { recursive: true });
+            }
+            const options = {
+                format: 'png',
+                out_dir: outputDir,
+                out_prefix: path.parse(uniqueName).name,
+                page: null
+            };
+            await pdfPoppler.convert(pdfAbsPath, options);
+
+            pdfImages = fs.readdirSync(outputDir)
+                .filter(file => file.startsWith(path.parse(uniqueName).name) && file.endsWith('.png'));
+        }
 
         // Crear nuevo usuario
         const newUser = await User.create({
@@ -595,45 +617,6 @@ const updateUserProfile = async (req, res) => {
 
 // Convertir Documento de identidad a Imagen (Creee el controlador para la API aun estoy en eso....!!)
 
-        const convertPdfToImages = async (req, res) => {
-            try {
-                const { userId } = req.params;
-                const user = await User.findByPk(userId);  
-                if (!user || !user.document_identity) {
-                    return res.status(404).json({ message: 'Usuario o documento no encontrado.' });
-                }
-                
-            const absolutePath = path.join(__dirname, '..', user.document_identity);
-            
-            if (!fs.existsSync(absolutePath)) {
-                return res.status(404).json({ message: 'Archivo PDF no encontrado en el servidor.' })
-            }
-
-            const form = new FormData();
-            form.append('file', fs.createReadStream(absolutePath));
-
-            const headers = {
-                ...form.getHeaders(),
-                'x-client-id': 'c38d4fb0-f2ad-4d0f-97ec-00e8d6b09b42',
-                'x-api-key': '57a90e6bcd7801b56e5d8aa6c30a4aac'
-            };
-
-            const response = await axios.post(
-                'https://api.groupdocs.cloud/v2.0/conversion',
-                form,
-                { headers }
-            );
-
-            const imagenes = response.data.images;
-
-            res.status(200).json({ message: 'Conversion Exitosa', imagenes });
-            
-        } catch (error) {
-            console.error('Error al convertir PDF a imagenes:', error.response?.data || error.message);
-            res.status(500).json({ message: 'Error al convertir PDF a imagenes', error: error.message });
-            }
-        };
-
 
 // Actualizar foto de perfil
 const updateProfilePicture = async (req, res) => {
@@ -818,6 +801,8 @@ const createGestor = async (req, res) => {
     }
 };
 
+
+
 module.exports = { 
     registerUser,
     verifyEmail, 
@@ -833,7 +818,6 @@ module.exports = {
     updateUserProfile, 
     updateProfilePicture, 
     createInstructor, 
-    createGestor, 
-    convertPdfToImages,
+    createGestor,
     logoutUser,
 };
