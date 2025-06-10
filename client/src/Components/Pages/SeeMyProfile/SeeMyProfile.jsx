@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { Footer } from '../../../Components/Layouts/Footer/Footer';
 import { Main } from '../../../Components/Layouts/Main/Main';
 import axiosInstance from '../../../config/axiosInstance';
+import { Header } from '../../Layouts/Header/Header';
 
 export const SeeMyProfile = () => {
     const location = useLocation();
@@ -69,6 +70,7 @@ export const SeeMyProfile = () => {
 
     return (
         <>
+            <Header />
             <Main>
                 <div className='container_mainSeeMyProfile'>
                     <div className='container_profile'>

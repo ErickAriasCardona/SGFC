@@ -2,10 +2,12 @@ import { Footer } from "../../Layouts/Footer/Footer";
 import { Main } from "../../Layouts/Main/Main";
 import ilustration_01 from "../../../assets/Ilustrations/Frame01.svg";
 import "./Who_we_are.css";
+import { Header } from "../../Layouts/Header/Header";
 
 export const Who_we_are = () => {
   return (
     <>
+      <Header/>
       <Main>
         <picture className="ilustration_who">
           <img

@@ -67,11 +67,23 @@ export const Modal_SignUp = ({ accountType }) => {
     }
 
     try {
-      const response = await axiosInstance.post("/api/users/createUser", {
-        email,
-        password,
-        accountType,
+      const response = await fetch("http://localhost:3001/api/users/createUser", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          accountType,
+        }),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Error al registrar el usuario");
+      }
 
       setShowSignUp(false);
       setShowAccountType(false);
@@ -83,8 +95,8 @@ export const Modal_SignUp = ({ accountType }) => {
       }, 3000);
 
     } catch (error) {
-      const msg = error.response?.data?.message || "Ocurrió un error al registrar el usuario";
-      alert(msg);
+      console.error("Error en el registro:", error);
+      alert(error.message || "Ocurrió un error al registrar el usuario");
     }
   };
 

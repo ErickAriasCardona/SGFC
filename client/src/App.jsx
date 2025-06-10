@@ -191,7 +191,7 @@ function App() {
             />
           } />
           <Route path="/QuienesSomos" element={<Who_we_are />} />
-          <Route path="/Inicio" element={
+          <Route path="/" element={
             <Home
               handleShowSignUp={handleShowSignUp}
             />
@@ -199,8 +199,23 @@ function App() {
           <Route path="/verificarCorreo" element={<EmailVerification />} />
           <Route path="/forgotPassword" element={<ForgotPassword />} />
           <Route path="/resetPassword" element={<ResetPassword />} />
-          <Route path="/Cursos/CrearCurso" element={<CreateCourse />} />
-          <Route path="/Cursos/BuscarCursos" element={<ConsultCourses />} />
+          <Route path="/Cursos/CrearCurso" element={
+            <Layout
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <CreateCourse />
+            </Layout>
+          } />
+          <Route path="/Cursos/BuscarCursos" element={<Layout
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowAccountType={setShowAccountType}
+            >
+              <ConsultCourses />
+            </Layout>
+          } />
           <Route path="/Cursos/:id" element={<SeeCourse />} />
           <Route path="/Cursos/MisCursos" element={
             <Layout

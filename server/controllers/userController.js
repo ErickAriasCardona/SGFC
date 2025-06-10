@@ -161,7 +161,8 @@ const loginUser = async (req, res) => {
             message: "Inicio de sesión exitoso",
             id: user.ID,
             accountType: user.accountType,
-            email: user.email
+            email: user.email,
+            token: token
         });
     } catch (error) {
         console.error(error);

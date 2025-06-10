@@ -591,6 +591,22 @@ const getAllCursos = async (req, res) => {
     res.status(500).json({ message: "Error al obtener los cursos." });
   }
 };
+// Obtener un curso por ID
+const getCursoById = async (req, res) => {
+  try {
+    const { id } = req.params; // Obtener el ID del curso desde los parámetros de la URL
+    const curso = await Curso.findByPk(id); // Buscar el curso por ID
+
+    if (!curso) {
+      return res.status(404).json({ message: "Curso no encontrado." });
+    }
+
+    res.status(200).json(curso);
+  } catch (error) {
+    console.error("Error al obtener el curso:", error);
+    res.status(500).json({ message: "Error al obtener el curso." });
+  }
+};
 
 const getCursoByNameOrFicha = async (req, res) => {
   try {
@@ -988,6 +1004,7 @@ module.exports = {
   createCurso,
   updateCurso,
   getAllCursos,
+  getCursoById,
   getCursoByNameOrFicha,
   asignarCursoAInstructor,
   obtenerCursosAsignadosAInstructor,

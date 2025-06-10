@@ -13,6 +13,7 @@ import { AttendanceManagement } from './AttendanceManagement';
 import { Modal_General } from '../../../UI/Modal_General/Modal_General';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { Header } from '../../../Layouts/Header/Header';
 
 export const SeeCourse = () => {
 
@@ -41,8 +42,12 @@ export const SeeCourse = () => {
     useEffect(() => {
         const fetchCurso = async () => {
             try {
-                const response = await axiosInstance.get(`/api/courses/cursos/${id}`); // Corregir la ruta
-                setCurso(response.data); // Guardar los datos del curso en el estado
+                const response = await fetch(`http://localhost:3001/api/courses/cursos/${id}`);
+                if (!response.ok) {
+                    throw new Error('Error al obtener el curso');
+                }
+                const data = await response.json();
+                setCurso(data); // Guardar los datos del curso en el estado
             } catch (error) {
                 console.error("Error al obtener el curso:", error);
             }
@@ -86,7 +91,7 @@ export const SeeCourse = () => {
     };
 
     return (
-        <>
+        <>  <Header />
             <Main>
                 <div className='container_createCourse'>
                     <h2>
@@ -97,7 +102,7 @@ export const SeeCourse = () => {
                         <label className='upload-area'>
                             {curso.imagen ? (
                                 <img
-                                    src={`https://sgfc-production.up.railway.app/${curso.imagen}`}
+                                    src={`http://localhost:3001/${curso.imagen}`}
                                     alt="Imagen del curso"
                                     className="preview-image"
                                 />
