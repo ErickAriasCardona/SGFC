@@ -27,7 +27,6 @@ const sendNotification = async (userId, type, title, message, sessionId = null, 
             tipo: type,
             titulo: title,
             mensaje: message,
-            sesion_ID: sessionId,
             curso_ID: courseId,
             estado: 'pendiente'
         });
@@ -118,8 +117,156 @@ const sendAbsenceNotifications = async (sessionId) => {
     }
 };
 
+/**
+ * Envía notificaciones a los usuarios cuando se crea un nuevo curso
+ */
+const sendNewCourseNotifications = async (courseId) => {
+    try {
+        // Obtener el curso
+        const course = await dbInstance.Curso.findByPk(courseId);
+        if (!course) {
+            throw new Error('Curso no encontrado');
+        }
+
+        // Obtener todas las empresas y aprendices
+        const users = await dbInstance.Usuario.findAll({
+            where: {
+                accountType: {
+                    [Op.in]: ['Empresa', 'Aprendiz']
+                }
+            }
+        });
+
+        const fechaActual = new Date().toLocaleString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        const message = `
+            <h3>Fecha de notificación: ${fechaActual}</h3>
+            <h2>Nuevo Curso Disponible</h2>
+            <p>Se ha publicado un nuevo curso en el sistema:</p>
+            <ul>
+                <li><strong>Nombre del Curso:</strong> ${course.nombre_curso}</li>
+                <li><strong>Ficha:</strong> ${course.ficha}</li>
+                <li><strong>Fecha de Inicio:</strong> ${new Date(course.fecha_inicio).toLocaleDateString()}</li>
+                <li><strong>Fecha de Fin:</strong> ${new Date(course.fecha_fin).toLocaleDateString()}</li>
+                <li><strong>Lugar:</strong> ${course.lugar_formacion}</li>
+            </ul>
+            <p>Puede acceder al curso haciendo clic en el siguiente enlace: <a href="http://localhost:5173/cursos/${course.ID}">Ver detalles del curso</a></p>
+            
+            <p>Saludos cordiales,<br>SGFC</p>
+        `;
+
+        // Crear notificaciones en la base de datos para todos los usuarios
+        const notifications = await Promise.all(
+            users.map(async user => {
+                const notification = await dbInstance.Notificacion.create({
+                    usuario_ID: user.ID,
+                    tipo: 'nuevo_curso',
+                    remitente: 'Sistema',
+                    asunto: 'Nuevo Curso Disponible',
+                    mensaje: message,
+                    curso_ID: courseId,
+                    fecha_envio: new Date(),
+                    estado: 'enviada'
+                });
+                return notification;
+            })
+        );
+
+        return {
+            success: true,
+            notificationsSent: notifications.length,
+            notifications
+        };
+    } catch (error) {
+        console.error('Error al enviar notificaciones de nuevo curso:', error);
+        throw error;
+    }
+};
+
+/**
+ * Envía notificaciones cuando se actualiza un curso
+ * @param {number} courseId - ID del curso actualizado
+ */
+const sendCourseUpdateNotifications = async (courseId) => {
+    try {
+        // Obtener el curso actualizado
+        const course = await dbInstance.Curso.findByPk(courseId);
+        if (!course) {
+            throw new Error('Curso no encontrado');
+        }
+
+        // Obtener los aprendices inscritos y el instructor
+        const [inscripciones, instructor] = await Promise.all([
+            dbInstance.Inscripcion.findAll({
+                where: { curso_ID: courseId },
+                include: [{
+                    model: dbInstance.Usuario,
+                    as: 'aprendiz',
+                    attributes: ['ID', 'email']
+                }]
+            }),
+            dbInstance.Usuario.findByPk(course.instructor_ID, {
+                attributes: ['ID', 'email']
+            })
+        ]);
+
+        // Crear lista de usuarios a notificar
+        const usersToNotify = [
+            ...inscripciones.map(inscripcion => inscripcion.aprendiz),
+            instructor
+        ].filter(user => user); // Filtrar usuarios nulos
+
+        const message = `
+            <h2>Actualización de Curso</h2>
+            <p>Se ha actualizado la información del curso en el que está inscrito:</p>
+            <ul>
+                <li><strong>Nombre del Curso:</strong> ${course.nombre_curso}</li>
+                <li><strong>Ficha:</strong> ${course.ficha}</li>
+                <li><strong>Fecha de Inicio:</strong> ${new Date(course.fecha_inicio).toLocaleDateString()}</li>
+                <li><strong>Fecha de Fin:</strong> ${new Date(course.fecha_fin).toLocaleDateString()}</li>
+                <li><strong>Lugar:</strong> ${course.lugar_formacion}</li>
+            </ul>
+            <p>Puede acceder al curso haciendo clic en el siguiente enlace: <a href="http://localhost:5173/cursos/${course.ID}">Ver detalles del curso</a></p>
+            
+            <p>Saludos cordiales,<br>SGFC</p>
+        `;
+
+        // Crear notificaciones en la base de datos para todos los usuarios
+        const notifications = await Promise.all(
+            usersToNotify.map(async user => {
+                const notification = await dbInstance.Notificacion.create({
+                    usuario_ID: user.ID,
+                    tipo: 'actualizacion_curso',
+                    remitente: 'Sistema',
+                    asunto: 'Actualización de Curso',
+                    mensaje: message,
+                    curso_ID: courseId,
+                    fecha_envio: new Date(),
+                    estado: 'enviada'
+                });
+                return notification;
+            })
+        );
+
+        return {
+            success: true,
+            notificationsSent: notifications.length,
+            notifications
+        };
+    } catch (error) {
+        console.error('Error al enviar notificaciones de actualización:', error);
+        throw error;
+    }
+};
+
 module.exports = {
     setDb,
     sendNotification,
-    sendAbsenceNotifications
+    sendAbsenceNotifications,
+    sendNewCourseNotifications,
+    sendCourseUpdateNotifications
 }; 

@@ -14,10 +14,15 @@ class Notificacion extends Model {
                     allowNull: false
                 },
                 tipo: {
-                    type: DataTypes.ENUM('inasistencia', 'recordatorio', 'actualizacion_curso', 'otro'),
+                    type: DataTypes.ENUM('inasistencia', 'recordatorio', 'actualizacion_curso', 'nuevo_curso', 'actualizacion_contrasena', 'actualizacion_perfil', 'inscripcion', 'invitacion', 'otro'),
                     allowNull: false
                 },
-                titulo: {
+                remitente: {
+                    type: DataTypes.STRING(100),
+                    allowNull: false,
+                    defaultValue: 'Sistema'
+                },
+                asunto: {
                     type: DataTypes.STRING(200),
                     allowNull: false
                 },

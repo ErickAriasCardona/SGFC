@@ -127,18 +127,11 @@ export const CreateCourse = () => {
         formData.append("instructor_ID", instructor_ID);
       }
 
-      console.log("Datos a enviar:", {
-        ficha,
-        nombre_curso: nombreCurso,
-        descripcion,
-        tipo_oferta: selected,
-        estado: selectedStatus,
-        fecha_inicio: calendarData.startDate,
-        fecha_fin: calendarData.endDate,
-        hora_inicio: horaInicio,
-        hora_fin: horaFin,
-        dias_formacion: diasSemana
-      });
+      // Log detallado del FormData
+      console.log("Contenido del FormData:");
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
 
       const response = await axiosInstance.post("/api/courses/cursos", formData, {
         headers: {

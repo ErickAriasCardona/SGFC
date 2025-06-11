@@ -6,10 +6,10 @@ const { sendCourseCreatedEmail } = require("../services/emailService");
 const { Router } = require("express");
 const upload = require("../config/multer");
 const { sendCursoUpdatedNotification, sendInstructorAssignedEmail, sendStudentsInstructorAssignedEmail } = require('../services/emailService');
+const { sendNewCourseNotifications, sendCourseUpdateNotifications } = require('../services/notificationService');
 const { Op } = require('sequelize');
 const fs = require('fs');
 const InscripcionCurso = require('../models/InscripcionCurso');
-
 
 let dbInstance;
 
@@ -167,13 +167,15 @@ const obtenerCursosAsignadosAInstructor = async (req, res) => {
 
 // Crear un curso (solo para administradores)
 const createCurso = async (req, res) => {
-
   try {
+    console.log("=== INICIO createCurso ===");
+    console.log("req.user:", req.user);
     const { accountType } = req.user;
     if (accountType !== "Administrador") {
       return res.status(403).json({ message: "No tienes permisos para crear cursos." });
     }
 
+    console.log("req.body:", req.body);
     const {
       nombre_curso,
       descripcion,
@@ -190,6 +192,13 @@ const createCurso = async (req, res) => {
 
     // Validar campos obligatorios
     if (!ficha || !nombre_curso || !descripcion || !tipo_oferta || !estado) {
+      console.log("❌ Campos obligatorios faltantes:", {
+        ficha: !!ficha,
+        nombre_curso: !!nombre_curso,
+        descripcion: !!descripcion,
+        tipo_oferta: !!tipo_oferta,
+        estado: !!estado
+      });
       return res.status(400).json({
         message: "Los campos nombre_curso, tipo_oferta, ficha, descripcion y estado son obligatorios.",
       });
@@ -197,14 +206,18 @@ const createCurso = async (req, res) => {
 
     // Validar que la fecha de inicio sea anterior a la fecha de fin
     if (new Date(fecha_inicio) >= new Date(fecha_fin)) {
+      console.log("❌ Fechas inválidas:", { fecha_inicio, fecha_fin });
       return res.status(400).json({
         message: "La fecha de inicio debe ser anterior a la fecha de fin.",
       });
     }
 
+    console.log("✅ Validaciones básicas pasadas");
+
     // Procesar imagen y convertir a Base64 si se envió
     let image = null;
     if (req.file) {
+      console.log("Procesando imagen...");
       const base64Data = req.file.buffer.toString('base64');
       const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
       const savePath = path.join(__dirname, '../base64storage', uniqueName);
@@ -215,6 +228,7 @@ const createCurso = async (req, res) => {
       fs.writeFileSync(savePath, base64Data);
 
       image = `/base64storage/${uniqueName}`;
+      console.log("✅ Imagen procesada");
     }
 
     // Procesar días de formación
@@ -222,10 +236,27 @@ const createCurso = async (req, res) => {
     if (typeof dias_formacion === 'string') {
       try {
         diasFormacionParsed = JSON.parse(dias_formacion);
+        console.log("✅ Días de formación parseados:", diasFormacionParsed);
       } catch (e) {
+        console.log("❌ Error al parsear días de formación:", e);
         return res.status(400).json({ message: "El formato de los días de formación no es válido." });
       }
     }
+
+    console.log("Creando curso con datos:", {
+      nombre_curso,
+      descripcion,
+      tipo_oferta,
+      ficha,
+      estado,
+      fecha_inicio,
+      fecha_fin,
+      hora_inicio,
+      hora_fin,
+      dias_formacion: diasFormacionParsed,
+      lugar_formacion,
+      imagen: image ? "presente" : "no presente"
+    });
 
     // Crear el curso
     const nuevoCurso = await Curso.create({
@@ -243,11 +274,18 @@ const createCurso = async (req, res) => {
       imagen: image,
     });
 
+    console.log("✅ Curso creado:", nuevoCurso.ID);
 
-    // Responder con éxito
-    res.status(201).json({ message: "Curso creado con éxito." });
+    // Enviar notificaciones del sistema
+    try {
+      await sendNewCourseNotifications(nuevoCurso.ID);
+      console.log("✅ Notificaciones enviadas");
+    } catch (notificationError) {
+      console.error('❌ Error al enviar notificaciones del sistema:', notificationError);
+      // No bloqueamos la creación del curso si fallan las notificaciones
+    }
 
-    // Buscar usuarios verificados para enviar notificación
+    // Buscar usuarios verificados para enviar notificación por email
     const usuarios = await User.findAll({
       where: {
         verificacion_email: true,
@@ -259,20 +297,29 @@ const createCurso = async (req, res) => {
     const emails = usuarios.map(user => user.email);
 
     if (emails.length > 0) {
-      const courseLink = `http://localhost:5173/cursos/${nuevoCurso.id}`;
+      const courseLink = `http://localhost:5173/cursos/${nuevoCurso.ID}`;
       await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
     }
 
+    // Responder con éxito
+    res.status(201).json({
+      message: "Curso creado con éxito.",
+      curso: nuevoCurso
+    });
+
   } catch (error) {
-    console.error("Error al crear el curso:", error);
+    console.error("❌ Error al crear el curso:", error);
+    console.error("Stack trace:", error.stack);
 
     if (error.name === "SequelizeValidationError") {
       return res.status(400).json({ message: "Error de validación.", errors: error.errors });
     }
 
-    res.status(500).json({ message: "Error al crear el curso." });
+    res.status(500).json({
+      message: "Error al crear el curso.",
+      error: error.message
+    });
   }
-
 };
 
 // Actualizar un curso (solo para administradores)
@@ -564,7 +611,13 @@ const updateCurso = async (req, res) => {
 
       sendCursoUpdatedNotification(emails, curso);
     };
-
+    // Enviar notificaciones a aprendices inscritos y al instructor
+    try {
+      await sendCourseUpdateNotifications(id);
+    } catch (notificationError) {
+      console.error("Error al enviar notificaciones:", notificationError);
+      // No fallamos la actualización si las notificaciones fallan
+    }
 
     res.status(200).json({
       message: `Curso actualizado con éxito. Notificaciones enviadas a ${emails.length} usuarios.`,
