@@ -25,6 +25,7 @@ export const SeeCourse = () => {
     const [showAttendanceManagement, setShowAttendanceManagement] = useState(false);
     const navigate = useNavigate(); // Hook para redirigir
     const [showModal, setShowModal] = useState(false);
+    const [error, setError] = useState(null);
 
 
     const showModalAssignInstructor = () => {
@@ -42,14 +43,11 @@ export const SeeCourse = () => {
     useEffect(() => {
         const fetchCurso = async () => {
             try {
-                const response = await fetch(`http://localhost:3001/api/courses/cursos/${id}`);
-                if (!response.ok) {
-                    throw new Error('Error al obtener el curso');
-                }
-                const data = await response.json();
-                setCurso(data); // Guardar los datos del curso en el estado
+                const response = await axiosInstance.get(`/api/courses/cursos/${id}`);
+                setCurso(response.data);
             } catch (error) {
                 console.error("Error al obtener el curso:", error);
+                setError("Error al cargar el curso");
             }
         };
 

@@ -97,7 +97,7 @@ export const AssignInstructorCourse = ({ curso_ID, onClose }) => {
         estado: "aceptada",
       });
 
-      const response = await axiosInstance.post("/asignaciones", {
+      const response = await axiosInstance.post("/api/courses/asignaciones", {
         gestor_ID,
         instructor_ID,
         curso_ID,

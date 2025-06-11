@@ -70,18 +70,31 @@
   opacity: 0.5;
 }
 
-.carousel-container-misCursos {
+.container-illustration-caruosel {
+  width: 90%;
+  height: auto;
+  display: flex;
+  flex-direction: row;
+
+}
+
+.carousel-section-misCursos {
   width: 50%;
+  height: auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-container-misCursos {
+  width: 60%;
   max-width: 1200px;
   height: auto;
   text-align: center;
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 1rem;
-  position: relative;
-  left: 40%;
-  bottom: 1%;
 }
 
 .carousel-title {
@@ -95,39 +108,62 @@
 .carousel-wrapper-misCursos {
   width: 100%;
   height: auto;
-  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 4rem;
-  margin: 0 auto;
+  overflow: hidden;
+  gap: 1rem;
+}
+
+.carousel-wrapper-misCursos button {
+  width: auto;
+  height: auto;
+}
+
+.carousel-wrapper-misCursos button img {
+  width: 1rem;
+  height: auto;
 }
 
 .carousel-track-misCursos {
   display: flex;
   scroll-behavior: smooth;
   gap: 1.5rem;
-  overflow-x: auto;
   width: 100%;
   height: auto;
-  padding: 1rem 0;
-  position: relative;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+  min-height: 15rem;
 }
 
 .carousel-card-misCursos {
-  width: 13rem;
-  height: 14rem;
+  width: 8rem;
+  height: 11rem;
   border-radius: 1rem;
   overflow: hidden;
-  position: relative;
+  position: absolute;
   cursor: pointer;
-  transition: transform 0.3s ease;
-  background-color: #345331;
+  transition: all 0.3s ease;
+  background-color: #9a9a9a;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  transform-origin: center center;
+}
+
+.carousel-card-misCursos.main-card {
+  transform: scale(1);
+  z-index: 5;
+}
+
+.carousel-card-misCursos.side-card {
+  transform: scale(0.9);
+  z-index: 4;
 }
 
 .carousel-card-misCursos:hover {
-  transform: translateY(-5px);
+  transform: translateY(-5px) scale(1.05);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -138,34 +174,25 @@
 }
 
 .card-text-misCursos {
-  bottom: 1rem;
-  color: white;
   height: 40%;
   width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  align-content: center;
-  position: absolute;
+  justify-content: center;
 }
 
 .card-text-misCursos h4 {
+  width: auto;
+  height: auto;
   font-size: 1.1rem;
   font-weight: 600;
-  margin-right: 3rem;
-  position: absolute;
-  left: 5rem;
-  bottom: 5rem;
 }
 
-.card-text-misCursos .ficha-misCursos {
+.card-text-misCursos p {
+  width: auto;
+  height: auto;
   font-weight: 500;
   font-size: 0.9rem;
-  margin: 0.25rem 0;
-  position: absolute;
-  left: 5.3rem;
-  bottom: 3rem;
 }
 
 .card-text-misCursos .description-misCursos {
@@ -177,38 +204,21 @@
 }
 
 .carousel-arrow-misCursos {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.9);
+  width: auto;
+  height: auto;
+  background: none;
   border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  cursor: pointer;
+  padding: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   z-index: 10;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  padding: 0;
-  min-width: 40px;
-  min-height: 40px;
 }
 
-.carousel-arrow-misCursos.left {
-  left: 0;
-}
-
-.carousel-arrow-misCursos.right {
-  right: 0;
-}
-
-.carousel-arrow-misCursos:hover:not(:disabled) {
-  background: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transform: translateY(-50%) scale(1.1);
+.carousel-arrow-misCursos:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .carousel-arrow-misCursos img {
@@ -228,19 +238,22 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: start;
-  position: absolute;
-  top: 55%;
-  right: 35%;
+  justify-content: center;
 }
 
 .illustration-container-misCursos img {
   width: 20rem;
   height: auto;
-  margin-top: -12%;
-  left: 15rem;
 }
 
+.custom-select-container p {
+  width: auto;
+  height: auto;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
+}
 
 @media (max-width: 768px) {
   .container_misCursos {
@@ -280,4 +293,21 @@
     width: 18px;
     height: 18px;
   }
+}
+
+.no-courses {
+  width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.no-courses p {
+  color: #fff;
+  font-size: 1.1rem;
+  text-align: center;
 }

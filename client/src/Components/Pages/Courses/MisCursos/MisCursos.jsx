@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import './MisCursos.css';
 import { Footer } from '../../../Layouts/Footer/Footer';
 import { Main } from '../../../Layouts/Main/Main';
@@ -12,48 +12,51 @@ export const MisCursos = () => {
   const [filteredCursos, setFilteredCursos] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [currentPosition, setCurrentPosition] = useState(0);
-  const [maxScroll, setMaxScroll] = useState(0);
+  const [currentCourseIndex, setCurrentCourseIndex] = useState(0);
   const scrollRef = useRef(null);
   const navigate = useNavigate();
 
-  const userSession = JSON.parse(localStorage.getItem('userSession')) ||
-    JSON.parse(sessionStorage.getItem('userSession'));
+  // Memoizar userSession para evitar cambios innecesarios
+  const userSession = useMemo(() => {
+    return JSON.parse(localStorage.getItem('userSession')) ||
+           JSON.parse(sessionStorage.getItem('userSession'));
+  }, []);
 
   useEffect(() => {
     const fetchCursos = async () => {
       try {
         let response;
 
-        // Verificar que tenemos un ID válido antes de hacer la petición
         if (!userSession?.ID && !userSession?.id) {
           setErrorMessage("No se pudo obtener el ID del usuario");
           return;
         }
 
-        // Obtener cursos según el tipo de cuenta
         switch (userSession?.accountType) {
           case 'Instructor':
-            // Usar el ID que esté disponible (ID o id)
             const instructorId = userSession.ID || userSession.id;
             response = await axiosInstance.get(`/api/courses/cursos-asignados/${instructorId}`);
-            // Transformar la respuesta para mantener el mismo formato que los otros endpoints
             const cursosAsignados = response.data.map(asignacion => ({
               ...asignacion.Curso,
-              // Asegurar que cada curso tenga un ID único
-              ID: asignacion.Curso.ID || asignacion.Curso.id || asignacion.curso_ID
+              ID: asignacion.Curso.ID || asignacion.Curso.id || asignacion.curso_ID,
+              ficha: asignacion.Curso.ficha || '',
+              nombre_curso: asignacion.Curso.nombre_curso || '',
+              descripcion: asignacion.Curso.descripcion || '',
+              imagen: asignacion.Curso.imagen || null
             }));
             setCursos(cursosAsignados);
             setFilteredCursos(cursosAsignados);
             break;
           case 'Administrador':
           case 'Gestor':
-            // Para administradores y gestores, mostrar todos los cursos
             response = await axiosInstance.get("/api/courses/cursos");
-            // Asegurar que cada curso tenga un ID único
             const todosLosCursos = response.data.map(curso => ({
               ...curso,
-              ID: curso.ID || curso.id
+              ID: curso.ID || curso.id,
+              ficha: curso.ficha || '',
+              nombre_curso: curso.nombre_curso || '',
+              descripcion: curso.descripcion || '',
+              imagen: curso.imagen || null
             }));
             setCursos(todosLosCursos);
             setFilteredCursos(todosLosCursos);
@@ -64,7 +67,15 @@ export const MisCursos = () => {
         }
       } catch (error) {
         console.error("Error al obtener los cursos:", error);
-        setErrorMessage("Error al cargar los cursos");
+        if (error.response?.status === 401) {
+          localStorage.removeItem('userSession');
+          sessionStorage.removeItem('userSession');
+          navigate('/');
+        } else if (error.response?.status === 403) {
+          setErrorMessage('No tienes permisos para acceder a esta función');
+        } else {
+          setErrorMessage("Error al cargar los cursos");
+        }
       }
     };
 
@@ -73,75 +84,39 @@ export const MisCursos = () => {
     } else {
       setErrorMessage("Debes iniciar sesión para ver tus cursos");
     }
-  }, [userSession]);
+  }, [userSession, navigate]);
 
-  // Función para filtrar cursos por ficha
-  const handleSearch = (e) => {
-    const searchValue = e.target.value.toLowerCase();
+  // Memoizar la función de búsqueda
+  const handleSearch = useMemo(() => (e) => {
+    const searchValue = e.target.value.toLowerCase().trim();
     setSearchTerm(searchValue);
 
-    const filtered = cursos.filter(curso =>
-      (curso.ficha || '').toLowerCase().includes(searchValue) ||
-      (curso.nombre_curso || '').toLowerCase().includes(searchValue)
-    );
-    setFilteredCursos(filtered);
-  };
+    if (!searchValue) {
+      setFilteredCursos(cursos);
+      return;
+    }
 
-  // Función para actualizar el estado del scroll
-  const updateScrollState = () => {
-    const { current } = scrollRef;
-    if (!current) return;
-
-    const trackWidth = current.scrollWidth;
-    const containerWidth = current.offsetWidth;
-    const scrollLeft = current.scrollLeft;
-
-    setMaxScroll(trackWidth - containerWidth);
-    setCurrentPosition(scrollLeft);
-  };
-
-  // Función para manejar el scroll del carrusel
-  const scroll = (direction) => {
-    const { current } = scrollRef;
-    if (!current) return;
-
-    const card = current.querySelector('.carousel-card');
-    if (!card) return;
-
-    const cardWidth = card.offsetWidth;
-    const gap = 24; // 1.5rem en píxeles
-    const scrollAmount = (cardWidth + gap) * 3; // Scroll 3 cartas a la vez
-
-    const newPosition = direction === 'left'
-      ? Math.max(0, currentPosition - scrollAmount)
-      : Math.min(maxScroll, currentPosition + scrollAmount);
-
-    current.scrollTo({
-      left: newPosition,
-      behavior: 'smooth'
+    const filtered = cursos.filter(curso => {
+      const ficha = curso.ficha ? curso.ficha.toLowerCase().trim() : '';
+      const nombre = curso.nombre_curso ? curso.nombre_curso.toLowerCase().trim() : '';
+      
+      return ficha === searchValue || nombre === searchValue;
     });
+
+    setFilteredCursos(filtered);
+  }, [cursos]);
+
+  const handleNextCourse = () => {
+    if (currentCourseIndex < filteredCursos.length - 1) {
+      setCurrentCourseIndex(prev => prev + 1);
+    }
   };
 
-  // Efecto para actualizar el estado del scroll
-  useEffect(() => {
-    const { current } = scrollRef;
-    if (!current) return;
-
-    const handleScroll = () => {
-      updateScrollState();
-    };
-
-    current.addEventListener('scroll', handleScroll);
-    window.addEventListener('resize', updateScrollState);
-
-    // Actualizar estado inicial
-    updateScrollState();
-
-    return () => {
-      current.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', updateScrollState);
-    };
-  }, [filteredCursos]);
+  const handlePrevCourse = () => {
+    if (currentCourseIndex > 0) {
+      setCurrentCourseIndex(prev => prev - 1);
+    }
+  };
 
   // Función para redirigir al usuario al ver un curso
   const handleCardClick = (ID) => {
@@ -176,66 +151,88 @@ export const MisCursos = () => {
           <p>Busca un curso por su ficha o nombre.</p>
 
           <div className='options_Search'>
+            <div className="custom-select-container">
+              <p>Filtrar por: </p>
+            </div>
             <input
               type="text"
               placeholder='Buscar por ficha o nombre del curso'
               value={searchTerm}
-              onChange={handleSearch}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
+            <button className='searchCourse' onClick={handleSearch}>
+              Buscar
+            </button>
           </div>
 
           {errorMessage && <p className="error-message">{errorMessage}</p>}
 
-          <div className="carousel-container-misCursos">
-            <div className="carousel-wrapper-misCursos">
-              {currentPosition > 0 && (
-                <button
-                  className="carousel-arrow-misCursos left"
-                  onClick={() => scroll('left')}
-                >
-                  <img src={arrowLeft} alt="Flecha izquierda" />
-                </button>
-              )}
-              <div className="carousel-track-misCursos" ref={scrollRef}>
-                {filteredCursos.map((curso) => {
-                  // Asegurar que cada curso tenga un ID único
-                  const cursoId = curso.ID || curso.id;
-                  if (!cursoId) {
-                    console.warn('Curso sin ID:', curso);
-                    return null;
-                  }
-
-                  return (
-                    <div
-                      className="carousel-card-misCursos"
-                      key={`curso-${cursoId}`}
-                      onClick={() => handleCardClick(cursoId)}
+          <div className='container-illustration-caruosel'>
+            <div className="illustration-container-misCursos">
+              <img src="/src/assets/Ilustrations/Professor-amico.svg" alt="Ilustración de gestión de asistencia" />
+            </div>
+            <div className='carousel-section-misCursos'>
+              {filteredCursos.length === 0 ? (
+                <div className="no-courses">
+                  <p>No hay cursos que coincidan con la búsqueda</p>
+                </div>
+              ) : (
+                <div className="carousel-container-misCursos">
+                  <div className="carousel-wrapper-misCursos">
+                    <button
+                      className="carousel-arrow-misCursos left"
+                      onClick={handlePrevCourse}
+                      disabled={currentCourseIndex === 0}
                     >
-                      <img
-                        src={`http://localhost:3001${curso.imagen}` || "ruta/imagen/por/defecto.jpg"}
-                        alt={curso.nombre_curso || 'Curso sin nombre'}
-                      />
-                      <div className="card-text-misCursos">
-                        <h4>{curso.nombre_curso || 'Sin nombre'}</h4>
-                        <p className="ficha-misCursos">Ficha: {curso.ficha || 'No disponible'}</p>
-                        <p className="description-misCursos">{curso.descripcion || 'Sin descripción'}</p>
-                      </div>
+                      <img src={arrowLeft} alt="Flecha izquierda" />
+                    </button>
+
+                    <div className="carousel-track-misCursos">
+                      {filteredCursos.map((curso, index) => {
+                        const isMain = index === currentCourseIndex;
+                        const isVisible = Math.abs(index - currentCourseIndex) <= 1;
+
+                        if (!isVisible) return null;
+
+                        const position = index - currentCourseIndex;
+                        const scale = 1 - Math.abs(position) * 0.1;
+                        const opacity = 1 - Math.abs(position) * 0.2;
+
+                        return (
+                          <div
+                            key={`curso-${curso.ID || curso.id}`}
+                            className={`carousel-card-misCursos ${isMain ? 'main-card' : 'side-card'}`}
+                            style={{
+                              transform: `translateX(${position * 50}%) scale(${scale})`,
+                              zIndex: 5 - Math.abs(position),
+                              opacity: opacity
+                            }}
+                            onClick={() => handleCardClick(curso.ID || curso.id)}
+                          >
+                            <img
+                              src={`http://localhost:3001${curso.imagen}` || "ruta/imagen/por/defecto.jpg"}
+                              alt={curso.nombre_curso || 'Curso sin nombre'}
+                            />
+                            <div className="card-text-misCursos">
+                              <h4>{curso.nombre_curso || 'Sin nombre'}</h4>
+                              <p>Ficha: {curso.ficha || 'No disponible'}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
-              {currentPosition < maxScroll && (
-                <button
-                  className="carousel-arrow-misCursos right"
-                  onClick={() => scroll('right')}
-                >
-                  <img src={arrowRight} alt="Flecha derecha" />
-                </button>
+
+                    <button
+                      className="carousel-arrow-misCursos right"
+                      onClick={handleNextCourse}
+                      disabled={currentCourseIndex === filteredCursos.length - 1}
+                    >
+                      <img src={arrowRight} alt="Flecha derecha" />
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
-          </div>
-          <div className="illustration-container-misCursos">
-            <img src="/src/assets/Ilustrations/Professor-amico.svg" alt="Ilustración de gestión de asistencia" />
           </div>
         </div>
       </Main>

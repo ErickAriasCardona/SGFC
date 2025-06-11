@@ -151,7 +151,7 @@ const obtenerCursosAsignadosAInstructor = async (req, res) => {
       include: [
         {
           model: Curso,
-          attributes: ["id", "nombre_curso", "descripcion", "imagen"],
+          attributes: ["id", "nombre_curso", "descripcion", "imagen", "ficha"],
         }
       ]
     });
