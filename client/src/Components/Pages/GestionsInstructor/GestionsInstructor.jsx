@@ -23,10 +23,6 @@ export const GestionsInstructor = () => {
   // Validación de sesión de usuario y rol de administrador
   const userSessionString = sessionStorage.getItem("userSession");
   const userSession = userSessionString ? JSON.parse(userSessionString) : null;
-  const acces_granted =
-    userSessionString &&
-    (userSession.accountType === "Administrador" ||
-      userSession.accountType === "Instructor");
 
   const showModalSeeProfile = (instructor) => {
     setSelectedInstructor(instructor); // Establecer el instructor seleccionado
@@ -121,7 +117,6 @@ export const GestionsInstructor = () => {
     }
   };
 
-  if (acces_granted) {
     return (
       <>
         <Header />
@@ -287,7 +282,5 @@ export const GestionsInstructor = () => {
         <Footer />
       </>
     );
-  } else {
-    navigate("/ProtectedRoute"); // Redirigir a la página de inicio si no es administrador
-  }
+
 };

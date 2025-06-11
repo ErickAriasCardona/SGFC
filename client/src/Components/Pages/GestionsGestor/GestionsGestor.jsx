@@ -22,10 +22,6 @@ export const GestionsGestor = () => {
   // Validación de sesión de usuario y rol de administrador
   const userSessionString = sessionStorage.getItem("userSession");
   const userSession = userSessionString ? JSON.parse(userSessionString) : null;
-  const acces_granted =
-    userSessionString &&
-    (userSession.accountType === "Administrador" ||
-      userSession.accountType === "Gestor");
 
   const [selectedGestor, setSelectedGestor] = useState(null); // Estado para el instructor seleccionado
 
@@ -121,7 +117,6 @@ export const GestionsGestor = () => {
     }
   };
 
-  if (acces_granted) {
     return (
       <> <Header />
         <Main>
@@ -282,6 +277,3 @@ export const GestionsGestor = () => {
     );
   }
   
-  navigate("/ProtectedRoute");
-  return null;
-};

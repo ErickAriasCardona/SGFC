@@ -30,12 +30,7 @@ export const CreateInstructor = () => {
     const hasAccess = userSessionString && userSession?.accountType === "Administrador";
     setAccesGranted(hasAccess);
 
-    if (!mounted.current) {
-      mounted.current = true;
-      if (!hasAccess) {
-        navigate("/ProtectedRoute");
-      }
-    }
+
   }, [navigate]);
 
   // 3. Handlers y funciones después de los efectos

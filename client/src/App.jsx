@@ -6,16 +6,9 @@ import React from "react";
 // Importación del contexto de los modales
 import { useModal } from './Context/ModalContext';
 
-// Importación de iconos
-import companyGreen from "./assets/Icons/companyGreen.png";
-import companyGrey from "./assets/Icons/companyGrey.png";
-import userGreen from "./assets/Icons/userGreen.png";
-import userGrey from "./assets/Icons/userGrey.png";
-
 // Importación de páginas
 import { Start } from './Components/Pages/Start/Start';
 import { Who_we_are } from './Components/Pages/Who_we_are/Who_we_are';
-import { Home } from './Components/Pages/Home/Home';
 import { EmailVerification } from './Components/Pages/EmailVerification/EmailVerification';
 import { ResetPassword } from './Components/Pages/ResetPassword/ResetPassword';
 import { ForgotPassword } from './Components/Pages/ForgotPassword/ForgotPassword';
@@ -48,17 +41,16 @@ import { NoAutorizado } from './Components/Pages/NoAutorizado/NoAutorizado';
 
 // Importación de estilos
 import "./App.css";
-import { ProtectedRoute } from "./utils/ProtectedRoute";
 import { Header } from './Components/Layouts/Header/Header';
 
 // Crear un componente Layout que envuelva las páginas con Header y Footer
-const Layout = ({ children, setShowSignIn, setShowSignUp, setShowAccountType }) => {
+const Layout = ({ children, setShowSignIn, setShowSignUp, setShowModalGeneral }) => {
   return (
     <>
-      <Header 
+      <Header
         setShowSignIn={setShowSignIn}
         setShowSignUp={setShowSignUp}
-        setShowAccountType={setShowAccountType}
+        setShowModalGeneral={setShowModalGeneral}
       />
       {children}
     </>
@@ -74,15 +66,21 @@ function App() {
     setShowSignIn,
     showSignUp,
     setShowSignUp,
-    showAccountType,
-    setShowAccountType,
+    showModalGeneral,
+    setShowModalGeneral,
     selectedAccountType,
     setSelectedAccountType,
     showModalCreateEmployee,
-    setShowModalCreateEmployee
+    showModalSuccesfull,
+    setShowModalSuccesfull,
+    modalSuccesfullContent,
+    showModalFailed,
+    setShowModalFailed,
+    modalFailedContent,
+    modalGeneralContent, 
+
   } = useModal();
 
-  const [hoveredButton, setHoveredButton] = React.useState("");
 
   useEffect(() => {
     if (window.gapi) {
@@ -100,22 +98,14 @@ function App() {
     const { email } = JSON.parse(userInfo || '{}'); // Manejo seguro si userInfo es null
 
     if (email?.includes('@example.com')) {
-      setShowAccountType(true);
+      setShowModalGeneral(true);
     }
 
-    if (userSession) {
-      const { accountType } = JSON.parse(userSession);
-      navigate("/Inicio", { state: { accountType } });
+    if (userSession && location.pathname !== "/resetPassword") {
+      navigate("/", { state: { accountType } });
     }
   }, [navigate]);
 
-  const handleShowSignUp = (accountType) => {
-    setSelectedAccountType(accountType);
-    setShowSignUp(true);
-    setShowAccountType(false);
-    setShowSignIn(false);
-    setHoveredButton("");
-  };
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
@@ -126,13 +116,13 @@ function App() {
             showSignIn={showSignIn}
             setShowSignIn={setShowSignIn}
             setShowSignUp={setShowSignUp}
-            setShowAccountType={setShowAccountType}
+            setShowModalGeneral={setShowModalGeneral}
             setSelectedAccountType={setSelectedAccountType}
           />
         )}
 
-        {showAccountType && !showSignUp && (
-          <Modal_General closeModal={() => setShowAccountType(false)}>
+        {/* {showAccountType && !showSignUp && (
+          <Modal_General closeModal={() => setShowModalGeneral(false)}>
             <p>Por favor seleccione el tipo de cuenta que desea crear</p>
             <div className="option_1Account">
               <p>Empresa</p>
@@ -165,6 +155,12 @@ function App() {
               </button>
             </div>
           </Modal_General>
+        )} */}
+
+        {showModalGeneral && (
+          <Modal_General closeModal={() => setShowModalGeneral(false)}>
+            {modalGeneralContent}
+          </Modal_General>
         )}
 
         {showSignUp && selectedAccountType && (
@@ -172,30 +168,37 @@ function App() {
             accountType={selectedAccountType}
             setShowSignUp={setShowSignUp}
             setShowSignIn={setShowSignIn}
-            setShowAccountType={setShowAccountType}
+            setShowModalGeneral={setShowModalGeneral}
           />
         )}
 
-        <Modal_Successful />
-        <Modal_Failed />
+        {showModalSuccesfull && (
+          <Modal_Successful closeModal={() => setShowModalSuccesfull(false)}>
+            {modalSuccesfullContent}
+          </Modal_Successful>
+        )}
+
+        {showModalFailed && (
+          <Modal_Failed closeModal={() => setShowModalFailed(false)}>
+            {modalFailedContent}
+          </Modal_Failed>
+        )}
+
+        {showModalCreateEmployee && <CreateEmploye />}
+
         <CreateInstructor />
         <CreateGestor />
-        {showModalCreateEmployee && <CreateEmploye />}
 
         <Routes>
           <Route path="/" element={
             <Start
               setShowSignIn={setShowSignIn}
               setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
+              setShowModalGeneral={setShowModalGeneral}
             />
           } />
           <Route path="/QuienesSomos" element={<Who_we_are />} />
-          <Route path="/" element={
-            <Home
-              handleShowSignUp={handleShowSignUp}
-            />
-          } />
+
           <Route path="/verificarCorreo" element={<EmailVerification />} />
           <Route path="/forgotPassword" element={<ForgotPassword />} />
           <Route path="/resetPassword" element={<ResetPassword />} />
@@ -203,25 +206,25 @@ function App() {
             <Layout
               setShowSignIn={setShowSignIn}
               setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
+              setShowModalGeneral={setShowModalGeneral}
             >
               <CreateCourse />
             </Layout>
           } />
           <Route path="/Cursos/BuscarCursos" element={<Layout
-              setShowSignIn={setShowSignIn}
-              setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
-            >
-              <ConsultCourses />
-            </Layout>
+            setShowSignIn={setShowSignIn}
+            setShowSignUp={setShowSignUp}
+            setShowModalGeneral={setShowModalGeneral}
+          >
+            <ConsultCourses />
+          </Layout>
           } />
           <Route path="/Cursos/:id" element={<SeeCourse />} />
           <Route path="/Cursos/MisCursos" element={
             <Layout
               setShowSignIn={setShowSignIn}
               setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
+              setShowModalGeneral={setShowModalGeneral}
             >
               <MisCursos />
             </Layout>
@@ -230,7 +233,7 @@ function App() {
             <Layout
               setShowSignIn={setShowSignIn}
               setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
+              setShowModalGeneral={setShowModalGeneral}
             >
               <ManageAttendance />
             </Layout>
@@ -260,13 +263,12 @@ function App() {
             <Layout
               setShowSignIn={setShowSignIn}
               setShowSignUp={setShowSignUp}
-              setShowAccountType={setShowAccountType}
+              setShowModalGeneral={setShowModalGeneral}
             >
               <AttendanceRecords />
             </Layout>
           } />
 
-          <Route path="/ProtectedRoute" element={<ProtectedRoute />} />
           <Route path="/no-autorizado" element={<NoAutorizado />} />
         </Routes>
       </>

@@ -17,11 +17,6 @@ export const UpdateCourse = () => {
   // Validación de sesión de usuario y rol de administrador
   const userSessionString = sessionStorage.getItem("userSession");
   const userSession = userSessionString ? JSON.parse(userSessionString) : null;
-  const acces_granted =
-    userSessionString &&
-    (userSession.accountType === "Administrador" ||
-      userSession.accountType === "Gestor");
-
 
   // Obtener los datos del curso al cargar la página
   useEffect(() => {
@@ -77,7 +72,6 @@ export const UpdateCourse = () => {
     }
   };
 
-  if (acces_granted) {
     if (!curso) {
       return <p>Cargando...</p>;
     }
@@ -228,7 +222,5 @@ export const UpdateCourse = () => {
         <Footer />
       </>
     );
-  } else {
-    navigate("/ProtectedRoute"); // Redirigir a la página de inicio si no es administrador
-  }
+
 };

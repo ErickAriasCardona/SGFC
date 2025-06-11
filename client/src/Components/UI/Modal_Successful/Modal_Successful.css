@@ -1,5 +1,5 @@
 #container_modalSucessfull{
-    display: none;
+    display: flex;
     position: fixed;
     top: 50%;
     left: 50%;

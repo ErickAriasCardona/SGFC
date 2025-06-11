@@ -13,7 +13,7 @@ export const ForgotPassword = () => {
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        axiosInstance.post("/requestPasswordReset", { email })
+        axiosInstance.post("/api/users/requestPasswordReset", { email })
             .then((response) => {
                 setMessage(response.data.message);
                 setIsSuccess(true); // Indicar que el mensaje es exitoso

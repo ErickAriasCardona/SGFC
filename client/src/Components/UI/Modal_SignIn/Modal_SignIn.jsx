@@ -10,25 +10,74 @@ import userGrey from "../../../assets/Icons/userGrey.png";
 import { NavLink, useNavigate } from "react-router-dom";
 import { GoogleLogin } from '@react-oauth/google';
 import axiosInstance from "../../../config/axiosInstance";
+import { useModal } from "../../../Context/ModalContext"; // 👈 importa el hook del contexto
 
-export const Modal_SignIn = ({ 
-  showSignIn,
-  setShowSignIn,
-  setShowSignUp,
-  setShowAccountType,
-  setSelectedAccountType 
-}) => {
+export const Modal_SignIn = () => {
+
+  const { showSignIn,
+    setShowSignIn,
+    setShowSignUp,
+    setShowModalGeneral,
+    setModalGeneralContent,
+    setSelectedAccountType } = useModal();
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberSession, setRememberSession] = useState(false);
   const navigate = useNavigate();
-  
+  const [hoveredButton, setHoveredButton] = React.useState("");
+
   const closeModalSignIn = () => setShowSignIn(false);
+
+  const handleShowSignUp = (accountType) => {
+    setSelectedAccountType(accountType);
+    setShowSignUp(true);
+    setShowModalGeneral(false);
+    setShowSignIn(false);
+    setHoveredButton("");
+  };
+
+
 
   const showModalAccountType = () => {
     setShowSignIn(false);
-    setShowAccountType(true);
+    setShowModalGeneral(true);
+    setModalGeneralContent(
+      <>
+        <p>Por favor seleccione el tipo de cuenta que desea crear</p>
+        <div className="option_1Account">
+          <p>Empresa</p>
+          <button
+            className="container_AccountTypeEmpresa"
+            onClick={() => handleShowSignUp("Empresa")}
+            onMouseEnter={() => setHoveredButton("Empresa")}
+            onMouseLeave={() => setHoveredButton("")}
+          >
+            <img
+              src={hoveredButton === "Empresa" ? companyGrey : companyGreen}
+              alt="Empresa"
+            />
+          </button>
+        </div>
+
+        <div className="option_2Account">
+          <p>Aprendiz</p>
+          <button
+            className="container_AccountTypeAprendiz"
+            onClick={() => handleShowSignUp("Aprendiz")}
+            onMouseEnter={() => setHoveredButton("Aprendiz")}
+            onMouseLeave={() => setHoveredButton("")}
+          >
+            <img
+              src={hoveredButton === "Aprendiz" ? userGrey : userGreen}
+              alt="Aprendiz"
+              style={{ opacity: 1 }}
+            />
+          </button>
+        </div>
+      </>
+    )
   };
 
   const handleAccountTypeSelection = (accountType) => {
@@ -54,21 +103,21 @@ export const Modal_SignIn = ({
       .then((response) => response.json())
       .then((data) => {
         console.log("Respuesta completa del servidor:", data);
-        
+
         if (!data.token) {
           console.error("Datos recibidos sin token:", data);
           throw new Error("No se recibió el token de autenticación");
         }
-        
+
         const sessionData = {
           accountType: data.accountType,
           email: data.email,
           id: data.id,
           token: data.token
         };
-        
+
         console.log("Datos de sesión a guardar:", sessionData);
-        
+
         if (rememberSession) {
           localStorage.setItem("userSession", JSON.stringify(sessionData));
           console.log("Sesión guardada en localStorage");
@@ -79,8 +128,8 @@ export const Modal_SignIn = ({
 
         // Verificar que los datos se guardaron correctamente
         const storedSession = JSON.parse(
-          rememberSession 
-            ? localStorage.getItem("userSession") 
+          rememberSession
+            ? localStorage.getItem("userSession")
             : sessionStorage.getItem("userSession")
         );
         console.log("Datos de sesión guardados:", storedSession);

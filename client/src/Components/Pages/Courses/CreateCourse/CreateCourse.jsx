@@ -28,10 +28,6 @@ export const CreateCourse = () => {
   // Validación de sesión de usuario y rol de administrador
   const userSessionString = sessionStorage.getItem("userSession");
   const userSession = userSessionString ? JSON.parse(userSessionString) : null;
-  const acces_granted =
-    userSessionString &&
-    (userSession.accountType === "Administrador" ||
-      userSession.accountType === "Instructor");
 
   // New state for calendar data
   const [calendarData, setCalendarData] = useState({
@@ -163,7 +159,6 @@ export const CreateCourse = () => {
 
     };
 
-    if (acces_granted) {
       return (
         <>
           <Header />
@@ -322,8 +317,6 @@ export const CreateCourse = () => {
         </>
 
       );
-    } else {
-      navigate("/ProtectedRoute"); // Redirigir a la página de inicio si no es administrador
-    }
+
   };
 };

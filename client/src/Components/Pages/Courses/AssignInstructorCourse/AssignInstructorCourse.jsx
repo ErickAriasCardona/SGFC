@@ -9,10 +9,6 @@ export const AssignInstructorCourse = ({ curso_ID, onClose }) => {
   // Validación de sesión de usuario y rol de administrador
   const userSessionString = sessionStorage.getItem("userSession");
   const userSession = userSessionString ? JSON.parse(userSessionString) : null;
-  const acces_granted =
-    userSessionString &&
-    (userSession.accountType === "Administrador" ||
-      userSession.accountType === "Gestor");
 
   const [filteredInstructors, setFilteredInstructors] = useState([]);
   const [instructors, setInstructors] = useState([]);
@@ -114,7 +110,6 @@ export const AssignInstructorCourse = ({ curso_ID, onClose }) => {
       );
     }
   };
-  if (acces_granted) {
     return (
       <div id="modal-assingInstructorCourse">
         <div className="modal-bodyAssignInstructorCourse">
@@ -254,7 +249,5 @@ export const AssignInstructorCourse = ({ curso_ID, onClose }) => {
         </div>
       </div>
     );
-  } else {
-    navigate("/ProtectedRoute"); // Redirigir a la página de inicio si no es administrador
-  }
+  
 };

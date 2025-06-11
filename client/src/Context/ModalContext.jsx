@@ -7,9 +7,15 @@ export const ModalProvider = ({ children }) => {
   // Estados para controlar la visibilidad de diferentes modales y datos relacionados
   const [showSignIn, setShowSignIn] = useState(false);          // Modal de inicio de sesión
   const [showSignUp, setShowSignUp] = useState(false);          // Modal de registro
-  const [showAccountType, setShowAccountType] = useState(false);// Modal para seleccionar tipo de cuenta
+  const [showModalGeneral, setShowModalGeneral] = useState(false);// Modal para seleccionar tipo de cuenta
   const [selectedAccountType, setSelectedAccountType] = useState(""); // Tipo de cuenta seleccionada
   const [showModalCreateEmployee, setShowModalCreateEmployee] = useState(false); // Modal para crear empleado
+  const [showModalSuccesfull, setShowModalSuccesfull] = useState(false);
+  const [modalSuccesfullContent, setModalSuccesfullContent] = useState(null);
+  const [showModalFailed, setShowModalFailed] = useState(false);
+  const [modalFailedContent, setModalFailedContent] = useState(null);
+  const [modalGeneralContent, setModalGeneralContent] = useState(null);
+
   return (
     // Proveedor del contexto que expone los estados y funciones para manejarlos
     <ModalContext.Provider
@@ -18,12 +24,22 @@ export const ModalProvider = ({ children }) => {
         setShowSignIn,
         showSignUp,
         setShowSignUp,
-        showAccountType,
-        setShowAccountType,
+        showModalGeneral,
+        setShowModalGeneral,
         selectedAccountType,
         setSelectedAccountType,
         showModalCreateEmployee,
-        setShowModalCreateEmployee// Añadido el estado y función para el modal de crear empleado
+        setShowModalCreateEmployee,
+        showModalSuccesfull,
+        setShowModalSuccesfull,
+        modalSuccesfullContent,
+        setModalSuccesfullContent,
+        showModalFailed,
+        setShowModalFailed,
+        modalFailedContent,
+        setModalFailedContent,
+        modalGeneralContent, 
+        setModalGeneralContent
       }}
     >
       {children} {/* Renderiza los componentes hijos que consumen este contexto */}

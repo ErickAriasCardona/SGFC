@@ -6,15 +6,9 @@ export const CreateGestor = () => {
   const mounted = useRef(false);
   const userSessionString = sessionStorage.getItem("userSession");
   const userSession = userSessionString ? JSON.parse(userSessionString) : null;
-  const acces_granted = userSessionString && userSession.accountType === "Administrador";
 
   useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      if (!acces_granted) {
-        navigate("/ProtectedRoute");
-      }
-    }
+
   }, []); // Empty dependency array since we only want this to run once
 
   if (!acces_granted) {

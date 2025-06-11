@@ -27,14 +27,7 @@ export const CreateGestor = ({ onClose }) => {
     const userSessionString = sessionStorage.getItem("userSession");
     const userSession = userSessionString ? JSON.parse(userSessionString) : null;
     const hasAccess = userSessionString && userSession?.accountType === "Administrador";
-    setAccesGranted(hasAccess);
 
-    if (!mounted.current) {
-      mounted.current = true;
-      if (!hasAccess) {
-        navigate("/ProtectedRoute");
-      }
-    }
   }, [navigate]);
 
   // 3. Handlers y funciones después de los efectos
@@ -87,6 +80,7 @@ export const CreateGestor = ({ onClose }) => {
       console.log(response.data);
 
       closeModalCreateGestor();
+      
       window.location.reload();
     } catch (error) {
       console.error("Error al crear el gestor:", error);

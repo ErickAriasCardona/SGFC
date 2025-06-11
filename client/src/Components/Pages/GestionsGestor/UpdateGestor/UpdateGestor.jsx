@@ -9,10 +9,6 @@ export const UpdateGestor = ({ gestor }) => {
   // Validación de sesión de usuario y rol de administrador
   const userSessionString = sessionStorage.getItem("userSession");
   const userSession = userSessionString ? JSON.parse(userSessionString) : null;
-  const acces_granted =
-    userSessionString &&
-    (userSession.accountType === "Administrador" ||
-      userSession.accountType === "Instructor");
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ ...gestor });
@@ -84,7 +80,6 @@ export const UpdateGestor = ({ gestor }) => {
     }
   };
 
-  if (acces_granted) {
     return (
       <div id="modal-overlayUpdateGestor" style={{ display: "flex" }}>
         <form className="modal-bodyUpdateGestor" onSubmit={handleButtonClick}>
@@ -183,7 +178,5 @@ export const UpdateGestor = ({ gestor }) => {
         </form>
       </div>
     );
-  } else {
-    navigate("/ProtectedRoute"); // Redirigir a la página de inicio si no es administrador
-  }
+
 };

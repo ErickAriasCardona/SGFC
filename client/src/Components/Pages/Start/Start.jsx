@@ -5,14 +5,14 @@ import ilustration_01 from "../../../assets/Ilustrations/Frame01.svg";
 
 import "./Start.css";
 
-export const Start = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => {
+export const Start = ({ setShowSignIn, setShowSignUp, setShowModalGeneral }) => {
   return (
 
     <div className="start">
       <Header
         setShowSignIn={setShowSignIn}
         setShowSignUp={setShowSignUp}
-        setShowAccountType={setShowAccountType}
+        setShowModalGeneral={setShowModalGeneral}
       />
       <Main>
         <div className="container_description">

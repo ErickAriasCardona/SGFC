@@ -11,9 +11,6 @@ const getUserFromStorage = () => {
 export const ProtectedRoute = ({ requireAdmin = false }) => {
     const user = getUserFromStorage();
 
-    if (!user) {
-        return <Navigate to="/" />;
-    }
 
     if (requireAdmin && user.accountType !== 'Administrador') {
         return <Navigate to="/no-autorizado" />;

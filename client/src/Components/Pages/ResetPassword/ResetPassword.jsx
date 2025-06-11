@@ -45,7 +45,7 @@ export const ResetPassword = () => {
       return;
     }
   
-    axiosInstance.post(`/resetPassword?token=${token}`, {
+    axiosInstance.post(`/api/users/resetPassword?token=${token}`, {
       newPassword,
     })
       .then((response) => {

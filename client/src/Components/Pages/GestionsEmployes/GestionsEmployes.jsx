@@ -12,10 +12,6 @@ export const GestionsEmployes = () => {
   // Validación de sesión de usuario y rol de administrador
   const userSessionString = sessionStorage.getItem("userSession");
   const userSession = userSessionString ? JSON.parse(userSessionString) : null;
-  const acces_granted =
-    userSessionString &&
-    (userSession.accountType === "Administrador" ||
-      userSession.accountType === "Instructor");
 
   const [employes, setEmployes] = useState([]); // Estado para almacenar los empleados
   const [filteredEmployes, setFilteredEmployes] = useState([]); // Estado para los empleados filtrados
@@ -181,7 +177,6 @@ export const GestionsEmployes = () => {
         modalCreateEmploye.style.display = "flex"; // Cambia el display a flex para mostrar el modal
       }
     };
-    if (acces_granted) {
       return (
         <>
           <Header />
@@ -393,8 +388,6 @@ export const GestionsEmployes = () => {
           <Footer />
         </>
       );
-    } else {
-      navigate("/ProtectedRoute"); // Redirigir a la página de inicio si no es administrador
-    }
+    
   };
 };

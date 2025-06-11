@@ -8,13 +8,11 @@ import './index.css';
 import { ModalProvider } from './Context/ModalContext.jsx'; // Ajusta la ruta si es necesario
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    {/* Envolvemos toda la app con ModalProvider para usar el contexto en cualquier componente */}
+  // <React.StrictMode>
     <ModalProvider>
-      {/* Envolvemos con BrowserRouter para manejar las rutas */}
       <BrowserRouter>
         <App />
       </BrowserRouter>
     </ModalProvider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );

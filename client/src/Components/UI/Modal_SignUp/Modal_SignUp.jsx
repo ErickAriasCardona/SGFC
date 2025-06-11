@@ -3,7 +3,6 @@ import "./Modal_SignUp.css";
 import ilustration_02 from "../../../assets/Ilustrations/SignUp.svg";
 import seePassword from "../../../assets/Icons/seePassword.png";
 import hidePassword from "../../../assets/Icons/hidePassword.png";
-import { Modal_Successful } from "../Modal_Successful/Modal_Successful";
 import axiosInstance from "../../../config/axiosInstance";
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from "react-router-dom";
@@ -13,10 +12,11 @@ export const Modal_SignUp = ({ accountType }) => {
   const {
     setShowSignUp,
     setShowSignIn,
-    setShowAccountType
+    setShowAccountType,
+    setShowModalSuccesfull,
+    setModalSuccesfullContent
   } = useModal(); // 👈 usa el contexto
 
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -87,18 +87,24 @@ export const Modal_SignUp = ({ accountType }) => {
 
       setShowSignUp(false);
       setShowAccountType(false);
-      setShowSuccessModal(true);
-
+      setShowModalSuccesfull(true);
+      setModalSuccesfullContent(
+        <>
+          <h2>Registro exitoso</h2>
+          <p>Hemos enviado un enlace de verificación a tu correo. Haz click en él para activar tu cuenta.</p>
+        </>
+      );
       setTimeout(() => {
-        setShowSuccessModal(false);
+        setShowModalSuccesfull(false);
         navigate('/', { state: { accountType } });
-      }, 3000);
+      }, 5000);
 
     } catch (error) {
       console.error("Error en el registro:", error);
       alert(error.message || "Ocurrió un error al registrar el usuario");
     }
   };
+
 
   const closeModalSignUp = () => {
     setShowSignUp(false);
@@ -131,11 +137,18 @@ export const Modal_SignUp = ({ accountType }) => {
         }));
 
         setShowSignUp(false);
-        setShowSuccessModal(true);
+        setShowModalSuccesfull(true);
+        setModalSuccesfullContent(
+          <>
+            <h2>Registro exitoso</h2>
+            <p>Hemos enviado un enlace de verificación a tu correo. Haz click en él para activar tu cuenta.</p>
+          </>
+        );
         setTimeout(() => {
-          setShowSuccessModal(false);
+          setShowModalSuccesfull(false);
           navigate('/', { state: { accountType: data.user.accountType } });
-        }, 3000);
+        }, 5000);
+
       } else {
         alert(data.message || 'Error en el registro con Google');
       }
@@ -146,12 +159,6 @@ export const Modal_SignUp = ({ accountType }) => {
 
   return (
     <>
-      {showSuccessModal && (
-        <Modal_Successful closeModal={() => setShowSuccessModal(false)}>
-          <h2>Registro exitoso</h2>
-          <p>"Hemos enviado un enlace de verificación a tu correo. Haz click en él para activar tu cuenta"</p>
-        </Modal_Successful>
-      )}
       <div id="container_signUp" style={{ display: 'flex' }}>
         <div className="modalSignUp">
           <div className="container_form_register">

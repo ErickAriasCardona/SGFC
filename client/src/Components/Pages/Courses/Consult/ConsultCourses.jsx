@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import './ConsultCourses.css';
 import { Footer } from '../../../Layouts/Footer/Footer';
 import { Main } from '../../../Layouts/Main/Main';
-import { publicAxiosInstance } from '../../../../config/axiosInstance';
+import axiosInstance from '../../../../config/axiosInstance';
 import { useNavigate } from 'react-router-dom'; // Importar useNavigate para redirigir
 
 import arrowLeft from '../../../../assets/Icons/arrowLeft.png';
@@ -19,7 +19,7 @@ export const ConsultCourses = () => {
   useEffect(() => {
     const fetchCursos = async () => {
       try {
-        const response = await publicAxiosInstance.get("/api/courses/cursos");
+        const response = await axiosInstance.get("/api/courses/cursos");
         console.log("Datos recibidos del backend:", response.data);
         setCursos(response.data);
       } catch (error) {
@@ -60,7 +60,7 @@ export const ConsultCourses = () => {
     }
 
     try {
-      const response = await publicAxiosInstance.get(`/api/courses/cursos/${searchTerm}`);
+      const response = await axiosInstance.get(`/api/courses/cursos/${searchTerm}`);
       setCursos([response.data]);
       setErrorMessage("");
     } catch (error) {

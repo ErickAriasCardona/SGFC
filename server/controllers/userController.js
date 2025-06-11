@@ -198,7 +198,7 @@ const requestPasswordReset = async (req, res) => {
         // 👉 Imprimir el token en consola
         console.log(`Token generado para ${email}: ${resetToken}`);
 
-        const resetLink = `https://sgfc-seven.vercel.app/resetPassword?token=${resetToken}`;
+        const resetLink = `http://localhost:5173/resetPassword?token=${resetToken}`;
         console.log(`Enviando correo de recuperación a: ${email}`);
         await sendPasswordResetEmail(email, resetLink);
 
@@ -247,7 +247,7 @@ const resetPassword = async (req, res) => {
         await user.save();
 
         // Enlace para volver a cambiar la contraseña
-        const resetLink = `https://sgfc-seven.vercel.app/resetPassword?token=${newResetToken}`;
+        const resetLink = `http://localhost:5173/resetPassword?token=${newResetToken}`;
         await sendPasswordChangeConfirmationEmail(user.email, resetLink);
 
         res.status(200).json({ message: "Contraseña restablecida con éxito" });

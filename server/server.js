@@ -33,9 +33,8 @@ cron.schedule('0 * * * *', async () => {
 const app = express();
 
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://sgfc-seven.vercel.app",
-  "https://sgfc-production.up.railway.app"
+  "http://localhost:5173"
+  
 ];
 
 app.use(

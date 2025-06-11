@@ -12,10 +12,6 @@ export const UpdateInstructor = ({ instructor }) => {
   // Validación de sesión de usuario y rol de administrador
   const userSessionString = sessionStorage.getItem("userSession");
   const userSession = userSessionString ? JSON.parse(userSessionString) : null;
-  const acces_granted =
-    userSessionString &&
-    (userSession.accountType === "Administrador" ||
-      userSession.accountType === "Instructor");
 
   useEffect(() => {
     const obtenerCursosAsignados = async () => {
@@ -118,7 +114,6 @@ export const UpdateInstructor = ({ instructor }) => {
   };
 
 
-  if (acces_granted) {
     return (
       <div id="modal-overlayUpdateInstructor" style={{ display: 'flex' }}>
         <form className="modal-bodyUpdateInstructor" onSubmit={handleButtonClick}>
@@ -215,7 +210,5 @@ export const UpdateInstructor = ({ instructor }) => {
         </form>
       </div>
     );
-  } else {
-    navigate("/ProtectedRoute"); // Redirigir a la página de inicio si no es administrador
-  }
+
 };
