@@ -1,97 +1,119 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './ConsultCourses.css';
 import { Footer } from '../../../Layouts/Footer/Footer';
 import { Main } from '../../../Layouts/Main/Main';
 import axiosInstance from '../../../../config/axiosInstance';
-import { useNavigate } from 'react-router-dom'; // Importar useNavigate para redirigir
+import { useNavigate } from 'react-router-dom';
+import ilustrationSearch from '../../../../assets/Ilustrations/search_course.svg';
+import nub1 from '../../../../assets/Ilustrations/nub1.svg';
+import nub2 from '../../../../assets/Ilustrations/nub2.svg';    
+import nub3 from '../../../../assets/Ilustrations/nub3.svg';     
+
 
 import arrowLeft from '../../../../assets/Icons/arrowLeft.png';
 import arrowRight from '../../../../assets/Icons/arrowRight.png';
 
 export const ConsultCourses = () => {
-  const [cursos, setCursos] = useState([]); // Estado para almacenar los cursos
-  const [searchTerm, setSearchTerm] = useState(""); // Estado para el término de búsqueda
-  const [errorMessage, setErrorMessage] = useState(""); // Estado para el mensaje de error
+  const [cursos, setCursos] = useState([]);
+  const [allCursos, setAllCursos] = useState([]); // Para guardar todos los cursos
+  const [searchTerm, setSearchTerm] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [startIndex, setStartIndex] = useState(0);
   const scrollRef = useRef(null);
-  const navigate = useNavigate(); // Hook para redirigir
+  const navigate = useNavigate();
 
-  // Función para obtener todos los cursos al cargar la página
+  // Obtener todos los cursos al cargar la página
   useEffect(() => {
     const fetchCursos = async () => {
       try {
-        const response = await axiosInstance.get("/api/courses/cursos");
-        console.log("Datos recibidos del backend:", response.data);
+        const response = await axiosInstance.get('/api/courses/cursos');
         setCursos(response.data);
+        setAllCursos(response.data);
+        setErrorMessage("");
       } catch (error) {
-        console.error("Error al obtener los cursos:", error);
-        setErrorMessage("Error al cargar los cursos. Por favor, intente más tarde.");
+        setCursos([]);
+        setAllCursos([]);
+        setErrorMessage("Error al cargar los cursos.");
       }
     };
-
     fetchCursos();
   }, []);
 
-  // Función para manejar el scroll del carrusel
-  const scroll = (direction) => {
-    const { current } = scrollRef;
-    if (!current) return;
+  // Resetear el carrusel al cambiar cursos
+  useEffect(() => {
+    setStartIndex(0);
+  }, [cursos]);
 
-    // Tomamos una tarjeta como referencia
-    const card = current.querySelector('.carousel-card');
-    if (!card) return;
-
-    const cardStyles = window.getComputedStyle(card);
-    const cardWidth = card.offsetWidth;
-    const gap = parseInt(cardStyles.marginRight || 16); // fallback de 16px
-
-    const scrollAmount = (cardWidth + gap) * 4;
-
-    current.scrollBy({
-      left: direction === 'left' ? -scrollAmount : scrollAmount,
-      behavior: 'smooth',
-    });
-  };
-
-  // Función para buscar un curso por ID
-  const handleSearch = async () => {
-    if (!searchTerm) {
-      setErrorMessage("Por favor, ingresa un ID para buscar.");
-      return;
-    }
-
-    try {
-      const response = await axiosInstance.get(`/api/courses/cursos/${searchTerm}`);
-      setCursos([response.data]);
+  // Búsqueda en tiempo real con debounce
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setCursos(allCursos);
       setErrorMessage("");
-    } catch (error) {
-      console.error("Error al buscar el curso:", error);
-      setCursos([]);
-      setErrorMessage("No se encontraron resultados.");
-    }
-  };
-
-  // Función para redirigir al usuario al ver un curso
-  const handleCardClick = (ID) => {
-    if (!ID) {
-      console.error("El ID del curso es undefined o null");
       return;
     }
-    navigate(`/Cursos/${ID}`); // Redirigir a la página del curso seleccionado
+
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const response = await axiosInstance.get(
+          `/api/courses/searchCurso?input=${encodeURIComponent(searchTerm.trim())}`
+        );
+        setCursos(response.data);
+        setErrorMessage("");
+      } catch (error) {
+        setCursos([]);
+        if (error.response && error.response.status === 404) {
+          setErrorMessage("No se encontraron resultados.");
+        } else {
+          setErrorMessage("Error al buscar el curso. Intenta nuevamente.");
+        }
+      }
+    }, 400);
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm, allCursos]);
+
+  // Redirigir a ver curso
+  const handleCardClick = (ID) => {
+    if (!ID) return;
+    navigate(`/Cursos/${ID}`);
+  };
+
+  // Cursos a mostrar en el carrusel
+  const visibleCursos = cursos.slice(startIndex, startIndex + 3);
+
+  // Scroll carrusel
+  const scroll = (direction) => {
+    if (direction === 'left') {
+      setStartIndex((prev) => Math.max(prev - 1, 0));
+    } else {
+      setStartIndex((prev) =>
+        Math.min(prev + 1, cursos.length - 3)
+      );
+    }
   };
 
   return (
     <>
       <Main>
         <div className="container_consultCourse">
+          <img className='nub1' src={nub1} alt="" />
+          <img className='nub2' src={nub2} alt="" />
+          <img className='nub3' src={nub3} alt="" />
+          
+          <img className='illustration_search' src={ilustrationSearch} alt="" />
           <h2>
             Buscar <span className='complementary'>Cursos</span>
           </h2>
-          <p>Busca un curso por su ID.</p>
+          <p>Busca un curso por su <b>nombre</b> o <b>ficha</b>.</p>
 
           <div className='options_Search'>
-
             <div className="custom-select-container">
-              <select className="custom-select" defaultValue="">
+              <select
+                className="custom-select"
+                value={selectedCategory}
+                onChange={e => setSelectedCategory(e.target.value)}
+              >
                 <option value="" disabled hidden>Categoría</option>
                 <option value="desarrollo">Desarrollo</option>
                 <option value="diseño">Diseño</option>
@@ -100,48 +122,68 @@ export const ConsultCourses = () => {
             </div>
             <input
               type="text"
-              placeholder='ID del curso'
+              placeholder='Nombre o ficha del curso'
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)} // Actualizar el término de búsqueda
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button className='searchCourse' onClick={handleSearch}>
-              Buscar
-            </button>
           </div>
 
-          {errorMessage && <p className="error-message">{errorMessage}</p>} {/* Mostrar mensaje de error */}
+          {errorMessage && (
+            <p className="error-message-search" style={{ marginTop: 8, marginBottom: 0 }}>
+              {errorMessage}
+            </p>
+          )}
 
-          <div className='lineMedium'></div>
-
-          <div className="carousel-container">
-            <h2 className="carousel-title">Resultados</h2>
-            <div className="carousel-wrapper">
-              <button className="carousel-arrow left" onClick={() => scroll('left')}>
-                <img src={arrowLeft} alt="Flecha izquierda" />
-              </button>
-              <div className="carousel-track" ref={scrollRef}>
-                {cursos.map((curso) => (
-                  <div
-                    className="carousel-card"
-                    key={curso.ID}
-                    onClick={() => handleCardClick(curso.ID)}
+          {cursos.length > 0 && (
+            <div className="carousel-container">
+              <h2 className="carousel-title">
+                {cursos.length === 1
+                  ? "1 resultado"
+                  : `${cursos.length} resultados`}
+              </h2>
+              <div className="carousel-wrapper">
+                {cursos.length > 3 && (
+                  <button
+                    className="carousel-arrow left"
+                    onClick={() => scroll('left')}
+                    disabled={startIndex === 0}
+                    style={{ opacity: startIndex === 0 ? 0.5 : 1, cursor: startIndex === 0 ? "not-allowed" : "pointer" }}
                   >
-                    <img
-                      className='img_course' src={curso.imagen ? `data:image/jpeg;base64,${curso.imagen}` : "ruta/imagen/por/defecto.jpg"}
-                      alt={curso.nombre_curso}
-                    />
-                    <div className="card-text">
-                      <h4>{curso.nombre_curso}</h4>
-                      <p>{curso.descripcion}</p>
+                    <img src={arrowLeft} alt="Flecha izquierda" />
+                  </button>
+                )}
+                <div className="carousel-track-search-course" ref={scrollRef}>
+                  {visibleCursos.map((curso) => (
+                    <div
+                      className="carousel-card-search-course"
+                      key={curso.ID || curso.id}
+                      onClick={() => handleCardClick(curso.ID || curso.id)}
+                    >
+                      <img
+                        className='img_course'
+                        src={`data:image/png;base64,${curso.imagen}`}
+                        alt={curso.nombre_curso}
+                      />
+                      <div className="card-text-search-course">
+                        <h4>{curso.nombre_curso}</h4>
+                        <p>{curso.ficha}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                {cursos.length > 3 && (
+                  <button
+                    className="carousel-arrow right"
+                    onClick={() => scroll('right')}
+                    disabled={startIndex >= cursos.length - 3}
+                    style={{ opacity: startIndex >= cursos.length - 3 ? 0.5 : 1, cursor: startIndex >= cursos.length - 3 ? "not-allowed" : "pointer" }}
+                  >
+                    <img src={arrowRight} alt="Flecha derecha" />
+                  </button>
+                )}
               </div>
-              <button className="carousel-arrow right" onClick={() => scroll('right')}>
-                <img src={arrowRight} alt="Flecha derecha" />
-              </button>
             </div>
-          </div>
+          )}
         </div>
       </Main>
       <Footer />

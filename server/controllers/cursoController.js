@@ -189,9 +189,17 @@ const createCurso = async (req, res) => {
     } = req.body;
 
     // Validar campos obligatorios
-    if (!ficha || !nombre_curso || !descripcion || !tipo_oferta || !estado) {
+    if (!ficha || isNaN(Number(ficha))) {
       return res.status(400).json({
-        message: "Los campos nombre_curso, tipo_oferta, ficha, descripcion y estado son obligatorios.",
+        message: "El campo ficha es obligatorio y debe ser un número.",
+      });
+    }
+
+    // Validar que no exista un curso con la misma ficha
+    const cursoExistente = await Curso.findOne({ where: { ficha } });
+    if (cursoExistente) {
+      return res.status(409).json({
+        message: "Ya existe un curso con la misma ficha.",
       });
     }
 
@@ -202,19 +210,10 @@ const createCurso = async (req, res) => {
       });
     }
 
-    // Procesar imagen y convertir a Base64 si se envió
+    // Procesar imagen y guardar base64 directamente en la base de datos
     let image = null;
     if (req.file) {
-      const base64Data = req.file.buffer.toString('base64');
-      const uniqueName = `${req.file.fieldname}-${Date.now()}.txt`;
-      const savePath = path.join(__dirname, '../base64storage', uniqueName);
-
-      if (!fs.existsSync(path.dirname(savePath))) {
-        fs.mkdirSync(path.dirname(savePath), { recursive: true });
-      }
-      fs.writeFileSync(savePath, base64Data);
-
-      image = `/base64storage/${uniqueName}`;
+      image = req.file.buffer.toString('base64');
     }
 
     // Procesar días de formación
@@ -240,9 +239,8 @@ const createCurso = async (req, res) => {
       hora_fin,
       dias_formacion: diasFormacionParsed,
       lugar_formacion,
-      imagen: image,
+      imagen: image, // Aquí se guarda el base64 directamente
     });
-
 
     // Responder con éxito
     res.status(201).json({ message: "Curso creado con éxito." });
@@ -580,7 +578,6 @@ const updateCurso = async (req, res) => {
   }
 };
 
-
 // Obtener todos los cursos
 const getAllCursos = async (req, res) => {
   try {
@@ -591,40 +588,31 @@ const getAllCursos = async (req, res) => {
     res.status(500).json({ message: "Error al obtener los cursos." });
   }
 };
-// Obtener un curso por ID
-const getCursoById = async (req, res) => {
-  try {
-    const { id } = req.params; // Obtener el ID del curso desde los parámetros de la URL
-    const curso = await Curso.findByPk(id); // Buscar el curso por ID
-
-    if (!curso) {
-      return res.status(404).json({ message: "Curso no encontrado." });
-    }
-
-    res.status(200).json(curso);
-  } catch (error) {
-    console.error("Error al obtener el curso:", error);
-    res.status(500).json({ message: "Error al obtener el curso." });
-  }
-};
 
 const getCursoByNameOrFicha = async (req, res) => {
   try {
     const { input } = req.query;
 
-    let curso;
-
     if (!input) {
       return res.status(400).json({ message: "El campo 'input' es obligatorio." });
     }
 
-    if (isNaN(Number(input))) {
-      let nombre_curso = input;
-      curso = await Curso.findAll({ where: { nombre_curso } })
-    } else {
-      let ficha = input;
-      curso = await Curso.findAll({ where: { ficha } })
-    }
+    const curso = await Curso.findAll({
+      where: {
+        [Op.or]: [
+          {
+            nombre_curso: {
+              [Op.like]: `%${input}%`
+            }
+          },
+          {
+            ficha: {
+              [Op.like]: `%${input}%`
+            }
+          }
+        ]
+      }
+    });
 
     if (!curso || curso.length === 0) {
       return res.status(404).json({ message: "Curso no encontrado" });
@@ -636,7 +624,8 @@ const getCursoByNameOrFicha = async (req, res) => {
     console.error("Error al obtener curso: ", error);
     res.status(500).json({ message: "Error al obtener el curso." });
   }
-}
+};
+
 
 // Nuevo controlador para transformacion
 const uploadImagesBase64 = async (req, res) => {
@@ -1004,7 +993,6 @@ module.exports = {
   createCurso,
   updateCurso,
   getAllCursos,
-  getCursoById,
   getCursoByNameOrFicha,
   asignarCursoAInstructor,
   obtenerCursosAsignadosAInstructor,

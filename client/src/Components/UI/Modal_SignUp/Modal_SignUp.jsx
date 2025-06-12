@@ -12,9 +12,9 @@ export const Modal_SignUp = ({ accountType }) => {
   const {
     setShowSignUp,
     setShowSignIn,
-    setShowAccountType,
     setShowModalSuccesfull,
-    setModalSuccesfullContent
+    setModalSuccesfullContent,
+    setShowModalGeneral
   } = useModal(); // 👈 usa el contexto
 
   const navigate = useNavigate();
@@ -86,7 +86,7 @@ export const Modal_SignUp = ({ accountType }) => {
       }
 
       setShowSignUp(false);
-      setShowAccountType(false);
+      setShowModalGeneral(false);
       setShowModalSuccesfull(true);
       setModalSuccesfullContent(
         <>
@@ -108,12 +108,12 @@ export const Modal_SignUp = ({ accountType }) => {
 
   const closeModalSignUp = () => {
     setShowSignUp(false);
-    setShowAccountType(true);
+    setShowModalGeneral(true);
   };
 
   const showModalSignIn = () => {
     setShowSignUp(false);
-    setShowAccountType(false);
+    setShowModalGeneral(false);
     setShowSignIn(true);
   };
 

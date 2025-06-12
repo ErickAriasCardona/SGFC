@@ -14,7 +14,7 @@
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-.modalSignUp{
+.modalSignUp {
     width: 900px;
     height: 550px;
     background-color: #1A1A1A;
@@ -25,7 +25,7 @@
     overflow: hidden;
 }
 
-.container_form_register{
+.container_form_register {
     width: auto;
     height: auto;
     display: flex;
@@ -33,7 +33,8 @@
     position: relative;
     left: 7rem;
 }
-.content_createAccount{
+
+.content_createAccount {
     width: auto;
     height: auto;
     display: flex;
@@ -41,7 +42,8 @@
     align-items: center;
     align-content: center;
 }
-.goTo_SignIn{
+
+.goTo_SignIn {
     cursor: pointer;
 
 }
@@ -70,6 +72,7 @@
     left: 0;
     z-index: 1000;
 }
+
 .closeModal {
     width: 142px;
     height: 115px;
@@ -80,7 +83,7 @@
     cursor: pointer;
 }
 
-.form_register{
+.form_register {
     width: 100%;
     height: auto;
     display: flex;
@@ -90,7 +93,7 @@
 }
 
 
-.form_register>input{
+.form_register>input {
     width: 250px;
     height: 35px;
     border-radius: 10px;
@@ -100,11 +103,12 @@
     padding-left: 1rem;
 }
 
-.password-container{
+.password-container {
     width: auto;
     height: auto;
 }
-.password-container>input{
+
+.password-container>input {
     width: 250px;
     height: 35px;
     border-radius: 10px;
@@ -114,11 +118,12 @@
     padding-left: 1rem;
 }
 
-.confirmPassword-container{
+.confirmPassword-container {
     width: auto;
     height: auto;
 }
-.confirmPassword-container>input{
+
+.confirmPassword-container>input {
     width: 250px;
     height: 35px;
     border-radius: 10px;
@@ -130,7 +135,7 @@
 
 
 
-.form_register>button{
+.form_register>button {
     width: 268px;
     height: 35px;
     border-radius: 10px;
@@ -138,20 +143,20 @@
     margin-top: 1rem;
 }
 
-.button_register{
+.button_register {
     background-color: #00843D;
     z-index: 1000;
 }
 
-.button_registerGoogle{
+.button_registerGoogle {
     background: linear-gradient(50deg, #b0b0b00f, #00843e7e);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 1rem;
-}     
+}
 
-button{
+button {
     cursor: pointer;
 }
 
@@ -206,28 +211,30 @@ button{
 
 }
 
-.content_createAccount>h2,.content_createAccount>p,.form_register>p{
+.content_createAccount>h2,
+.content_createAccount>p,
+.form_register>p {
     width: auto;
     height: auto;
 }
 
-.content_createAccount>h2{
+.content_createAccount>h2 {
     font-weight: 100;
     font-size: 32px;
 
 }
 
-.title2_register{
+.title2_register {
     color: #00843D;
 }
 
-.content_createAccount>p{
+.content_createAccount>p {
     margin-bottom: 3rem;
     font-weight: 100;
 }
 
 
-.option_signIn{
+.option_signIn {
     background: linear-gradient(-90deg, #b0b0b01c, #1a1a1a1b);
     width: 65%;
     height: 100%;
@@ -235,30 +242,32 @@ button{
     flex-direction: column;
     align-items: center;
     position: relative;
-    left: 8.9rem; 
-    border-radius: 15px; 
+    left: 8.9rem;
+    border-radius: 15px;
     opacity: 98%;
     gap: 1rem;
 }
 
-.option_signIn>h3,.option_signIn>p{
+.option_signIn>h3,
+.option_signIn>p {
     width: 60%;
     height: auto;
     text-align: center;
     font-weight: 100;
 }
-.option_signIn>.logo{
 
-    margin:4rem 0 1rem 0; 
+.option_signIn>.logo {
+
+    margin: 4rem 0 1rem 0;
 }
 
-.option_signIn>img{
-width: 14rem;
-height: auto;
+.option_signIn>img {
+    width: 14rem;
+    height: auto;
 }
 
 
-.option_signIn>button{
+.option_signIn>button {
     width: 137px;
     height: auto;
     font-size: 16px;
@@ -266,12 +275,12 @@ height: auto;
     border-radius: 10px;
     background-color: #00843D;
     border-style: none;
-    margin-top:1rem;
-    padding:10px 0 10px 0 ;
+    margin-top: 1rem;
+    padding: 10px 0 10px 0;
 
 }
 
-.option_signIn>h3{
+.option_signIn>h3 {
     font-size: 18px;
 }
 
@@ -287,41 +296,42 @@ height: auto;
     background-color: #b0b0b01f;
     border-radius: 15px;
     padding: 10px;
-  }
-  
-  .password-requirements li {
+}
+
+.password-requirements li {
     width: 100%;
     height: auto;
     font-size: 0.9rem;
-  }
-  
-  .password-requirements li.valid {
-    color: #00843D;
-  }
-  
-  .password-requirements li.invalid {
-    color: #E53935;
-  }
+}
 
-  .password-container,.confirmPassword-container {
+.password-requirements li.valid {
+    color: #00843D;
+}
+
+.password-requirements li.invalid {
+    color: #E53935;
+}
+
+.password-container,
+.confirmPassword-container {
     position: relative;
     display: flex;
     align-items: center;
-  }
+}
 
-  .password-icon {
+.password-icon {
     position: absolute;
     right: 10px;
     cursor: pointer;
     width: 20px;
     height: 20px;
-  }
-  
+}
 
-  .button_registerGoogle img{
-      width: 25px;
-      height: auto;
-  }
+
+.button_registerGoogle img {
+    width: 25px;
+    height: auto;
+}
 
 .google-login-container {
     margin-top: 2.1rem;

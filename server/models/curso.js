@@ -32,8 +32,9 @@ class Curso extends Model {
           defaultValue: "pendiente",
         },
         ficha: {
-          type: DataTypes.STRING(15),
-          allowNull: true,
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          unique: true,
         },
         fecha_inicio: {
           type: DataTypes.DATE,
@@ -60,9 +61,9 @@ class Curso extends Model {
           allowNull: true,
         },
 
-        imagen: { // Nuevo campo para la imagen
-          type: DataTypes.TEXT, // Almacena la URL o ruta de la imagen
-          allowNull: true, // Opcional inicialmente
+        imagen: {
+          type: DataTypes.TEXT('medium'), // Esto es MEDIUMTEXT en MySQL
+          allowNull: true,
         },
       },
 

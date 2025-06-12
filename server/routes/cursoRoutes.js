@@ -7,7 +7,6 @@ const { crearOActualizarInscripcion } = require('../controllers/inscripcionCurso
 
 // Rutas públicas (no requieren autenticación)
 router.get("/cursos", cursoController.getAllCursos);
-router.get("/cursos/:id", cursoController.getCursoById);
 router.get('/searchCurso', cursoController.getCursoByNameOrFicha)
 
 router.use(authMiddleware);

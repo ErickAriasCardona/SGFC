@@ -102,7 +102,7 @@ function App() {
     }
 
     if (userSession && location.pathname !== "/resetPassword") {
-      navigate("/", { state: { accountType } });
+navigate("/", { state: { accountType: selectedAccountType } });
     }
   }, [navigate]);
 
