@@ -14,7 +14,7 @@ class Notificacion extends Model {
                     allowNull: false
                 },
                 tipo: {
-                    type: DataTypes.ENUM('inasistencia', 'recordatorio', 'actualizacion_curso', 'nuevo_curso', 'actualizacion_contrasena', 'actualizacion_perfil', 'inscripcion', 'invitacion', 'otro'),
+                    type: DataTypes.ENUM('inasistencia', 'recordatorio', 'actualizacion_curso', 'nuevo_curso', 'actualizacion_contrasena', 'actualizacion_perfil', 'inscripcion', 'asignacion', 'otro'),
                     allowNull: false
                 },
                 remitente: {

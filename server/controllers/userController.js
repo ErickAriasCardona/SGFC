@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const crypto = require("crypto");
 const { sendVerificationEmail, sendPasswordResetEmail, sendPasswordChangeConfirmationEmail } = require("../services/emailService");
+const { sendPasswordChangeNotification, sendProfileUpdateNotification } = require("../services/notificationService");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
@@ -245,6 +246,14 @@ const resetPassword = async (req, res) => {
         user.resetPasswordExpires = Date.now() + 3600000; // 1 hora más
 
         await user.save();
+
+        // Enviar notificación de cambio de contraseña
+        try {
+            await sendPasswordChangeNotification(user.ID);
+        } catch (notificationError) {
+            console.error('Error al enviar notificación de cambio de contraseña:', notificationError);
+            // No fallamos el proceso si la notificación falla
+        }
 
         // Enlace para volver a cambiar la contraseña
         const resetLink = `https://sgfc-seven.vercel.app/resetPassword?token=${newResetToken}`;
@@ -507,6 +516,15 @@ const updateUserProfile = async (req, res) => {
                 if (foto_perfil) user.foto_perfil = foto_perfil;
 
                 await user.save();
+
+                // Enviar notificación de actualización de perfil
+                try {
+                    await sendProfileUpdateNotification(user.ID);
+                } catch (notificationError) {
+                    console.error('Error al enviar notificación de actualización de perfil:', notificationError);
+                    // No fallamos el proceso si la notificación falla
+                }
+
                 return res.status(200).json({ message: "Perfil actualizado con éxito." });
             }
         }
@@ -560,6 +578,15 @@ const updateUserProfile = async (req, res) => {
             if (foto_perfil) user.foto_perfil = foto_perfil;
 
             await user.save();
+
+            // Enviar notificación de actualización de perfil
+            try {
+                await sendProfileUpdateNotification(user.ID);
+            } catch (notificationError) {
+                console.error('Error al enviar notificación de actualización de perfil:', notificationError);
+                // No fallamos el proceso si la notificación falla
+            }
+
             return res.status(200).json({ message: "Perfil de empresa actualizado con éxito." });
         }
 
@@ -593,6 +620,15 @@ const updateUserProfile = async (req, res) => {
             }
             if (foto_perfil) user.foto_perfil = foto_perfil;
             await user.save();
+
+            // Enviar notificación de actualización de perfil
+            try {
+                await sendProfileUpdateNotification(user.ID);
+            } catch (notificationError) {
+                console.error('Error al enviar notificación de actualización de perfil:', notificationError);
+                // No fallamos el proceso si la notificación falla
+            }
+
             return res.status(200).json({ message: "Perfil de aprendiz actualizado con éxito. Por favor verifica tu nuevo correo." });
         }
 

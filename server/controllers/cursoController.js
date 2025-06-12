@@ -6,7 +6,7 @@ const { sendCourseCreatedEmail } = require("../services/emailService");
 const { Router } = require("express");
 const upload = require("../config/multer");
 const { sendCursoUpdatedNotification, sendInstructorAssignedEmail, sendStudentsInstructorAssignedEmail } = require('../services/emailService');
-const { sendNewCourseNotifications, sendCourseUpdateNotifications } = require('../services/notificationService');
+const { sendNewCourseNotifications, sendCourseUpdateNotifications, sendInstructorAssignmentNotification } = require('../services/notificationService');
 const { Op } = require('sequelize');
 const fs = require('fs');
 const InscripcionCurso = require('../models/InscripcionCurso');
@@ -77,6 +77,15 @@ const asignarCursoAInstructor = async (req, res) => {
       fecha_asignacion: fecha_asignacion || new Date(),
       estado: estado || "aceptada",
     });
+
+    // Enviar notificación al instructor
+    try {
+      await sendInstructorAssignmentNotification(curso_ID, instructor_ID, gestor_ID);
+    } catch (notificacionError) {
+      console.error('Error al enviar notificación de asignación:', notificacionError);
+      // No interrumpimos el flujo principal si falla la notificación
+    }
+
     // Enviar correo al instructor
     if (instructor.email) {
       await sendInstructorAssignedEmail(instructor.email, curso);
@@ -120,7 +129,6 @@ const asignarCursoAInstructor = async (req, res) => {
       }
     }
 
-
     res.status(201).json({
       mensaje: "Curso asignado correctamente",
       asignacion: nuevaAsignacion,
@@ -131,8 +139,6 @@ const asignarCursoAInstructor = async (req, res) => {
       mensaje: "Error interno al asignar el curso",
     });
   }
-
-
 };
 
 //consultar cursos asignador a un instructor
@@ -297,8 +303,13 @@ const createCurso = async (req, res) => {
     const emails = usuarios.map(user => user.email);
 
     if (emails.length > 0) {
-      const courseLink = `http://localhost:5173/cursos/${nuevoCurso.ID}`;
-      await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
+      try {
+        const courseLink = `http://localhost:5173/cursos/${nuevoCurso.ID}`;
+        await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
+      } catch (emailError) {
+        console.error('❌ Error al enviar notificaciones por correo:', emailError);
+        // No fallamos el proceso si el envío de correos falla
+      }
     }
 
     // Responder con éxito
