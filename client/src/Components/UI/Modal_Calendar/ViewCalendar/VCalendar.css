@@ -1,4 +1,4 @@
-.modal-overlay {
+/* .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -14,9 +14,7 @@
 .modal-background {
   width: 60vw;
   height: 80vh;
-  background: rgba(10, 10, 10, 0.85);
   border-radius: 25px;
-  backdrop-filter: blur(15px);
   z-index: 998;
 }
 
@@ -76,15 +74,6 @@
   width: 45%;
   justify-content: space-between;
   margin-top: 5px;
-}
-
-.organized-date-inputs label {
-  display: flex;
-  width: 45%;
-  font-size: 1rem;
-  color: #ccc;
-  margin-top: 13vh;
-  margin-right: 5vw;
 }
 
 .date-inputs input[type="date"] {
@@ -220,4 +209,4 @@
 
 .save-button-calendar:hover {
   background-color: #1fac1f;
-}
+} */

@@ -11,7 +11,6 @@ import { Start } from './Components/Pages/Start/Start';
 import { Who_we_are } from './Components/Pages/Who_we_are/Who_we_are';
 import { EmailVerification } from './Components/Pages/EmailVerification/EmailVerification';
 import { ResetPassword } from './Components/Pages/ResetPassword/ResetPassword';
-import { ForgotPassword } from './Components/Pages/ForgotPassword/ForgotPassword';
 import { CreateCourse } from './Components/Pages/Courses/CreateCourse/CreateCourse';
 import { ConsultCourses } from './Components/Pages/Courses/Consult/ConsultCourses';
 import { SeeCourse } from './Components/Pages/Courses/SeeCourse/SeeCourse';
@@ -77,7 +76,7 @@ function App() {
     showModalFailed,
     setShowModalFailed,
     modalFailedContent,
-    modalGeneralContent, 
+    modalGeneralContent,
 
   } = useModal();
 
@@ -102,7 +101,7 @@ function App() {
     }
 
     if (userSession && location.pathname !== "/resetPassword") {
-navigate("/", { state: { accountType: selectedAccountType } });
+      navigate("/", { state: { accountType: selectedAccountType } });
     }
   }, [navigate]);
 
@@ -120,42 +119,6 @@ navigate("/", { state: { accountType: selectedAccountType } });
             setSelectedAccountType={setSelectedAccountType}
           />
         )}
-
-        {/* {showAccountType && !showSignUp && (
-          <Modal_General closeModal={() => setShowModalGeneral(false)}>
-            <p>Por favor seleccione el tipo de cuenta que desea crear</p>
-            <div className="option_1Account">
-              <p>Empresa</p>
-              <button
-                className="container_AccountTypeEmpresa"
-                onClick={() => handleShowSignUp("Empresa")}
-                onMouseEnter={() => setHoveredButton("Empresa")}
-                onMouseLeave={() => setHoveredButton("")}
-              >
-                <img
-                  src={hoveredButton === "Empresa" ? companyGrey : companyGreen}
-                  alt="Empresa"
-                />
-              </button>
-            </div>
-
-            <div className="option_2Account">
-              <p>Aprendiz</p>
-              <button
-                className="container_AccountTypeAprendiz"
-                onClick={() => handleShowSignUp("Aprendiz")}
-                onMouseEnter={() => setHoveredButton("Aprendiz")}
-                onMouseLeave={() => setHoveredButton("")}
-              >
-                <img
-                  src={hoveredButton === "Aprendiz" ? userGrey : userGreen}
-                  alt="Aprendiz"
-                  style={{ opacity: 1 }}
-                />
-              </button>
-            </div>
-          </Modal_General>
-        )} */}
 
         {showModalGeneral && (
           <Modal_General closeModal={() => setShowModalGeneral(false)}>
@@ -200,7 +163,6 @@ navigate("/", { state: { accountType: selectedAccountType } });
           <Route path="/QuienesSomos" element={<Who_we_are />} />
 
           <Route path="/verificarCorreo" element={<EmailVerification />} />
-          <Route path="/forgotPassword" element={<ForgotPassword />} />
           <Route path="/resetPassword" element={<ResetPassword />} />
           <Route path="/Cursos/CrearCurso" element={
             <Layout

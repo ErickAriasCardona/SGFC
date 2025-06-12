@@ -3,8 +3,10 @@ import Axios from "axios";
 import "./ForgotPassword.css";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../../config/axiosInstance";
+import { useModal } from "../../../Context/ModalContext";
 
 export const ForgotPassword = () => {
+    const { setShowModalGeneral } = useModal();
     const [email, setEmail] = useState("");
     const [message, setMessage] = useState("");
     const [isSuccess, setIsSuccess] = useState(null); // Estado para determinar si el mensaje es exitoso o no
@@ -54,8 +56,7 @@ export const ForgotPassword = () => {
 
                 <div className="container_return">
                     <h5>Volver</h5>
-                    <button onClick={() => navigate("/")} className="closeModal"></button>
-                </div>
+                    <button onClick={() => setShowModalGeneral(false)} className="closeModal"></button>                </div>
 
                 <div className="container_informationForgotPassword">
                     <h2 className="title_forgotPassword">
@@ -77,7 +78,7 @@ export const ForgotPassword = () => {
                             className="result_forgotPassword"
                             style={{
                                 backgroundColor: isSuccess ? "#00843e7c" : "#e5383596",
-                                width:" 60%",
+                                width: " 60%",
                                 height: "auto",
                                 fontSize: "12px",
                                 position: "relative",

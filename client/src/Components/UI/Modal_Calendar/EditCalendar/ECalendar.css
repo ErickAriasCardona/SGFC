@@ -12,91 +12,82 @@
 }
 
 .modal-background {
-  width: 80vw;
-  height: 80vh;
+  width: 45rem;
+  height: 37rem;
   background: #1A1A1A;
   border-radius: 25px;
   backdrop-filter: blur(15px);
   z-index: 998;
   position: relative;
   overflow: hidden;
-}
-
-.modal-container.calendar-modal {
-  background: transparent;
-  border-radius: 15px;
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  box-shadow: none;
-  color: #fff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  z-index: 999;
   display: flex;
   flex-direction: column;
-  padding: 2rem;
-  position: relative;
-  gap: 1.5rem;
+  align-items: center;
 }
 
-.close-button {
+.container_return_EditCalendar {
+  width: 8.875rem;
+  height: 8.875rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: transparent;
-  border: none;
-  color: rgb(255, 255, 255);
-  font-weight: bold;
-  font-size: 16px;
+  top: -1.5rem;
+  right: 0;
+  z-index: 1000;
+}
+
+.container_return_EditCalendar h5 {
+  width: auto;
+  height: auto;
+  position: relative;
+  top: 27%;
+  font-size: 1.125rem;
+  font-weight: 400;
+  z-index: 1000;
+  color: #fff;
+  left: 4%;
   cursor: pointer;
-  transition: color 0.3s ease;
-  z-index: 1001;
 }
 
-.close-button:hover {
-  color: #00843D;
-}
-
-.modal-title {
+.modal-title-edit-calendar {
   font-weight: 600;
   font-size: 1.8rem;
   text-align: center;
+  width: auto;
+  height: auto;
+  margin-top: 2rem;
   margin-bottom: 2rem;
 }
 
 .highlight {
   color: #00843D;
+  font-size: 1.8rem;
+  font-weight: 600;
 }
 
 .organized-date-inputs {
+  width: auto;
+  height: auto;
   display: flex;
-  flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 2rem;
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 15px;
-  position: relative;
-  z-index: 1002;
+  gap: 5rem;
+
 }
 
 .organized-date-inputs label {
+  width: auto;
+  height: auto;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  justify-content: center;
+  align-items: center;
   gap: 0.5rem;
-  font-size: 1rem;
-  color: #ccc;
-  margin: 0;
 }
 
 .organized-date-inputs input[type="date"] {
-  width: 200px;
-  height: 40px;
+  width: 7rem;
+  height: auto;
   border: 1px solid #333;
   background-color: #111;
   color: #eee;
@@ -116,39 +107,44 @@
   box-shadow: 0 0 0 2px rgba(0, 132, 61, 0.2);
 }
 
-.error-message {
+.error-message-calendar {
   position: absolute;
-  bottom: -25px;
-  left: 50%;
+  top: 9rem;
+  right: 1rem;
   transform: translateX(-50%);
   color: #ff4444;
   font-size: 0.9rem;
   text-align: center;
-  width: 100%;
+  width: auto;
+  height: auto;
 }
 
-.calendar-container {
-  flex: 1;
+.calendar-container-edit {
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: start;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 15px;
   padding: 1rem;
-  margin: 0 auto;
+  margin-top: 3rem;
+  width: 17rem;
+  height: 17rem;
+  overflow: hidden;
+}
+
+.calendar-scroll-wrapper {
   width: 100%;
-  max-width: 800px;
-  overflow: auto;
-  position: relative;
-  z-index: 1001;
+  height: 100%;
+  overflow-y: auto;
+  /* Aquí es donde se aplicará el scroll */
 }
 
 .calendar-table {
   width: 100%;
-  max-width: 600px;
   border-collapse: collapse;
   user-select: none;
 }
+
 
 .calendar-table th,
 .calendar-table td {
@@ -181,25 +177,21 @@
 }
 
 .plus-icon {
-  color: #0f0;
+  color: #00843e88;
   font-weight: bold;
   font-size: 1.2rem;
   user-select: none;
 }
 
-.save-button-calendar{
-  background-color: #007700;
-  color: white;
+.save-button-calendar {
+  background-color: #00843D;
   border: none;
-  padding: 12px 30px;
   border-radius: 12px;
-  font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin: 2rem auto 0;
-  display: block;
-}
-
-.save-button-calendar:hover {
-  background-color: #00aa00;
+  display: flex;
+  width: auto;
+  height: auto;
+  padding: 0.8rem;
+  margin-top: 2rem;
 }

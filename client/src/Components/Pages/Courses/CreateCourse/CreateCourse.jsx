@@ -10,7 +10,6 @@ import calendar from '../../../../assets/Icons/calendar.png';
 import axiosInstance from '../../../../config/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { AssignInstructorCourse } from '../AssignInstructorCourse/AssignInstructorCourse';
-import { Routes, Route } from "react-router-dom";
 
 export const CreateCourse = () => {
   const navigate = useNavigate();
@@ -23,7 +22,6 @@ export const CreateCourse = () => {
   const [descripcion, setDescripcion] = useState('');
   const [instructor_ID, setInstructor_ID] = useState(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
-
 
   // Validación de sesión de usuario y rol de administrador
   const userSessionString = sessionStorage.getItem("userSession");
@@ -57,8 +55,8 @@ export const CreateCourse = () => {
   // Callback to receive calendar data from EditCalendar
   const handleCalendarSave = (data) => {
     setCalendarData(data);
+    setIsEditCalendarOpen(false);
   };
-
 
   const handleAssignInstructor = (instructorId) => {
     setInstructor_ID(instructorId);
@@ -69,6 +67,12 @@ export const CreateCourse = () => {
   const handleCreateCourse = async () => {
     if (!ficha || !nombreCurso || !descripcion || !selected || !selectedStatus) {
       alert("Por favor, completa todos los campos requeridos.");
+      return;
+    }
+
+    // Validar que ficha sea un número
+    if (isNaN(Number(ficha))) {
+      alert("El campo ficha debe ser un número.");
       return;
     }
 
@@ -146,7 +150,6 @@ export const CreateCourse = () => {
       if (response.data.curso && response.data.curso.ID) {
         navigate(`/Cursos/${response.data.curso.ID}`);
       } else {
-        console.error("No se pudo obtener el ID del curso creado");
         navigate('/Cursos/MisCursos');
       }
     } catch (error) {
@@ -156,167 +159,165 @@ export const CreateCourse = () => {
       } else {
         alert("Ocurrió un error al crear el curso");
       }
+    }
+  };
 
-    };
+  return (
+    <>
+      <Main>
+        <div className="container_createCourse">
+          <h2>
+            Crear
+            <span className="complementary"> Curso</span>
+          </h2>
 
-      return (
-        <>
-          <Header />
-          <Main>
-            <div className="container_createCourse">
-              <h2>
-                Crear
-                <span className="complementary"> Curso</span>
-              </h2>
+          <div className="containerInformation_CreateCourse">
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleChange}
+              hidden
+            />
 
-              <div className="containerInformation_CreateCourse">
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={fileInputRef}
-                  onChange={handleChange}
-                  hidden
+            <label
+              className="upload-area"
+              onClick={() => fileInputRef.current.click()}
+            >
+              {preview ? (
+                <img
+                  src={preview}
+                  alt="Vista previa"
+                  className="preview-image"
                 />
-
-                <label
-                  className="upload-area"
-                  onClick={() => fileInputRef.current.click()}
-                >
-                  {preview ? (
-                    <img
-                      src={preview}
-                      alt="Vista previa"
-                      className="preview-image"
-                    />
-                  ) : (
-                    <div className="upload-placeholder">
-                      <img
-                        src={addIMG}
-                        alt="icono agregar imagen"
-                        className="icon"
-                      />
-                      <p>Arrastra o sube la foto del curso aquí.</p>
-                    </div>
-                  )}
-                </label>
-
-                <div className='containerDetails_course'>
-                  <div id='containerInput_ficha'>
-                    <label htmlFor="fichaCourse">Ficha: </label>
-                    <input
-                      id='fichaCourse'
-                      type="text"
-                      placeholder='N° ficha'
-                      value={ficha}
-                      onChange={(e) => setFicha(e.target.value)}
-                    />
-                  </div>
-                  <input
-                    className='addName'
-                    type="text"
-                    placeholder='Agregar nombre del curso'
-                    value={nombreCurso}
-                    onChange={(e) => setNombreCurso(e.target.value)}
+              ) : (
+                <div className="upload-placeholder">
+                  <img
+                    src={addIMG}
+                    alt="icono agregar imagen"
+                    className="icon"
                   />
-                  <input
-                    className='addDetails'
-                    type="text"
-                    placeholder='Agregar descripción del curso'
-                    value={descripcion}
-                    onChange={(e) => setDescripcion(e.target.value)}
-                  />
+                  <p>Arrastra o sube la foto del curso aquí.</p>
+                </div>
+              )}
+            </label>
 
-                  <div className='containerDetails_course2'>
-                    <div>
-                      <div className="offer-type-container">
-                        <span>Tipo de oferta:</span>
-                        <div className="offer-options">
-                          <button
-                            className={`offer-button ${selected === 'Cerrada' ? 'active' : ''}`}
-                            onClick={() => setSelected('Cerrada')}
-                          >
-                            Cerrada
-                          </button>
-                          <button
-                            className={`offer-button ${selected === 'Abierta' ? 'active' : ''}`}
-                            onClick={() => setSelected('Abierta')}
-                          >
-                            Abierta
-                          </button>
-                        </div>
-                      </div>
-                      <div className="offer-type-container">
-                        <span>Estado:</span>
-                        <div className="offer-options">
-                          <button
-                            className={`offer-button ${selectedStatus === 'Activo' ? 'active' : ''}`}
-                            onClick={() => setSelectedStatus('Activo')}
-                          >
-                            Activo
-                          </button>
-                          <button
-                            className={`offer-button ${selectedStatus === 'En oferta' ? 'active' : ''}`}
-                            onClick={() => setSelectedStatus('En oferta')}
-                          >
-                            En oferta
-                          </button>
-                        </div>
-                      </div>
-                      <div className='containerInput_company'>
-                        <label htmlFor="nit_company">Empresa</label>
-                        <input id='nit_company' type="text" placeholder='NIT de la empresa' />
-                      </div>
-                    </div>
+            <div className='containerDetails_course'>
+              <div id='containerInput_ficha'>
+                <label htmlFor="fichaCourse">Ficha: </label>
+                <input
+                  id='fichaCourse'
+                  type="text"
+                  placeholder='N° ficha'
+                  value={ficha}
+                  onChange={(e) => setFicha(e.target.value)}
+                />
+              </div>
+              <input
+                className='addName'
+                type="text"
+                placeholder='Agregar nombre del curso'
+                value={nombreCurso}
+                onChange={(e) => setNombreCurso(e.target.value)}
+              />
+              <input
+                className='addDetails'
+                type="text"
+                placeholder='Agregar descripción del curso'
+                value={descripcion}
+                onChange={(e) => setDescripcion(e.target.value)}
+              />
 
-                    <div>
-                      <p id='p_addInstructor'> Instructor: {instructor_ID ? "Asignado (ID: " + instructor_ID + ")" : "Asignar instructor"}
-                        <button className='addInstructor' onClick={() => setShowAssignModal(true)}>
-                          <img src={buttonEdit} alt="" />
-                        </button>
-                      </p>
-
-                      {/* Botón para abrir el modal general */}
-                      <button className='addDate' onClick={showModalGeneral}>
-                        <img src={calendar} alt="" />
-                        Agregar fechas y horarios
+              <div className='containerDetails_course2'>
+                <div>
+                  <div className="offer-type-container">
+                    <span>Tipo de oferta:</span>
+                    <div className="offer-options">
+                      <button
+                        className={`offer-button ${selected === 'Cerrada' ? 'active' : ''}`}
+                        onClick={() => setSelected('Cerrada')}
+                        type="button"
+                      >
+                        Cerrada
+                      </button>
+                      <button
+                        className={`offer-button ${selected === 'Abierta' ? 'active' : ''}`}
+                        onClick={() => setSelected('Abierta')}
+                        type="button"
+                      >
+                        Abierta
                       </button>
                     </div>
                   </div>
+                  <div className="offer-type-container">
+                    <span>Estado:</span>
+                    <div className="offer-options">
+                      <button
+                        className={`offer-button ${selectedStatus === 'Activo' ? 'active' : ''}`}
+                        onClick={() => setSelectedStatus('Activo')}
+                        type="button"
+                      >
+                        Activo
+                      </button>
+                      <button
+                        className={`offer-button ${selectedStatus === 'En oferta' ? 'active' : ''}`}
+                        onClick={() => setSelectedStatus('En oferta')}
+                        type="button"
+                      >
+                        En oferta
+                      </button>
+                    </div>
+                  </div>
+                  {/* Mostrar campo empresa solo si la oferta es Cerrada */}
+                  {selected === 'Cerrada' && (
+                    <div className='containerInput_company'>
+                      <label htmlFor="nit_company">Empresa</label>
+                      <input id='nit_company' type="text" placeholder='NIT de la empresa' />
+                    </div>
+                  )}
+                </div>
 
-                  {/* Botón para crear el curso */}
-                  <button className='buttonCreate_Course' onClick={handleCreateCourse}>
-                    Crear curso
+                <div>
+                  <p id='p_addInstructor'> Instructor: {instructor_ID ? "Asignado (ID: " + instructor_ID + ")" : "Asignar instructor"}
+                    <button className='addInstructor' type="button" onClick={() => setShowAssignModal(true)}>
+                      <img src={buttonEdit} alt="" />
+                    </button>
+                  </p>
+
+                  {/* Botón para abrir el modal general */}
+                  <button className='addDate' type="button" onClick={showModalGeneral}>
+                    <img src={calendar} alt="" />
+                    Agregar fechas y horarios
                   </button>
                 </div>
               </div>
 
+              {/* Botón para crear el curso */}
+              <button className='buttonCreate_Course' type="button" onClick={handleCreateCourse}>
+                Crear curso
+              </button>
             </div>
-          </Main>
-          <Footer />
-          {showAssignModal && (
-            <AssignInstructorCourse
-              curso_ID={null} // (o el ID del curso si ya se creó)
-              onClose={() => setShowAssignModal(false)}
-              onAssign={handleAssignInstructor}
-            />
-          )}
-
-          {/* Edit Calendar Modal */}
-          {isEditCalendarOpen && (
-            <EditCalendar
-              show={isEditCalendarOpen}
-              closeModal={() => setIsEditCalendarOpen(false)} // Corrected prop name
-              onSave={handleCalendarSave}
-              initialData={calendarData}
-            />
-          )}
-          <div>
-            {/* Add a button to open the modal */}
-            <button onClick={showModalGeneral}>Open Calendar Modal</button>
           </div>
-        </>
+        </div>
+      </Main>
+      <Footer />
+      {showAssignModal && (
+        <AssignInstructorCourse
+          curso_ID={null}
+          onClose={() => setShowAssignModal(false)}
+          onAssign={handleAssignInstructor}
+        />
+      )}
 
-      );
-
-  };
+      {/* Edit Calendar Modal */}
+      {isEditCalendarOpen && (
+        <EditCalendar
+          show={isEditCalendarOpen}
+          closeModal={() => setIsEditCalendarOpen(false)}
+          onSave={handleCalendarSave}
+          initialData={calendarData}
+        />
+      )}
+    </>
+  );
 };

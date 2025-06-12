@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './ECalendar.css';
 
 const times = [
-  '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', 
-  '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', 
+  '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
+  '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
   '20:00', '21:00', '22:00'
 ];
 const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -101,41 +101,44 @@ export const EditCalendar = ({ closeModal, onSave, initialData }) => {
   return (
     <div className="modal-overlay">
       <div className="modal-background">
-        <div className="modal-container calendar-modal centered-modal">
-          <button className="close-button" onClick={handleCancel}>Volver</button>
-          <h2 className="modal-title">
-            Editar Fechas y <span className="highlight">horarios</span>
-          </h2>
+        <div className="container_return_EditCalendar">
+          <h5 onClick={handleCancel} style={{ cursor: "pointer" }}>Volver</h5>
+          <button onClick={handleCancel} className="closeModal"></button>
+        </div>
+        <h2 className="modal-title-edit-calendar">
+          Editar Fechas y <span className="highlight">horarios</span>
+        </h2>
 
-          <div className="organized-date-inputs">
-            <label>
-              Fecha inicio:
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => {
-                  setStartDate(e.target.value);
-                  setError('');
-                }}
-                min={new Date().toISOString().split('T')[0]}
-              />
-            </label>
-            <label>
-              Fecha fin:
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => {
-                  setEndDate(e.target.value);
-                  setError('');
-                }}
-                min={startDate || new Date().toISOString().split('T')[0]}
-              />
-            </label>
-            {error && <p className="error-message">{error}</p>}
-          </div>
+        <div className="organized-date-inputs">
+          <label>
+            Fecha inicio:
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                setError('');
+              }}
+              min={new Date().toISOString().split('T')[0]}
+            />
+          </label>
+          <label>
+            Fecha fin:
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => {
+                setEndDate(e.target.value);
+                setError('');
+              }}
+              min={startDate || new Date().toISOString().split('T')[0]}
+            />
+          </label>
+        </div>
 
-          <div className="calendar-container">          
+        {error && <p className="error-message-calendar">{error}</p>}
+        <div className="calendar-container-edit">
+          <div className="calendar-scroll-wrapper">
             <table className="calendar-table">
               <thead>
                 <tr>
@@ -167,9 +170,10 @@ export const EditCalendar = ({ closeModal, onSave, initialData }) => {
               </tbody>
             </table>
           </div>
-
-          <button className="save-button-calendar organized-save-button" onClick={handleSave}>Guardar</button>
         </div>
+
+        <button className="save-button-calendar" onClick={handleSave}>Guardar</button>
+
       </div>
     </div>
   );

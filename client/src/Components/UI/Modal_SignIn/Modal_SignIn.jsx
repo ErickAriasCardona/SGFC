@@ -10,7 +10,7 @@ import userGrey from "../../../assets/Icons/userGrey.png";
 import { NavLink, useNavigate } from "react-router-dom";
 import { GoogleLogin } from '@react-oauth/google';
 import { useModal } from "../../../Context/ModalContext";
-
+import { ForgotPassword } from "../../Pages/ForgotPassword/ForgotPassword";
 export const Modal_SignIn = () => {
   const {
     showSignIn,
@@ -78,6 +78,12 @@ export const Modal_SignIn = () => {
         </div>
       </>
     );
+  };
+
+  const showModalForgotPassword = () => {
+    setShowSignIn(false);
+    setShowModalGeneral(true);
+    setModalGeneralContent(<ForgotPassword />);
   };
 
   const login = (event) => {
@@ -221,9 +227,14 @@ export const Modal_SignIn = () => {
                 />
               </div>
             </form>
-            <NavLink to={"/forgotPassword"} className={"forgetPassword"}>
+            <button
+              type="button"
+              className="forgetPassword"
+              style={{ background: "none", border: "none", color: "#00843e", cursor: "pointer", padding: 0 }}
+              onClick={showModalForgotPassword}
+            >
               ¿Olvidó su contraseña?
-            </NavLink>
+            </button>
           </div>
 
           <div className="container_triangles_02_login">
