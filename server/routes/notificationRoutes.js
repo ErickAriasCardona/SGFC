@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const notificationController = require('../controllers/notificationController');
-const authMiddleware = require('../middlewares/authMiddleware');
+const {authMiddleware} = require('../middlewares/authMiddleware');
 
 // Proteger todas las rutas con autenticación
 router.use(authMiddleware);

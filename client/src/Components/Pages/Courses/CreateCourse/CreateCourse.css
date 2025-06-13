@@ -32,6 +32,25 @@
   border-radius: 15px;
 }
 
+.containerInput_description_course{
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+}
+.descripcion-counter {
+  width: auto;
+  height: auto;
+  font-size: 0.95em;
+  margin-top: 2px;
+}
+.descripcion-counter.rojo {
+  color: #d32f2f; /* Rojo cuando es menor a 250 */
+}
+.descripcion-counter.verde {
+  color: #388e3c; /* Verde cuando es 250 o más */
+}
+
 .upload-area {
   width: 220px;
   height: 250px;
@@ -87,7 +106,7 @@
 
 .addName,
 .addDetails {
-  width: 100%;
+  width: 99%;
   height: 2rem;
   background-color: transparent;
   border-style: none;
@@ -96,8 +115,21 @@
   padding-left: 5px;
 }
 
+/* Chrome, Safari, Edge, Opera */
+#fichaCourse::-webkit-outer-spin-button,
+#fichaCourse::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+#fichaCourse {
+  -moz-appearance: textfield;
+}
+
 .addDetails {
   height: 5rem;
+  padding-top: 5px;
 }
 
 .buttonCreate_Course {
@@ -148,7 +180,7 @@
   font-weight: 600;
   cursor: pointer;
   border: none;
-  background-color: transparent;
+  background-color: #b0b0b01c;
   color: #ccc;
   transition: all 0.2s ease;
 }
@@ -222,7 +254,7 @@
   justify-content: center;
   align-items: center;
   gap: 1rem;
-  margin: 1rem 0 2rem 0;
+  margin: 0.5rem 0 1rem 0;
 }
 
 .containerDetails_course2>div {

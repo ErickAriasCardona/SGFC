@@ -1,13 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const cursoController = require("../controllers/cursoController");
-const authMiddleware = require("../middlewares/authMiddleware");
+const {authMiddleware} = require("../middlewares/authMiddleware");
 const upload = require("../config/multer");
 const { crearOActualizarInscripcion } = require('../controllers/inscripcionCursoController');
 
 // Rutas públicas (no requieren autenticación)
 router.get("/cursos", cursoController.getAllCursos);
 router.get('/searchCurso', cursoController.getCursoByNameOrFicha)
+router.get("/cursos/:id", cursoController.getCursoById); // Obtener curso por ID
 
 router.use(authMiddleware);
 

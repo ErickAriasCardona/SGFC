@@ -11,6 +11,9 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { GoogleLogin } from '@react-oauth/google';
 import { useModal } from "../../../Context/ModalContext";
 import { ForgotPassword } from "../../Pages/ForgotPassword/ForgotPassword";
+import axiosInstance from "../../../config/axiosInstance";
+
+
 export const Modal_SignIn = () => {
   const {
     showSignIn,
@@ -86,43 +89,38 @@ export const Modal_SignIn = () => {
     setModalGeneralContent(<ForgotPassword />);
   };
 
+
   const login = (event) => {
     event.preventDefault();
 
-    fetch("http://localhost:3001/api/users/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+    axiosInstance.post("api/users/login", {
+      email,
+      password,
     })
-      .then((response) => response.json())
-      .then((data) => {
-        if (!data.token) throw new Error("No se recibió el token de autenticación");
+      .then((response) => {
+        alert(response.data.message);
+        sessionStorage.setItem("userSession", JSON.stringify({
+          accountType: response.data.accountType,
+          email: email,
+          id: response.data.id
+        }));
 
-        const sessionData = {
-          accountType: data.accountType,
-          email: data.email,
-          id: data.id,
-          token: data.token,
-        };
-
-        if (rememberSession) {
-          localStorage.setItem("userSession", JSON.stringify(sessionData));
-        } else {
-          sessionStorage.setItem("userSession", JSON.stringify(sessionData));
-        }
-
-        alert(data.message || "Inicio de sesión exitoso");
         closeModalSignIn();
-        navigate("/", { state: { accountType: data.accountType } });
+        navigate("/", {
+          state: { accountType: response.data.accountType },
+        });
       })
       .catch((error) => {
-        if (error.message === "No se recibió el token de autenticación") {
-          alert("Error en la autenticación: No se recibió el token");
+        if (error.response && error.response.status === 400) {
+          alert("Usuario o contraseña incorrectos");
+        } else if (error.response && error.response.status === 403) {
+          alert("Por favor verifica tu correo antes de iniciar sesión");
         } else {
           alert("Ocurrió un error al iniciar sesión");
         }
       });
   };
+
 
   const handleGoogleResponse = async (response) => {
     const idToken = response.credential;

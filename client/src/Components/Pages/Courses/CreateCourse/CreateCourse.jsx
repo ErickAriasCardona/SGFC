@@ -7,6 +7,7 @@ import EditCalendar from '../../../UI/Modal_Calendar/EditCalendar/EditCalendar';
 import addIMG from '../../../../assets/Icons/addImg.png';
 import buttonEdit from '../../../../assets/Icons/buttonEdit.png';
 import calendar from '../../../../assets/Icons/calendar.png';
+import imgDefectCourse from '../../../../assets/Icons/picDefectCourse.png'; 
 import axiosInstance from '../../../../config/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { AssignInstructorCourse } from '../AssignInstructorCourse/AssignInstructorCourse';
@@ -22,10 +23,6 @@ export const CreateCourse = () => {
   const [descripcion, setDescripcion] = useState('');
   const [instructor_ID, setInstructor_ID] = useState(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
-
-  // Validación de sesión de usuario y rol de administrador
-  const userSessionString = sessionStorage.getItem("userSession");
-  const userSession = userSessionString ? JSON.parse(userSessionString) : null;
 
   // New state for calendar data
   const [calendarData, setCalendarData] = useState({
@@ -76,6 +73,12 @@ export const CreateCourse = () => {
       return;
     }
 
+    // Validar longitud mínima de la descripción
+    if (descripcion.length < 300) {
+      alert("La descripción debe tener mínimo 300 caracteres.");
+      return;
+    }
+
     // Validar que se hayan seleccionado fechas y horarios
     if (!calendarData.startDate || !calendarData.endDate || calendarData.selectedSlots.length === 0) {
       alert("Por favor, selecciona las fechas y horarios del curso.");
@@ -85,7 +88,8 @@ export const CreateCourse = () => {
     try {
       const formData = new FormData();
       formData.append("ficha", ficha);
-      formData.append("nombre_curso", nombreCurso);
+      // Enviar el nombre del curso en mayúsculas
+      formData.append("nombre_curso", nombreCurso.toUpperCase());
       formData.append("descripcion", descripcion);
       formData.append("tipo_oferta", selected);
       formData.append("estado", selectedStatus);
@@ -129,8 +133,17 @@ export const CreateCourse = () => {
       const diasSemana = Object.keys(slotsByDay).map(dia => diasMapping[dia] || dia);
       formData.append("dias_formacion", JSON.stringify(diasSemana));
 
+      // --- GUARDAR LOS SLOTS SELECCIONADOS ---
+      formData.append("slots_formacion", JSON.stringify(calendarData.selectedSlots));
+
+      // Imagen: si no se subió, usar la imagen por defecto
       if (fileInputRef.current.files[0]) {
         formData.append("imagen", fileInputRef.current.files[0]);
+      } else {
+        // Convertir la imagen por defecto a blob y agregarla al formData
+        const response = await fetch(imgDefectCourse);
+        const blob = await response.blob();
+        formData.append("imagen", blob, "imgDefectCourse.png");
       }
 
       if (instructor_ID) {
@@ -207,7 +220,7 @@ export const CreateCourse = () => {
                 <label htmlFor="fichaCourse">Ficha: </label>
                 <input
                   id='fichaCourse'
-                  type="text"
+                  type="number"
                   placeholder='N° ficha'
                   value={ficha}
                   onChange={(e) => setFicha(e.target.value)}
@@ -220,13 +233,22 @@ export const CreateCourse = () => {
                 value={nombreCurso}
                 onChange={(e) => setNombreCurso(e.target.value)}
               />
-              <input
-                className='addDetails'
-                type="text"
-                placeholder='Agregar descripción del curso'
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
-              />
+              <div className='containerInput_description_course'>
+                <textarea
+                  className='addDetails'
+                  placeholder='Agregar descripción del curso (mínimo 300 caracteres)'
+                  value={descripcion}
+                  onChange={(e) => setDescripcion(e.target.value)}
+                  minLength={300}
+                  rows={6}
+                  style={{ resize: "vertical", width: "99%" }}
+                />
+                <div
+                  className={`descripcion-counter ${descripcion.length < 300 ? 'rojo' : 'verde'}`}
+                >
+                  {descripcion.length} / 300 caracteres
+                </div>
+              </div>
 
               <div className='containerDetails_course2'>
                 <div>

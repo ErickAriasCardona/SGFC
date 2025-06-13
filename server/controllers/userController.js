@@ -152,10 +152,11 @@ const loginUser = async (req, res) => {
         // Enviar el token como una cookie HTTP-only
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: process.env.NODE_ENV === "production", // Solo en HTTPS en producción
             sameSite: "strict",
             maxAge: 3600000, // 1 hora
         });
+
 
         res.status(200).json({
             message: "Inicio de sesión exitoso",
@@ -781,7 +782,7 @@ const createMasiveUsers = async (req, res) => {
         if (!req.file || !req.file.buffer) {
             return res.status(400).json({ message: 'No se ha subido ningún archivo.' });
         }
-        
+
         const Archivo = req.file.buffer;
         console.log(req.file.buffer)
         // Leer el archivo con xlsx
@@ -874,4 +875,4 @@ const createMasiveUsers = async (req, res) => {
 }
 
 
-module.exports = {getAprendicesByEmpresa,  registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers };
+module.exports = { getAprendicesByEmpresa, registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers };

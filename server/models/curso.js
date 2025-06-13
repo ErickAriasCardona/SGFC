@@ -53,14 +53,18 @@ class Curso extends Model {
           allowNull: true,
         },
         dias_formacion: {
-          type: DataTypes.STRING(20),
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        // Nuevo campo para guardar los slots seleccionados (día-hora)
+        slots_formacion: {
+          type: DataTypes.TEXT, // Guarda el array como JSON.stringify([...])
           allowNull: true,
         },
         lugar_formacion: {
           type: DataTypes.STRING(45),
           allowNull: true,
         },
-
         imagen: {
           type: DataTypes.TEXT('medium'), // Esto es MEDIUMTEXT en MySQL
           allowNull: true,

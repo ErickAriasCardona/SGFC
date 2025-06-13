@@ -19,6 +19,8 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const cron = require('node-cron');
 const { cleanExpiredTokens } = require('./controllers/userController');
 
+
+
 // Ejecuta la limpieza de tokens expirados cada hora
 cron.schedule('0 * * * *', async () => {
   try {
@@ -31,6 +33,7 @@ cron.schedule('0 * * * *', async () => {
 });
 
 const app = express();
+
 
 const allowedOrigins = [
   "http://localhost:5173"
