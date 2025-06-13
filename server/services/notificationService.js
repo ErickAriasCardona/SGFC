@@ -543,6 +543,127 @@ const sendInstructorAssignmentNotification = async (courseId, instructorId, gest
     }
 };
 
+/**
+ * Obtiene las notificaciones de un usuario
+ */
+const getUserNotifications = async (userId, page = 1, limit = 10, type = null) => {
+    try {
+        const whereClause = { usuario_ID: userId };
+        if (type) {
+            whereClause.tipo = type;
+        }
+
+        const offset = (page - 1) * limit;
+
+        const { count, rows: notifications } = await dbInstance.Notificacion.findAndCountAll({
+            where: whereClause,
+            include: [
+                {
+                    model: dbInstance.Usuario,
+                    as: 'usuario',
+                    attributes: ['ID', 'nombres', 'apellidos', 'email']
+                }
+            ],
+            order: [['fecha_envio', 'DESC']],
+            limit: parseInt(limit),
+            offset: offset
+        });
+
+        return {
+            success: true,
+            notifications,
+            pagination: {
+                total: count,
+                totalPages: Math.ceil(count / limit),
+                currentPage: parseInt(page),
+                limit: parseInt(limit)
+            }
+        };
+    } catch (error) {
+        console.error('Error al obtener notificaciones:', error);
+        throw error;
+    }
+};
+
+/**
+ * Marca una notificación como leída
+ */
+const markNotificationAsRead = async (notificationId, userId) => {
+    try {
+        const notification = await dbInstance.Notificacion.findOne({
+            where: {
+                ID: notificationId,
+                usuario_ID: userId
+            }
+        });
+
+        if (!notification) {
+            throw new Error('Notificación no encontrada');
+        }
+
+        await notification.update({ estado: 'leida' });
+
+        return {
+            success: true,
+            message: 'Notificación marcada como leída'
+        };
+    } catch (error) {
+        console.error('Error al marcar notificación como leída:', error);
+        throw error;
+    }
+};
+
+/**
+ * Envía una notificación de inasistencia manualmente
+ */
+const sendManualAbsenceNotification = async (attendanceId, instructorId) => {
+    try {
+        // Obtener el registro de asistencia
+        const attendance = await dbInstance.Asistencia.findOne({
+            where: {
+                ID: attendanceId,
+                estado: 'Ausente'
+            },
+            include: [
+                {
+                    model: dbInstance.Usuario,
+                    as: 'aprendiz',
+                    attributes: ['ID', 'nombres', 'apellidos', 'email']
+                }
+            ]
+        });
+
+        if (!attendance) {
+            throw new Error('Registro de asistencia no encontrado o no es una ausencia');
+        }
+
+        const title = `Notificación de Inasistencia`;
+        const message = `
+            <h2>Notificación de Inasistencia</h2>
+            <p>Estimado(a) ${attendance.aprendiz.nombres} ${attendance.aprendiz.apellidos},</p>
+            <p>Le informamos que se ha registrado una inasistencia en la fecha ${new Date(attendance.fecha).toLocaleDateString()}.</p>
+            <p>Por favor, asegúrese de asistir a las próximas sesiones programadas.</p>
+            <p>Saludos cordiales,<br>SGFC</p>
+        `;
+
+        const result = await sendNotification(
+            attendance.aprendiz.ID,
+            'inasistencia',
+            title,
+            message
+        );
+
+        return {
+            success: true,
+            message: 'Notificación de inasistencia enviada correctamente',
+            notification: result
+        };
+    } catch (error) {
+        console.error('Error al enviar notificación manualmente:', error);
+        throw error;
+    }
+};
+
 module.exports = {
     setDb,
     sendNotification,
@@ -552,5 +673,8 @@ module.exports = {
     sendPasswordChangeNotification,
     sendProfileUpdateNotification,
     sendEnrollmentNotification,
-    sendInstructorAssignmentNotification
+    sendInstructorAssignmentNotification,
+    getUserNotifications,
+    markNotificationAsRead,
+    sendManualAbsenceNotification
 }; 
