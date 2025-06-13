@@ -23,6 +23,7 @@ import { CreateCourse } from './Components/Pages/Courses/CreateCourse/CreateCour
 import { ConsultCourses } from './Components/Pages/Courses/Consult/ConsultCourses';
 import { SeeCourse } from './Components/Pages/Courses/SeeCourse/SeeCourse';
 import { UpdateCourse } from './Components/Pages/Courses/UpdateCourse/UpdateCourse';
+import { MyCourses } from './Components/Pages/Courses/MyCoursesAdmin/MyCourses';
 import { MisCursos } from './Components/Pages/Courses/MisCursos/MisCursos';
 import { GestionsInstructor } from './Components/Pages/GestionsInstructor/GestionsInstructor';
 import { GestionsGestor } from './Components/Pages/GestionsGestor/GestionsGestor';
@@ -216,6 +217,7 @@ function App() {
               <ConsultCourses />
             </Layout>
           } />
+          <Route path='/Cursos/MyCoursesAdmin' element={<MyCourses />} />
           <Route path="/Cursos/:id" element={<SeeCourse />} />
           <Route path="/Cursos/MisCursos" element={
             <Layout

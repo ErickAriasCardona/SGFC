@@ -1,0 +1,43 @@
+.container_myCourses {
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container_myCourses > h2 {
+  width: 100%;
+  height: auto;
+  color: #fff;
+  font-size: 40px;
+  text-align: center;
+  margin: 3rem 0 2rem 0;
+  font-weight: 100;
+}
+
+.illustration-container-myCourses {
+  width: 67%;
+  height: auto;
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  top: 57%;
+  left: 18%;
+}
+
+.illustration-container-myCourses img:first-child {
+  width: 9rem;
+  height: auto;
+  margin-top: -14%;
+  left: 15rem;
+}
+
+.illustration-container-myCourses img:last-child {
+  width: 12.5rem;
+  height: auto;
+  margin-top: -15%;
+  margin-left: auto;
+}
