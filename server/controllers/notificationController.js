@@ -79,7 +79,7 @@ const sendManualAbsenceNotificationController = async (req, res) => {
 /**
  * Envía notificación de nuevo curso
  */
-const sendNewCourseNotification = async (req, res) => {
+const sendNewCourseNotificationController = async (req, res) => {
     try {
         const { courseId } = req.params;
         const result = await sendNewCourseNotifications(courseId);
@@ -96,7 +96,7 @@ const sendNewCourseNotification = async (req, res) => {
 /**
  * Envía notificación de actualización de curso
  */
-const sendCourseUpdateNotification = async (req, res) => {
+const sendCourseUpdateNotificationController = async (req, res) => {
     try {
         const { courseId } = req.params;
         const result = await sendCourseUpdateNotifications(courseId);
@@ -113,7 +113,7 @@ const sendCourseUpdateNotification = async (req, res) => {
 /**
  * Envía notificación de cambio de contraseña
  */
-const sendPasswordChangeNotification = async (req, res) => {
+const sendPasswordChangeNotificationController = async (req, res) => {
     try {
         const { userId } = req.params;
         const result = await sendPasswordChangeNotification(userId);
@@ -130,7 +130,7 @@ const sendPasswordChangeNotification = async (req, res) => {
 /**
  * Envía notificación de actualización de perfil
  */
-const sendProfileUpdateNotification = async (req, res) => {
+const sendProfileUpdateNotificationController = async (req, res) => {
     try {
         const { userId } = req.params;
         const result = await sendProfileUpdateNotification(userId);
@@ -147,7 +147,7 @@ const sendProfileUpdateNotification = async (req, res) => {
 /**
  * Envía notificación de inscripción a curso
  */
-const sendEnrollmentNotification = async (req, res) => {
+const sendEnrollmentNotificationController = async (req, res) => {
     try {
         const { courseId, apprenticeId } = req.params;
         const gestorId = req.user.id;
@@ -166,7 +166,7 @@ const sendEnrollmentNotification = async (req, res) => {
 /**
  * Envía notificación de asignación de instructor
  */
-const sendInstructorAssignmentNotification = async (req, res) => {
+const sendInstructorAssignmentNotificationController = async (req, res) => {
     try {
         const { courseId, instructorId } = req.params;
         const gestorId = req.user.id;
@@ -186,10 +186,10 @@ module.exports = {
     getUserNotifications: getUserNotificationsController,
     markNotificationAsRead: markNotificationAsReadController,
     sendManualAbsenceNotification: sendManualAbsenceNotificationController,
-    sendNewCourseNotification,
-    sendCourseUpdateNotification,
-    sendPasswordChangeNotification,
-    sendProfileUpdateNotification,
-    sendEnrollmentNotification,
-    sendInstructorAssignmentNotification
+    sendNewCourseNotification: sendNewCourseNotificationController,
+    sendCourseUpdateNotification: sendCourseUpdateNotificationController,
+    sendPasswordChangeNotification: sendPasswordChangeNotificationController,
+    sendProfileUpdateNotification: sendProfileUpdateNotificationController,
+    sendEnrollmentNotification: sendEnrollmentNotificationController,
+    sendInstructorAssignmentNotification: sendInstructorAssignmentNotificationController
 }; 
