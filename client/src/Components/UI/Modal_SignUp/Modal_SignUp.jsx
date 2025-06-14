@@ -115,22 +115,17 @@ export const Modal_SignUp = ({
       setShowSignIn(true);
     }
   };
-
+//registro con google aprendiz o empresa
   const handleGoogleResponse = async (response) => {
     const idToken = response.credential;
 
     try {
-      const res = await fetch("https://sgfc-production.up.railway.app/auth/googleSignUp", { // Cambia la ruta a googleSignUp
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ idToken }), // Asegúrate de enviar el idToken
+      const { data } = await axiosInstance.post("/api/users/auth/googleSignUp", {
+        idToken,
+        accountType //toma el aprendiz o empresa del back
       });
 
-      const data = await res.json();
-
-      if (res.ok && data.success) {
+      if (data.success) {
         // Guardar información del usuario en sessionStorage
         sessionStorage.setItem("userSession", JSON.stringify({
           googleId: data.user.googleId,
@@ -144,7 +139,6 @@ export const Modal_SignUp = ({
 
         if (modalSuccefull && modalSignUp) {
           modalSignUp.style.display = "none";
-
           modalSuccefull.style.display = "flex";
 
           // Usar navigate en lugar de window.location.reload
@@ -153,15 +147,14 @@ export const Modal_SignUp = ({
             navigate('/', { state: { accountType: data.user.accountType } });
           }, 3000);
         }
-      } else if (data.message === "El correo ya está registrado") { // Verifica si el correo ya está registrado
-        alert("El correo ya está registrado. Por favor, inicie sesión.");
-      } else {
-        console.error('Error en el registro con Google (backend):', data.message);
-        alert(data.message || 'Error en el registro con Google');
       }
     } catch (error) {
-      console.error('Error de red al enviar el token de Google:', error);
-      alert('Error al conectar con el servidor');
+      if (error.response?.data?.message === "El correo ya está registrado") {
+        alert("El correo ya está registrado. Por favor, inicie sesión.");
+      } else {
+        console.error('Error en el registro con Google:', error.response?.data?.message || error.message);
+        alert(error.response?.data?.message || 'Error en el registro con Google');
+      }
     }
   };
 

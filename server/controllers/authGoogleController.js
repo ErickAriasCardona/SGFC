@@ -52,36 +52,56 @@ const googleSignIn = async (req, res) => {
         if (!emailVerified) {
             return res.status(400).json({ success: false, message: 'El correo electrónico de Google no está verificado.' });
         }
+        // funcionalidad para poder iniciar sesion si ya está registrado el correo normalmente
+        // Primero buscar por googleId
+        let user = await dbInstance.Usuario.findOne({ where: { googleId: googleId } });
 
-        // Buscar usuario en tu base de datos
-        const user = await dbInstance.Usuario.findOne({ where: { googleId: googleId } });
-
-        if (user) {
-            console.log('Usuario existente ha iniciado sesión con Google:', user.email);
-            // Si el usuario ya existe, actualiza sus datos si han cambiado en Google
+        // Si no existe por googleId, buscar por email
+        if (!user) {
+            user = await dbInstance.Usuario.findOne({ where: { email: email } });
+            
+            if (user) {
+                // Si el usuario existe pero no tiene googleId, actualizarlo
+                await user.update({
+                    googleId: googleId,
+                    nombres: nombres,
+                    apellidos: apellidos,
+                    foto_perfil: foto_perfil,
+                    verificacion_email: true,
+                });
+            } else {
+                return res.status(400).json({ success: false, message: 'Correo no registrado' });
+            }
+        } else {
+            // Si existe por googleId, actualizar datos si han cambiado
             await user.update({
                 nombres: nombres,
                 apellidos: apellidos,
                 foto_perfil: foto_perfil,
                 verificacion_email: true,
             });
-
-            // Generar token JWT y devolver la información del usuario
-            return generateTokenAndRespond(user, res);
-        } else {
-            return res.status(400).json({ success: false, message: 'Correo no registrado. Por favor, regístrese primero.' });
         }
+
+        // Generar token JWT y devolver la información del usuario
+        return generateTokenAndRespond(user, res);
+        
     } catch (error) {
         // Manejo de errores
         console.error('Error al procesar el inicio de sesión con Google:', error);
         res.status(500).json({ success: false, message: 'Error interno del servidor al autenticar con Google.' });
     }
 };
+
+//se añadió accountype a la solicitud para que se registre como aprendiz o empresa
 const googleSignUp = async (req, res) => {
-    const { idToken } = req.body;
+    const { idToken, accountType } = req.body;
 
     if (!idToken) {
         return res.status(400).json({ success: false, message: 'No se proporcionó token de Google.' });
+    }
+//aca verifica que sea alguna de los dos tipos de cuentas
+    if (!accountType || !['Aprendiz', 'Empresa'].includes(accountType)) {
+        return res.status(400).json({ success: false, message: 'Tipo de cuenta no válido. Debe ser "Aprendiz" o "Empresa".' });
     }
 
     try {
@@ -123,7 +143,7 @@ const googleSignUp = async (req, res) => {
             nombres: nombres,
             apellidos: apellidos,
             foto_perfil: foto_perfil,
-            accountType: 'Aprendiz',
+            accountType: accountType,
             verificacion_email: true,
             password: null,
         });

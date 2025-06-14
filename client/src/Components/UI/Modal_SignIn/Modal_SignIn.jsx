@@ -117,15 +117,17 @@ export const Modal_SignIn = ({
         }));
         closeModalSignIn();
         navigate('/', { state: { accountType } });
-      } else if (data.message === "Correo no registrado") {
-        alert("El correo no está registrado. Por favor, regístrese primero.");
       } else {
         console.error('Error en el inicio de sesión con Google (backend):', data.message);
         alert(data.message || 'Error en el inicio de sesión con Google');
       }
     } catch (error) {
-      console.error('Error de red al enviar el token de Google:', error);
-      alert('Error de red al intentar iniciar sesión.');
+      if (error.response?.data?.message === "Correo no registrado") {
+        alert("El correo no está registrado. Por favor, regístrese primero.");
+      } else {
+        console.error('Error de red al enviar el token de Google:', error.response?.data?.message || error.message);
+        alert(error.response?.data?.message || 'Error de red al intentar iniciar sesión.');
+      }
     }
   };
 

@@ -1,6 +1,4 @@
 const { 
-    sendNotification, 
-    sendAbsenceNotifications,
     sendNewCourseNotifications,
     sendCourseUpdateNotifications,
     sendPasswordChangeNotification,
