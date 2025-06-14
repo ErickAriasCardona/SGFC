@@ -15,7 +15,6 @@ export const ManageAttendance = () => {
     const [curso, setCurso] = useState(null);
     const [selectedDate, setSelectedDate] = useState('');
     const [showAttendanceManagement, setShowAttendanceManagement] = useState(false);
-    const [currentMonth, setCurrentMonth] = useState(new Date());
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [trainingDays, setTrainingDays] = useState([]);
@@ -87,15 +86,7 @@ export const ManageAttendance = () => {
     };
 
     const handleMonthChange = (direction) => {
-        setCurrentMonth(prev => {
-            const newDate = new Date(prev);
-            if (direction === 'prev') {
-                newDate.setMonth(prev.getMonth() - 1);
-            } else {
-                newDate.setMonth(prev.getMonth() + 1);
-            }
-            return newDate;
-        });
+        // Implement month change logic if needed
     };
 
     if (isLoading) {
@@ -163,10 +154,7 @@ export const ManageAttendance = () => {
                     <h2>Gestión de <span className="complementary">asistencias</span></h2>
                     <p>Ficha: {curso.ficha}</p>
 
-
                     <div className="calendar-main-content">
-
-
                         <MonthlyCalendar
                             selectedDate={selectedDate}
                             onDateSelect={handleDateSelect}
@@ -174,7 +162,6 @@ export const ManageAttendance = () => {
                             endDate={curso.fecha_fin}
                             trainingDays={trainingDays}
                         />
-
                     </div>
                     <div className="illustration-container">
                         <img src="/src/assets/Ilustrations/Raising hand-pana.svg" alt="Ilustración de gestión de asistencia" />
@@ -201,4 +188,4 @@ export const ManageAttendance = () => {
             )}
         </>
     );
-}; 
+}
