@@ -7,7 +7,6 @@ import "./Start.css";
 
 export const Start = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => {
   return (
-
     <div className="start">
       <Header
         setShowSignIn={setShowSignIn}
@@ -42,6 +41,5 @@ export const Start = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => {
       </Main>
       <Footer />
     </div>
-
   );
 };
