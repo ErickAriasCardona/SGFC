@@ -238,7 +238,7 @@ export const AssignInstructorCourse = ({ curso_ID, onClose }) => {
             )}
           </div>
 
-          <div className="container_return_CreateInstructor">
+          <div className="container_return_AssignInstructor">
             <h5>Volver</h5>
             <button
               type="button"

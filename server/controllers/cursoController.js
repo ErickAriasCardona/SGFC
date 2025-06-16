@@ -317,12 +317,11 @@ const updateCurso = async (req, res) => {
       dias_formacion,
       lugar_formacion,
       estado,
-      slots_formacion // <-- Nuevo campo
+      slots_formacion,
+      empresa_ID
     } = req.body;
 
-    // ...validaciones de fechas y horas (igual que antes)...
-
-    // Buscar el curso real en la base de datos
+    // Validar que el curso exista
     const curso = await Curso.findByPk(id);
     if (!curso) {
       return res.status(404).json({ message: "Curso no encontrado." });
@@ -334,7 +333,26 @@ const updateCurso = async (req, res) => {
       image = req.file.buffer.toString('base64');
     }
 
-    // Preparar datos para actualización
+    // 🟨 Validar empresa si tipo_oferta es "Cerrada"
+    let finalEmpresaID = null;
+    if (tipo_oferta === "Cerrada") {
+      if (!empresa_ID || isNaN(Number(empresa_ID))) {
+        return res.status(400).json({
+          message: "Debe proporcionar un ID de empresa válido para una oferta cerrada.",
+        });
+      }
+
+      const empresa = await Empresa.findByPk(empresa_ID);
+      if (!empresa) {
+        return res.status(404).json({
+          message: `No se encontró una empresa con el ID ${empresa_ID}.`,
+        });
+      }
+
+      finalEmpresaID = empresa_ID;
+    }
+
+    // 🧩 Preparar datos para actualización
     const datosActualizacion = {
       nombre_curso,
       descripcion,
@@ -343,6 +361,7 @@ const updateCurso = async (req, res) => {
       dias_formacion,
       lugar_formacion,
       estado,
+      empresa_ID: tipo_oferta === "Cerrada" ? finalEmpresaID : null, // ✅ Actualizar o limpiar
     };
 
     if (fecha_inicio && fecha_fin) {
@@ -365,16 +384,16 @@ const updateCurso = async (req, res) => {
       datosActualizacion.imagen = image;
     }
 
-    // Procesar slots_formacion
     if (slots_formacion) {
       datosActualizacion.slots_formacion = Array.isArray(slots_formacion)
         ? JSON.stringify(slots_formacion)
         : slots_formacion;
     }
 
-    // Actualizar el curso en la base de datos
+    // ✅ Actualizar curso en la base de datos
     await curso.update(datosActualizacion);
 
+    // 📨 Notificar por email
     const usuarios = await User.findAll({
       where: {
         verificacion_email: true,
@@ -382,13 +401,11 @@ const updateCurso = async (req, res) => {
       },
       attributes: ["email"],
     });
-    const emails = usuarios.map((user) => user.email);
 
-    if (emails.length === 0) {
-      console.warn("No hay usuarios aceptados para mandar Email");
-    } else {
-      sendCursoUpdatedNotification(emails, curso);
-    };
+    const emails = usuarios.map((user) => user.email);
+    if (emails.length > 0) {
+      await sendCursoUpdatedNotification(emails, curso);
+    }
 
     res.status(200).json({
       message: `Curso actualizado con éxito. Notificaciones enviadas a ${emails.length} usuarios.`,
@@ -396,6 +413,7 @@ const updateCurso = async (req, res) => {
       validaciones_aplicadas: {
         fechas: !!(fecha_inicio && fecha_fin),
         horas: !!(hora_inicio && hora_fin),
+        empresa: tipo_oferta === "Cerrada",
       },
     });
   } catch (error) {
@@ -403,6 +421,7 @@ const updateCurso = async (req, res) => {
     res.status(500).json({ message: "Error al actualizar el curso." });
   }
 };
+
 
 // Obtener todos los cursos
 const getAllCursos = async (req, res) => {

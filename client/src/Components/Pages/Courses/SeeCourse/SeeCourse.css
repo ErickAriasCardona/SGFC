@@ -22,6 +22,33 @@
   color: #00c26e;
 }
 
+#title_seeCourse {
+  width: 65%;
+  height: auto;
+  color: #00843d;
+  font-size: 40px;
+  text-align: center;
+  margin-top: 3rem;
+  border-bottom: 2px solid #b0b0b060;
+  padding-bottom: 1rem;
+}
+
+#descripcionSeeCurso {
+  width: 100%;
+  height: auto;
+  text-align: justify;
+  border-bottom: 2px solid #b0b0b025;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+}
+
+.fichaCourseLabel {
+  width: auto;
+  height: auto;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
 /* Detalles del curso */
 .courseDetails {
   display: flex;
@@ -32,7 +59,6 @@
 .courseDetails label {
   font-size: 1.2rem;
   font-weight: bold;
-  color: #cfcfcf;
 }
 
 .courseDetails input,
@@ -40,7 +66,6 @@
   width: 100%;
   padding: 10px;
   font-size: 1rem;
-  color: #333;
   background-color: #e9ecef;
   border: 1px solid #ced4da;
   border-radius: 8px;
@@ -70,7 +95,6 @@
 
 .courseDetails p {
   font-size: 1rem;
-  color: #bbbbbb;
 }
 
 /* Botón de edición */
@@ -106,6 +130,7 @@
   background-color: #00843d;
   border-radius: 10px;
   font-size: 20px;
+  margin-top: 1rem
 }
 
 .manageAttendance {
@@ -125,23 +150,23 @@
   background-color: #006633;
 }
 
-.containerImgCourse{
+.containerImgCourse {
   width: 220px;
-    height: 250px;
-    border-radius: 15px;
-    display: flex;
-    justify-content: center;
-    text-align: center;
-    cursor: pointer;
-  }
+  height: 250px;
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+}
 
-  .imgCourse{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 12px;
-    cursor: auto;
-  }
+.imgCourse {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  cursor: auto;
+}
 
 /* Responsividad */
 @media (max-width: 768px) {

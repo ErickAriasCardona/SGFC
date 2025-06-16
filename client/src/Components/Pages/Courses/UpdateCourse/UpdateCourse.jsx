@@ -8,6 +8,8 @@ import axiosInstance from "../../../../config/axiosInstance";
 import addIMG from "../../../../assets/Icons/addImg.png";
 import EditCalendar from "../../../UI/Modal_Calendar/EditCalendar/EditCalendar";
 import calendar from '../../../../assets/Icons/calendar.png';
+import debounce from "lodash.debounce";
+import buttonEdit from '../../../../assets/Icons/buttonEdit.png';
 
 export const UpdateCourse = () => {
   const navigate = useNavigate();
@@ -21,28 +23,37 @@ export const UpdateCourse = () => {
     endDate: "",
     selectedSlots: [],
   });
-  const [empresa, setEmpresa] = useState(""); // Nuevo estado para empresa
 
-  // Obtener los datos del curso al cargar la página
+  // Estado para búsqueda y selección de empresa
+  const [empresaNIT, setEmpresaNIT] = useState("");
+  const [resultadosEmpresa, setResultadosEmpresa] = useState([]);
+  const [empresaSeleccionada, setEmpresaSeleccionada] = useState(null);
+  const [showResultados, setShowResultados] = useState(false);
+
   useEffect(() => {
     const fetchCurso = async () => {
       try {
         const response = await axiosInstance.get(`/api/courses/cursos/${id}`);
-        setCurso(response.data);
-        setPreview(response.data.imagen ? `sgfc.railway.internal${response.data.imagen}` : null);
+        setCurso({
+          ...response.data,
+          empresa_ID: response.data.empresa_ID, // asegúrate de incluirlo explícitamente
+        });
 
-        // Inicializar calendarData con los datos del curso si existen
+        //imagen base64:
+        if (curso.imagen) {
+          setPreview(`data:image/png;base64,${curso.imagen}`);
+        }
+
         setCalendarData({
-          startDate: response.data.fecha_inicio ? response.data.fecha_inicio.split("T")[0] : "",
-          endDate: response.data.fecha_fin ? response.data.fecha_fin.split("T")[0] : "",
+          startDate: response.data.fecha_inicio?.split("T")[0] || "",
+          endDate: response.data.fecha_fin?.split("T")[0] || "",
           selectedSlots: response.data.slots_formacion
             ? JSON.parse(response.data.slots_formacion)
             : [],
         });
 
-        // Si hay empresa asociada, inicialízala
         if (response.data.empresa_NIT) {
-          setEmpresa(response.data.empresa_NIT);
+          setEmpresaNIT(response.data.empresa_NIT);
         }
       } catch (error) {
         console.error("Error al obtener el curso:", error);
@@ -52,44 +63,39 @@ export const UpdateCourse = () => {
     fetchCurso();
   }, [id]);
 
-  // Callback para guardar los datos del calendario
   const handleCalendarSave = (data) => {
     setCalendarData(data);
     setIsEditCalendarOpen(false);
   };
 
-  // Manejar la actualización del curso
   const handleUpdateCourse = async () => {
     try {
-      // Procesar los slots para obtener horarios y días
+      if (curso.tipo_oferta === "Cerrada" && !empresaSeleccionada) {
+        alert("Por favor selecciona una empresa válida.");
+        return;
+      }
+
       const slotsByDay = {};
       calendarData.selectedSlots.forEach(slot => {
-        const [dia, hora] = slot.split('-');
-        if (!slotsByDay[dia]) {
-          slotsByDay[dia] = [];
-        }
+        const [dia, hora] = slot.split("-");
+        if (!slotsByDay[dia]) slotsByDay[dia] = [];
         slotsByDay[dia].push(hora);
       });
 
-      // Obtener la primera hora de inicio y la última hora de fin
-      let horaInicio = '23:59';
-      let horaFin = '00:00';
+      let horaInicio = "23:59";
+      let horaFin = "00:00";
       Object.values(slotsByDay).flat().forEach(hora => {
         if (hora < horaInicio) horaInicio = hora;
         if (hora > horaFin) horaFin = hora;
       });
 
-      horaInicio = horaInicio.padStart(5, '0');
-      horaFin = horaFin.padStart(5, '0');
-
-      // Obtener los días únicos y asegurarse de que estén en formato completo
       const diasMapping = {
-        'Lun': 'Lunes',
-        'Mar': 'Martes',
-        'Mié': 'Miércoles',
-        'Jue': 'Jueves',
-        'Vie': 'Viernes',
-        'Sáb': 'Sábado'
+        Lun: "Lunes",
+        Mar: "Martes",
+        Mié: "Miércoles",
+        Jue: "Jueves",
+        Vie: "Viernes",
+        Sáb: "Sábado",
       };
       const diasSemana = Object.keys(slotsByDay).map(dia => diasMapping[dia] || dia);
 
@@ -106,7 +112,10 @@ export const UpdateCourse = () => {
         dias_formacion: JSON.stringify(diasSemana),
         lugar_formacion: curso.lugar_formacion || "",
         slots_formacion: JSON.stringify(calendarData.selectedSlots),
-        empresa_NIT: curso.tipo_oferta === "Cerrada" ? empresa : null,
+        empresa_ID:
+          curso.tipo_oferta === "Cerrada"
+            ? empresaSeleccionada?.ID || curso.empresa_ID
+            : null,
       };
 
       const response = await axiosInstance.put(`/api/courses/cursos/${id}`, updatedCurso, {
@@ -127,9 +136,37 @@ export const UpdateCourse = () => {
     }
   };
 
-  if (!curso) {
-    return <p>Cargando...</p>;
-  }
+  // Buscar empresa por NIT
+  const buscarEmpresaPorNIT = async (nit) => {
+    if (!nit.trim()) {
+      setResultadosEmpresa([]);
+      return;
+    }
+    try {
+      const response = await axiosInstance.get(`/api/users/empresa/${nit}`);
+      setResultadosEmpresa([response.data]);
+      setShowResultados(true);
+    } catch {
+      setResultadosEmpresa([]);
+      setShowResultados(false);
+    }
+  };
+
+  const debouncedBuscarEmpresa = useRef(debounce(buscarEmpresaPorNIT, 500)).current;
+
+  useEffect(() => {
+    debouncedBuscarEmpresa(empresaNIT);
+    return () => debouncedBuscarEmpresa.cancel();
+  }, [empresaNIT]);
+
+  const handleSeleccionEmpresa = (empresa) => {
+    setEmpresaSeleccionada(empresa);
+    setEmpresaNIT(empresa.NIT);
+    setShowResultados(false);
+  };
+
+  if (!curso) return <p>Cargando...</p>;
+
 
   return (
     <>
@@ -179,6 +216,7 @@ export const UpdateCourse = () => {
               )}
             </label>
 
+
             <div className="containerDetails_course">
               <div id="containerInput_ficha">
                 <label htmlFor="fichaCourse">Ficha: </label>
@@ -199,78 +237,131 @@ export const UpdateCourse = () => {
                   setCurso({ ...curso, nombre_curso: e.target.value });
                 }}
               />
-              <input
-                className="addDetails"
-                type="text"
-                value={curso.descripcion || ""}
-                onChange={(e) =>
-                  setCurso({ ...curso, descripcion: e.target.value })
-                }
-              />
+              <div className='containerInput_description_course'>
+                <textarea
+                  className='addDetails'
+                  placeholder='Agregar descripción del curso (mínimo 300 caracteres)'
+                  value={curso.descripcion || ""}  // <- aquí estaba el error
+                  onChange={(e) => {
+                    setCurso({ ...curso, descripcion: e.target.value });
+                  }} minLength={300}
+                  rows={6}
+                  style={{ resize: "vertical", width: "99%" }}
+                />
+                <div
+                  className={`descripcion-counter ${curso.descripcion.length < 300 ? 'rojo' : 'verde'}`}
+                >
+                  {curso.descripcion.length} / 300 caracteres
+                </div>
+              </div>
+
 
               <div className="containerDetails_course2">
                 <div>
-                 <div className="offer-type-container">
-  <span>Tipo de oferta:</span>
-  <div className="offer-options">
-    <button
-      className={`offer-button ${curso.tipo_oferta?.toLowerCase() === "cerrada" ? "active" : ""}`}
-      onClick={(e) => {
-        e.preventDefault();
-        setCurso({ ...curso, tipo_oferta: "Cerrada" });
-      }}
-      type="button"
-    >
-      Cerrada
-    </button>
-    <button
-      className={`offer-button ${curso.tipo_oferta?.toLowerCase() === "abierta" ? "active" : ""}`}
-      onClick={(e) => {
-        e.preventDefault();
-        setCurso({ ...curso, tipo_oferta: "Abierta" });
-      }}
-      type="button"
-    >
-      Abierta
-    </button>
-  </div>
-</div>
-<div className="offer-type-container">
-  <span>Estado:</span>
-  <div className="offer-options">
-    <button
-      className={`offer-button ${curso.estado?.toLowerCase() === "activo" ? "active" : ""}`}
-      onClick={(e) => {
-        e.preventDefault();
-        setCurso({ ...curso, estado: "Activo" });
-      }}
-      type="button"
-    >
-      Activo
-    </button>
-    <button
-      className={`offer-button ${curso.estado?.toLowerCase() === "en oferta" ? "active" : ""}`}
-      onClick={(e) => {
-        e.preventDefault();
-        setCurso({ ...curso, estado: "En oferta" });
-      }}
-      type="button"
-    >
-      En oferta
-    </button>
-  </div>
-</div>
+                  <div className="offer-type-container">
+                    <span>Tipo de oferta:</span>
+                    <div className="offer-options">
+                      <button
+                        className={`offer-button ${curso.tipo_oferta?.toLowerCase() === "cerrada" ? "active" : ""}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurso({ ...curso, tipo_oferta: "Cerrada" });
+                        }}
+                        type="button"
+                      >
+                        Cerrada
+                      </button>
+                      <button
+                        className={`offer-button ${curso.tipo_oferta?.toLowerCase() === "abierta" ? "active" : ""}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurso({ ...curso, tipo_oferta: "Abierta" });
+                        }}
+                        type="button"
+                      >
+                        Abierta
+                      </button>
+                    </div>
+                  </div>
+                  <div className="offer-type-container">
+                    <span>Estado:</span>
+                    <div className="offer-options">
+                      <button
+                        className={`offer-button ${curso.estado?.toLowerCase() === "activo" ? "active" : ""}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurso({ ...curso, estado: "Activo" });
+                        }}
+                        type="button"
+                      >
+                        Activo
+                      </button>
+                      <button
+                        className={`offer-button ${curso.estado?.toLowerCase() === "en oferta" ? "active" : ""}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurso({ ...curso, estado: "En oferta" });
+                        }}
+                        type="button"
+                      >
+                        En oferta
+                      </button>
+                    </div>
+                  </div>
                   {/* Mostrar campo empresa solo si la oferta es Cerrada */}
                   {curso.tipo_oferta === "Cerrada" && (
                     <div className='containerInput_company'>
                       <label htmlFor="nit_company">Empresa</label>
-                      <input
-                        id='nit_company'
-                        type="text"
-                        placeholder='NIT de la empresa'
-                        value={empresa}
-                        onChange={e => setEmpresa(e.target.value)}
-                      />
+                      {empresaSeleccionada ? (
+                        <div className='empresa-seleccionada'>
+                          <p className='nombre_empresaSeleccionada'>{empresaSeleccionada.nombre_empresa}</p>
+                          <button
+                            type="button"
+                            className='buttonEditEmpresa'
+                            onClick={() => {
+                              setEmpresaSeleccionada(null);
+                              setEmpresaNIT('');
+                              setShowResultados(false);
+                            }}
+                          >
+                            <img src={buttonEdit} alt="Editar empresa" style={{ width: 20, height: 20 }} />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <input
+                            id='nit_company'
+                            type="text"
+                            placeholder='NIT de la empresa'
+                            value={empresaNIT}
+                            onChange={(e) => {
+                              setEmpresaNIT(e.target.value);
+                              setShowResultados(true);
+                            }}
+                            autoComplete="off"
+                          />
+                          {empresaNIT.trim() !== '' && (
+                            <ul className="resultados-empresa">
+                              {showResultados && resultadosEmpresa.length > 0 ? (
+                                resultadosEmpresa.map((empresa) => (
+                                  <li
+                                    key={empresa.ID}
+                                    onClick={() => {
+                                      setEmpresaSeleccionada(empresa);
+                                      setEmpresaNIT('');
+                                      setShowResultados(false);
+                                    }}
+                                  >
+                                    {empresa.nombre_empresa}
+                                  </li>
+                                ))
+                              ) : (
+                                <li style={{ color: '#d32f2f' }}>No hay resultados</li>
+                              )}
+                            </ul>
+                          )}
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

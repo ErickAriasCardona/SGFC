@@ -152,7 +152,6 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 14px;
-  color: #ddd;
   width: auto;
   height: auto;
   justify-content: start;
@@ -162,7 +161,6 @@
   width: auto;
   height: auto;
   font-size: 14px;
-  color: #ddd;
 }
 
 .offer-options {

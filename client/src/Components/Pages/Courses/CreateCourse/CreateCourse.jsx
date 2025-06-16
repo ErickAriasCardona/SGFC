@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { AssignInstructorCourse } from '../AssignInstructorCourse/AssignInstructorCourse';
 import debounce from 'lodash.debounce';
 
-export const CreateCourse = () => {
+export const CreateCourse = ( ) => {
   const navigate = useNavigate();
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);

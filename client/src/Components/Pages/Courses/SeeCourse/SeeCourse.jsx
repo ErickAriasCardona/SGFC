@@ -9,7 +9,7 @@ import axiosInstance from '../../../../config/axiosInstance';
 import calendar from '../../../../assets/Icons/calendar.png';
 import buttonEdit from '../../../../assets/Icons/buttonEdit.png';
 import { AssignInstructorCourse } from '../AssignInstructorCourse/AssignInstructorCourse';
-import  ViewCalendar  from '../../../UI/Modal_Calendar/ViewCalendar/Calendar';
+import ViewCalendar from '../../../UI/Modal_Calendar/ViewCalendar/Calendar';
 
 export const SeeCourse = () => {
 
@@ -64,7 +64,7 @@ export const SeeCourse = () => {
             <Header />
             <Main>
                 <div className='container_createCourse'>
-                    <h2>
+                    <h2 id='title_seeCourse'>
                         {curso.nombre_curso}
                     </h2>
 
@@ -85,11 +85,11 @@ export const SeeCourse = () => {
 
                         <div className='containerDetails_course'>
                             <div id='containerInput_ficha'>
-                                <label htmlFor="fichaCourse">Ficha: {curso.ficha} </label>
+                                <label className='fichaCourseLabel' htmlFor="fichaCourse">Ficha: {curso.ficha} </label>
 
                             </div>
 
-                            <p>{curso.descripcion}  </p>
+                            <p id='descripcionSeeCurso'>{curso.descripcion}</p>
 
                             <div className='containerDetails_course2'>
                                 <div>
@@ -105,16 +105,10 @@ export const SeeCourse = () => {
                                         <span>Empresa: {curso.Empresa.nombre_empresa} </span>
 
                                     </div>
+                                    <p id='p_addInstructor'> Instructor: Sin asignar</p>
                                 </div>
 
                                 <div>
-                                    <p id='p_addInstructor'> Instructor: Sin asignar
-                                        {userSession && (userSession.accountType === 'Administrador' || userSession.accountType === 'Gestor') && (
-                                            <button className='addInstructor' onClick={showModalAssignInstructor}>
-                                                <img src={buttonEdit} alt="" />
-                                            </button>
-                                        )}
-                                    </p>
 
                                     {/* Botón para abrir el modal general */}
                                     <button className='addDate' onClick={() => setIsViewCalendarOpen(true)}>
@@ -123,18 +117,18 @@ export const SeeCourse = () => {
                                     </button>
                                 </div>
                             </div>
+                        {/* Mostrar botón solo si el usuario es Administrador o Gestor */}
+                        {userSession && (userSession.accountType === 'Administrador' || userSession.accountType === 'Gestor') && (
+                            <button
+                                className='editCourse'
+                                onClick={() => navigate(`/Cursos/ActualizarCurso/${id}`)}
+                            >
+                                Editar Curso
+                            </button>
+                        )}
                         </div>
                     </div>
 
-                    {/* Mostrar botón solo si el usuario es Administrador o Gestor */}
-                    {userSession && (userSession.accountType === 'Administrador' || userSession.accountType === 'Gestor') && (
-                        <button
-                            className='editCourse'
-                            onClick={() => navigate(`/Cursos/ActualizarCurso/${id}`)}
-                        >
-                            Editar Curso
-                        </button>
-                    )}
                 </div>
 
             </Main>
