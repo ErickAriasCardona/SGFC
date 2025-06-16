@@ -32,23 +32,28 @@
   border-radius: 15px;
 }
 
-.containerInput_description_course{
+.containerInput_description_course {
   width: 100%;
   height: auto;
   display: flex;
   flex-direction: column;
 }
+
 .descripcion-counter {
   width: auto;
   height: auto;
   font-size: 0.95em;
   margin-top: 2px;
 }
+
 .descripcion-counter.rojo {
-  color: #d32f2f; /* Rojo cuando es menor a 250 */
+  color: #d32f2f;
+  /* Rojo cuando es menor a 250 */
 }
+
 .descripcion-counter.verde {
-  color: #388e3c; /* Verde cuando es 250 o más */
+  color: #388e3c;
+  /* Verde cuando es 250 o más */
 }
 
 .upload-area {
@@ -122,11 +127,6 @@
   margin: 0;
 }
 
-/* Firefox */
-#fichaCourse {
-  -moz-appearance: textfield;
-}
-
 .addDetails {
   height: 5rem;
   padding-top: 5px;
@@ -193,7 +193,8 @@
   height: auto;
 }
 
-.containerInput_company , #containerInput_ficha {
+.containerInput_company,
+#containerInput_ficha {
   width: auto;
   height: auto;
   display: flex;
@@ -202,13 +203,14 @@
   gap: 0.5rem;
 }
 
-#containerInput_ficha{
+#containerInput_ficha {
   justify-content: end;
   width: 100%;
 }
 
 
-#nit_company , #fichaCourse {
+#nit_company,
+#fichaCourse {
   width: 8rem;
   height: auto;
   font-size: 12px;
@@ -216,10 +218,12 @@
   border-radius: 10px;
   padding: 0.3rem;
   border-style: node;
-  background-color: transparent;
+  background-color: #1a1a1a;
+  z-index: 100;
 }
 
-.containerInput_company>label , #containerInput_ficha>label {
+.containerInput_company>label,
+#containerInput_ficha>label {
   width: auto;
   height: auto;
 }
@@ -247,7 +251,7 @@
   height: auto;
 }
 
-.containerDetails_course2{
+.containerDetails_course2 {
   width: 100%;
   height: auto;
   display: flex;
@@ -265,7 +269,7 @@
   gap: 0.7rem;
 }
 
-.addDate{
+.addDate {
   width: auto;
   height: auto;
   background-color: transparent;
@@ -277,8 +281,65 @@
   color: #00843D;
 }
 
-.addDate>img{
+.addDate>img {
   width: 2rem;
   height: auto;
   margin: 1rem 0 0.5rem 0;
+}
+
+/* Resultado de búsqueda empresa */
+.resultados-empresa {
+  list-style: none;
+  border-left: 1px solid #b0b0b0;
+  border-right: 1px solid #b0b0b0;
+  border-bottom: 1px solid #b0b0b0;
+  max-height: 150px;
+  min-height: 38px;
+  overflow-y: auto;
+  background-color: #1a1a1a;
+  position: absolute;
+  bottom: 5.5rem;
+  left: 34.9rem;
+  z-index: 10;
+  width: 10%;
+  height: auto;
+}
+
+.resultados-empresa li {
+  padding: 20px 8px 8px 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: auto;
+  height: auto;
+}
+
+.resultados-empresa li:hover {
+  background-color: #00843e81;
+}
+
+.empresa-seleccionada{
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nombre_empresaSeleccionada{
+  width: auto;
+  height: auto;
+  font-size: 14px;
+  color: #fff;
+  margin: 0;
+}
+
+.buttonEditEmpresa{
+  width: auto;
+  height: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #00843D;
+  font-size: 14px;
 }

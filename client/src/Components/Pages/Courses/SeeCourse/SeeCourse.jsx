@@ -69,12 +69,12 @@ export const SeeCourse = () => {
                     </h2>
 
                     <div className='containerInformation_CreateCourse'>
-                        <label className='upload-area'>
+                        <label className='containerImgCourse'>
                             {curso.imagen ? (
                                 <img
                                     src={`data:image/jpeg;base64,${curso.imagen}`}
                                     alt="Imagen del curso"
-                                    className="preview-image"
+                                    className="imgCourse"
                                 />
                             ) : (
                                 <div className='upload-placeholder'>
@@ -89,7 +89,7 @@ export const SeeCourse = () => {
 
                             </div>
 
-                            <p>Descripción: {curso.descripcion}  </p>
+                            <p>{curso.descripcion}  </p>
 
                             <div className='containerDetails_course2'>
                                 <div>
@@ -99,6 +99,10 @@ export const SeeCourse = () => {
                                     </div>
                                     <div className="offer-type-container">
                                         <span>Estado: {curso.estado} </span>
+
+                                    </div>
+                                    <div className="offer-type-container">
+                                        <span>Empresa: {curso.Empresa.nombre_empresa} </span>
 
                                     </div>
                                 </div>

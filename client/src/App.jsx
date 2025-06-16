@@ -25,6 +25,7 @@ import { SeachEmployes } from './Components/Pages/GestionsEmployes/SeachEmployes
 import { GestionsEmployes } from './Components/Pages/GestionsEmployes/GestionsEmployes';
 import { AttendanceRecords } from './components/Pages/AttendanceRecords/AttendanceRecords';
 import { ManageAttendance } from './Components/Pages/Courses/ManageAttendance/ManageAttendance';
+import {MisCursosAdmin} from './Components/Pages/Courses/MisCursos/MisCursosAdmin/MisCursosAdmin';  
 // Importación de modales
 import { NavBar } from './Components/UI/NavBar/NavBar';
 import { Modal_SignIn } from './Components/UI/Modal_SignIn/Modal_SignIn';
@@ -182,7 +183,17 @@ function App() {
           </Layout>
           } />
           <Route path="/Cursos/:id" element={<SeeCourse />} />
-          <Route path="/Cursos/MisCursos" element={
+           <Route path="/Cursos/MisCursos" element={
+            <Layout
+              setShowSignIn={setShowSignIn}
+              setShowSignUp={setShowSignUp}
+              setShowModalGeneral={setShowModalGeneral}
+            >
+              <MisCursosAdmin />
+            </Layout>
+          } />
+          
+          <Route path="/Cursos/MisCursosAsignados" element={
             <Layout
               setShowSignIn={setShowSignIn}
               setShowSignUp={setShowSignUp}

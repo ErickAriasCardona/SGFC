@@ -15,7 +15,7 @@ const Ciudad = require('../models/ciudad'); // Importar el modelo Ciudad
 
 
 
-
+//registrar usuario (empresa o aprendiz)
 const registerUser = async (req, res) => {
     try {
         const { email, password, accountType, documento, nombres, apellidos, celular, titulo_profesional } = req.body;
@@ -367,6 +367,29 @@ const getEmpresas = async (req, res) => {
         console.error("Error al obtener la lista de empresas:", error);
         res.status(500).json({ message: "Error al obtener la lista de empresas." });
     }
+};
+
+//obtener empresa(activa) por ID 
+const getEmpresaByNIT = async (req, res) => {
+  try {
+    const { NIT } = req.params;
+
+    const empresa = await Empresa.findOne({
+      where: {
+        NIT,
+        estado: 'Activo'
+      }
+    });
+
+    if (!empresa) {
+      return res.status(404).json({ message: 'Empresa no encontrada o no está activa.' });
+    }
+
+    res.status(200).json(empresa);
+  } catch (error) {
+    console.error('Error al obtener la empresa:', error);
+    res.status(500).json({ message: 'Error al obtener la empresa.' });
+  }
 };
 
 //Consultar lista de instructores
@@ -736,7 +759,6 @@ const createGestor = async (req, res) => {
         res.status(500).json({ message: "Error al crear el gestor." });
     }
 };
-// ...existing code...
 
 // Consultar Empleados por Empresa
 const getAprendicesByEmpresa = async (req, res) => {
@@ -875,4 +897,4 @@ const createMasiveUsers = async (req, res) => {
 }
 
 
-module.exports = { getAprendicesByEmpresa, registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers };
+module.exports = { getAprendicesByEmpresa, registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers, getEmpresaByNIT };

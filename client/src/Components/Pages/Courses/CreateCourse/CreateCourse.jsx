@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import './CreateCourse.css';
 import { Footer } from '../../../Layouts/Footer/Footer';
 import { Main } from '../../../Layouts/Main/Main';
@@ -7,10 +7,11 @@ import EditCalendar from '../../../UI/Modal_Calendar/EditCalendar/EditCalendar';
 import addIMG from '../../../../assets/Icons/addImg.png';
 import buttonEdit from '../../../../assets/Icons/buttonEdit.png';
 import calendar from '../../../../assets/Icons/calendar.png';
-import imgDefectCourse from '../../../../assets/Icons/picDefectCourse.png'; 
+import imgDefectCourse from '../../../../assets/Icons/picDefectCourse.png';
 import axiosInstance from '../../../../config/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { AssignInstructorCourse } from '../AssignInstructorCourse/AssignInstructorCourse';
+import debounce from 'lodash.debounce';
 
 export const CreateCourse = () => {
   const navigate = useNavigate();
@@ -23,6 +24,10 @@ export const CreateCourse = () => {
   const [descripcion, setDescripcion] = useState('');
   const [instructor_ID, setInstructor_ID] = useState(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [empresaNIT, setEmpresaNIT] = useState('');
+  const [resultadosEmpresa, setResultadosEmpresa] = useState([]);
+  const [empresaSeleccionada, setEmpresaSeleccionada] = useState(null);
+  const [showResultados, setShowResultados] = useState(false);
 
   // New state for calendar data
   const [calendarData, setCalendarData] = useState({
@@ -87,6 +92,11 @@ export const CreateCourse = () => {
 
     try {
       const formData = new FormData();
+      // Agrega el campo empresa_NIT al formData si hay empresa seleccionada
+      if (empresaSeleccionada) {
+        formData.append("empresa_NIT", empresaSeleccionada.ID); // usa el nombre exacto del campo
+      }
+
       formData.append("ficha", ficha);
       // Enviar el nombre del curso en mayúsculas
       formData.append("nombre_curso", nombreCurso.toUpperCase());
@@ -150,6 +160,10 @@ export const CreateCourse = () => {
         formData.append("instructor_ID", instructor_ID);
       }
 
+      if (empresaSeleccionada) {
+        formData.append("empresa_ID", empresaSeleccionada.ID);
+      }
+
       const response = await axiosInstance.post("/api/courses/cursos", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -161,10 +175,9 @@ export const CreateCourse = () => {
 
       // Redirigir al usuario a la página del curso creado
       if (response.data.curso && response.data.curso.ID) {
-        navigate(`/Cursos/${response.data.curso.ID}`);
-      } else {
         navigate('/Cursos/MisCursos');
-      }
+      } 
+      
     } catch (error) {
       console.error("Error al crear el curso:", error);
       if (error.response?.data?.message) {
@@ -174,6 +187,39 @@ export const CreateCourse = () => {
       }
     }
   };
+
+  // Función para buscar empresa por NIT
+  const buscarEmpresaPorNIT = async (nit) => {
+    if (!nit.trim()) {
+      setResultadosEmpresa([]);
+      return;
+    }
+    try {
+      const response = await axiosInstance.get(`/api/users/empresa/${nit}`);
+      setResultadosEmpresa([response.data]); // se espera una sola empresa activa
+      setShowResultados(true);
+    } catch (error) {
+      setResultadosEmpresa([]);
+      setShowResultados(false);
+    }
+  };
+
+  // Debounce para evitar llamadas en cada tecla
+  const debouncedBuscarEmpresa = useRef(debounce(buscarEmpresaPorNIT, 500)).current;
+
+  useEffect(() => {
+    debouncedBuscarEmpresa(empresaNIT);
+    return () => {
+      debouncedBuscarEmpresa.cancel();
+    };
+  }, [empresaNIT]);
+
+  const handleSeleccionEmpresa = (empresa) => {
+    setEmpresaSeleccionada(empresa);
+    setEmpresaNIT(empresa.NIT);
+    setShowResultados(false);
+  };
+
 
   return (
     <>
@@ -294,7 +340,56 @@ export const CreateCourse = () => {
                   {selected === 'Cerrada' && (
                     <div className='containerInput_company'>
                       <label htmlFor="nit_company">Empresa</label>
-                      <input id='nit_company' type="text" placeholder='NIT de la empresa' />
+                      {empresaSeleccionada ? (
+                        <div className='empresa-seleccionada'>
+                          <p className='nombre_empresaSeleccionada'>{empresaSeleccionada.nombre_empresa}</p>
+                          <button
+                            type="button"
+                            className='buttonEditEmpresa'
+                            onClick={() => {
+                              setEmpresaSeleccionada(null);
+                              setEmpresaNIT('');
+                              setShowResultados(false);
+                            }}
+                          >
+                            <img src={buttonEdit} alt="Editar empresa" style={{ width: 20, height: 20 }} />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <input
+                            id='nit_company'
+                            type="text"
+                            placeholder='NIT de la empresa'
+                            value={empresaNIT}
+                            onChange={(e) => {
+                              setEmpresaNIT(e.target.value);
+                              setShowResultados(true);
+                            }}
+                            autoComplete="off"
+                          />
+                          {empresaNIT.trim() !== '' && (
+                            <ul className="resultados-empresa">
+                              {showResultados && resultadosEmpresa.length > 0 ? (
+                                resultadosEmpresa.map((empresa) => (
+                                  <li
+                                    key={empresa.ID}
+                                    onClick={() => {
+                                      setEmpresaSeleccionada(empresa);
+                                      setEmpresaNIT('');
+                                      setShowResultados(false);
+                                    }}
+                                  >
+                                    {empresa.nombre_empresa}
+                                  </li>
+                                ))
+                              ) : (
+                                <li style={{ color: '#d32f2f' }}>No hay resultados</li>
+                              )}
+                            </ul>
+                          )}
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

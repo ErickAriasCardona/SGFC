@@ -1,5 +1,6 @@
 const Curso = require("../models/curso");
 const User = require("../models/User");
+const Empresa = require('../models/empresa'); // Importar el modelo Empresa
 const path = require("path");
 const AsignacionCursoInstructor = require("../models/AsignacionCursoInstructor");
 const { sendCourseCreatedEmail } = require("../services/emailService");
@@ -165,6 +166,7 @@ const obtenerCursosAsignadosAInstructor = async (req, res) => {
 const createCurso = async (req, res) => {
   try {
     const { accountType } = req.user;
+
     if (accountType !== "Administrador") {
       return res.status(403).json({ message: "No tienes permisos para crear cursos." });
     }
@@ -181,43 +183,61 @@ const createCurso = async (req, res) => {
       hora_fin,
       dias_formacion,
       lugar_formacion,
-      slots_formacion // <-- Nuevo campo
+      slots_formacion,
+      empresa_ID // Esperado solo si tipo_oferta es "Cerrada"
     } = req.body;
 
-    // Validar campos obligatorios
-    if (!ficha || isNaN(Number(ficha))) {
+    // ✅ Validación estricta del tipo de oferta
+    const tipoOfertaValida = ["Cerrada", "Abierta"];
+    if (!tipoOfertaValida.includes(tipo_oferta)) {
       return res.status(400).json({
-        message: "El campo ficha es obligatorio y debe ser un número.",
+        message: "El tipo de oferta debe ser 'Cerrada' o 'Abierta'."
       });
     }
 
-    // Validar que no exista un curso con la misma ficha
+    // ✅ Validación de empresa_ID si es oferta cerrada
+    let finalEmpresaID = null;
+    if (tipo_oferta === "Cerrada") {
+      if (!empresa_ID || isNaN(Number(empresa_ID))) {
+        return res.status(400).json({
+          message: "Debe proporcionar un ID de empresa válido para una oferta cerrada."
+        });
+      }
+
+      const empresa = await Empresa.findByPk(empresa_ID);
+
+      if (!empresa) {
+        return res.status(404).json({
+          message: `No se encontró una empresa con el ID ${empresa_ID}.`
+        });
+      }
+
+      finalEmpresaID = empresa_ID;
+    }
+
+    // ✅ Validaciones generales del curso
+    if (!ficha || isNaN(Number(ficha))) {
+      return res.status(400).json({ message: "El campo ficha es obligatorio y debe ser un número." });
+    }
+
     const cursoExistente = await Curso.findOne({ where: { ficha } });
     if (cursoExistente) {
-      return res.status(409).json({
-        message: "Ya existe un curso con la misma ficha.",
-      });
+      return res.status(409).json({ message: "Ya existe un curso con la misma ficha." });
     }
 
-    // Validar que la fecha de inicio sea anterior a la fecha de fin
     if (new Date(fecha_inicio) >= new Date(fecha_fin)) {
-      return res.status(400).json({
-        message: "La fecha de inicio debe ser anterior a la fecha de fin.",
-      });
+      return res.status(400).json({ message: "La fecha de inicio debe ser anterior a la fecha de fin." });
     }
 
-    // Procesar imagen y guardar base64 directamente en la base de datos
+    if (typeof dias_formacion !== 'string') {
+      return res.status(400).json({ message: "El campo dias_formacion debe ser un string." });
+    }
+
     let image = null;
     if (req.file) {
       image = req.file.buffer.toString('base64');
     }
 
-    // Procesar días de formación
-    if (typeof dias_formacion !== 'string') {
-      return res.status(400).json({ message: "El campo dias_formacion debe ser un string." });
-    }
-
-    // Procesar slots_formacion
     let slotsFormacionString = null;
     if (slots_formacion) {
       slotsFormacionString = Array.isArray(slots_formacion)
@@ -225,7 +245,9 @@ const createCurso = async (req, res) => {
         : slots_formacion;
     }
 
-    // Crear el curso
+    const sena_ID = 1;
+
+    // ✅ Crear el curso
     const nuevoCurso = await Curso.create({
       nombre_curso,
       descripcion,
@@ -239,12 +261,14 @@ const createCurso = async (req, res) => {
       dias_formacion,
       lugar_formacion,
       imagen: image,
-      slots_formacion: slotsFormacionString // <-- Guarda los slots seleccionados
+      sena_ID,
+      empresa_ID: finalEmpresaID,
+      slots_formacion: slotsFormacionString
     });
 
     res.status(201).json({ message: "Curso creado con éxito.", curso: nuevoCurso });
 
-    // Buscar usuarios verificados para enviar notificación
+    // ✅ Enviar notificación por email (opcional)
     const usuarios = await User.findAll({
       where: {
         verificacion_email: true,
@@ -254,7 +278,6 @@ const createCurso = async (req, res) => {
     });
 
     const emails = usuarios.map(user => user.email);
-
     if (emails.length > 0) {
       const courseLink = `http://localhost:5173/cursos/${nuevoCurso.id}`;
       await sendCourseCreatedEmail(emails, nombre_curso, courseLink);
@@ -492,8 +515,16 @@ const getCursoParticipants = async (req, res) => {
 
 const getCursoById = async (req, res) => {
   try {
-    const { id } = req.params; // Obtener el ID del curso desde los parámetros de la URL
-    const curso = await Curso.findByPk(id); // Buscar el curso por ID
+    const { id } = req.params;
+
+    const curso = await Curso.findByPk(id, {
+      include: [
+        {
+          model: Empresa,
+          as: 'Empresa', 
+        }
+      ]
+    });
 
     if (!curso) {
       return res.status(404).json({ message: "Curso no encontrado." });
@@ -505,6 +536,7 @@ const getCursoById = async (req, res) => {
     res.status(500).json({ message: "Error al obtener el curso." });
   }
 };
+
 
 module.exports = {
   setDb,

@@ -7,12 +7,12 @@ import companyGreen from "../../../assets/Icons/companyGreen.png";
 import companyGrey from "../../../assets/Icons/companyGrey.png";
 import userGreen from "../../../assets/Icons/userGreen.png";
 import userGrey from "../../../assets/Icons/userGrey.png";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from '@react-oauth/google';
 import { useModal } from "../../../Context/ModalContext";
 import { ForgotPassword } from "../../Pages/ForgotPassword/ForgotPassword";
 import axiosInstance from "../../../config/axiosInstance";
-
+import Loader from "../Loader/Loader";
 
 export const Modal_SignIn = () => {
   const {
@@ -25,6 +25,7 @@ export const Modal_SignIn = () => {
   } = useModal();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [loginnig, setLoginning] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberSession, setRememberSession] = useState(false);
@@ -47,7 +48,6 @@ export const Modal_SignIn = () => {
     setModalGeneralContent(
       <>
         <p>Por favor seleccione el tipo de cuenta que desea crear</p>
-
         <div className="option_1Account">
           <p>Empresa</p>
           <button
@@ -57,14 +57,11 @@ export const Modal_SignIn = () => {
             onMouseLeave={() => setHoveredButton("")}
           >
             <img
-              key={hoveredButton === "Empresa" ? "companyGrey" : "companyGreen"}
               src={hoveredButton === "Empresa" ? companyGrey : companyGreen}
               alt="Empresa"
             />
-
           </button>
         </div>
-
         <div className="option_2Account">
           <p>Aprendiz</p>
           <button
@@ -89,41 +86,44 @@ export const Modal_SignIn = () => {
     setModalGeneralContent(<ForgotPassword />);
   };
 
-
   const login = (event) => {
     event.preventDefault();
+    setLoginning(true);
 
-    axiosInstance.post("api/users/login", {
-      email,
-      password,
-    })
+    axiosInstance.post("api/users/login", { email, password })
       .then((response) => {
-        alert(response.data.message);
+        // Guardar sesión
         sessionStorage.setItem("userSession", JSON.stringify({
           accountType: response.data.accountType,
           email: email,
           id: response.data.id
         }));
 
-        closeModalSignIn();
-        navigate("/", {
-          state: { accountType: response.data.accountType },
-        });
+        // Esperar 2 segundos antes de cerrar modal y navegar
+        setTimeout(() => {
+          closeModalSignIn();
+          navigate("/", {
+            state: { accountType: response.data.accountType },
+          });
+          setLoginning(false); // apagar loader al final
+        }, 1000);
       })
       .catch((error) => {
-        if (error.response && error.response.status === 400) {
+        if (error.response?.status === 400) {
           alert("Usuario o contraseña incorrectos");
-        } else if (error.response && error.response.status === 403) {
+        } else if (error.response?.status === 403) {
           alert("Por favor verifica tu correo antes de iniciar sesión");
         } else {
           alert("Ocurrió un error al iniciar sesión");
         }
+        setLoginning(false); // en caso de error también apagar loader
       });
   };
 
 
   const handleGoogleResponse = async (response) => {
     const idToken = response.credential;
+    setLoginning(true);
 
     try {
       const res = await fetch("http://localhost:3001/api/users/auth/googleSignIn", {
@@ -147,10 +147,13 @@ export const Modal_SignIn = () => {
       }
     } catch (error) {
       alert('Error de red al intentar iniciar sesión.');
+    } finally {
+      setLoginning(false);
     }
   };
 
   if (!showSignIn) return null;
+  if (loginnig) return <Loader />;
 
   return (
     <div id="container_signIn">
@@ -162,7 +165,7 @@ export const Modal_SignIn = () => {
           <button className="goTo_register" onClick={showModalAccountType}>
             Registrarse
           </button>
-          <img src={ilustration_03} alt="" />
+          <img src={ilustration_03} alt="Ilustración" />
         </div>
 
         <div className="container_form_signIn">
@@ -179,14 +182,14 @@ export const Modal_SignIn = () => {
             <form className="form_register">
               <input
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 type="email"
                 placeholder="Correo electrónico"
               />
               <div className="password-container">
                 <input
                   value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                   type={showPassword ? "text" : "password"}
                   placeholder="Contraseña"
                 />
@@ -203,7 +206,7 @@ export const Modal_SignIn = () => {
                   type="checkbox"
                   id="rememberSession"
                   checked={rememberSession}
-                  onChange={(event) => setRememberSession(event.target.checked)}
+                  onChange={(e) => setRememberSession(e.target.checked)}
                 />
                 <label htmlFor="rememberSession">Recordar sesión</label>
               </div>
@@ -228,8 +231,14 @@ export const Modal_SignIn = () => {
             <button
               type="button"
               className="forgetPassword"
-              style={{ background: "none", border: "none", color: "#00843e", cursor: "pointer", padding: 0 }}
               onClick={showModalForgotPassword}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#00843e",
+                cursor: "pointer",
+                padding: 0,
+              }}
             >
               ¿Olvidó su contraseña?
             </button>
@@ -243,7 +252,9 @@ export const Modal_SignIn = () => {
         </div>
 
         <div className="container_return_signIn">
-          <h5 onClick={closeModalSignIn} style={{ cursor: "pointer" }}>Volver</h5>
+          <h5 onClick={closeModalSignIn} style={{ cursor: "pointer" }}>
+            Volver
+          </h5>
           <button onClick={closeModalSignIn} className="closeModal"></button>
         </div>
       </div>
