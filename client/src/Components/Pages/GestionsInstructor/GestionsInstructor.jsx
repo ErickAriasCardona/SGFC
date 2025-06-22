@@ -18,7 +18,6 @@ export const GestionsInstructor = () => {
   });
   const [selectedInstructor, setSelectedInstructor] = useState(null); // Estado para el instructor seleccionado
 
-  const navigate = useNavigate();
 
   // Validación de sesión de usuario y rol de administrador
   const userSessionString = sessionStorage.getItem("userSession");
@@ -117,170 +116,172 @@ export const GestionsInstructor = () => {
     }
   };
 
-    return (
-      <>
-        <Header />
-        <Main>
-          <div className="container_GestionsInstructor">
-            <h2>
-              Mis <span className="complementary">Instructores</span>
-            </h2>
+ const getImageSrcFromBase64 = (base64) => {
+  if (!base64) return 'default-profile.png'; // Ruta a imagen por defecto
 
-            <div className="containerGestionsInstructorOptions">
-              <div className="containerConsultInstructor">
-                <p>Filtrar por:</p>
-                <div className="containerFiltersInstructor">
-                  <label htmlFor="inputNameCC">Nombre o Cédula</label>
-                  <div className="inputSearchContainer">
-                    <input
-                      type="text"
-                      id="inputNameCC"
-                      placeholder="Escriba el nombre o la cédula"
-                      value={filter}
-                      onChange={handleFilterChange} // Manejar el cambio en el input
-                    />
-                  </div>
+  // Detectar tipo MIME por encabezado base64
+  if (base64.startsWith('iVBOR')) {
+    return `data:image/png;base64,${base64}`;
+  } else if (base64.startsWith('/9j/')) {
+    return `data:image/jpeg;base64,${base64}`;
+  } else {
+    // Si no puedes detectar, asume jpeg por defecto
+    return `data:image/jpeg;base64,${base64}`;
+  }
+};
 
-                  <label>Estado</label>
-                  <div className="statusButtons">
-                    <button
-                      className={`inactive ${selectedState.inactivo ? 'selected' : ''}`}
-                      onClick={() => {
-                        setSelectedState((prevState) => ({
-                          ...prevState,
-                          inactivo: !prevState.inactivo,
-                        }));
-                      }}
-                    >
-                      Inactivos
-                    </button>
-                    <button
-                      className={`active ${selectedState.activo ? 'selected' : ''}`}
-                      onClick={() => {
-                        setSelectedState((prevState) => ({
-                          ...prevState,
-                          activo: !prevState.activo,
-                        }));
-                      }}
-                    >
-                      Activos
-                    </button>
-                  </div>
+  return (
+    <>
+      <Header />
+      <Main>
+        <div className="container_GestionsInstructor">
+          <h2>
+            Mis <span className="complementary">Instructores</span>
+          </h2>
+
+          <div className="containerGestionsInstructorOptions">
+            <div className="containerConsultInstructor">
+              <p>Filtrar por:</p>
+              <div className="containerFiltersInstructor">
+                <label htmlFor="inputNameCC">Nombre o Cédula</label>
+                <div className="inputSearchContainer">
+                  <input
+                    type="text"
+                    id="inputNameCC"
+                    placeholder="Escriba el nombre o la cédula"
+                    value={filter}
+                    onChange={handleFilterChange} // Manejar el cambio en el input
+                  />
                 </div>
-                <button className="btn_createInstructor" onClick={showModalCreateInstructor}>Agregar Instructor</button>
 
+                <label>Estado</label>
+                <div className="statusButtons">
+                  <button
+                    className={`inactive ${selectedState.inactivo ? 'selected' : ''}`}
+                    onClick={() => {
+                      setSelectedState((prevState) => ({
+                        ...prevState,
+                        inactivo: !prevState.inactivo,
+                      }));
+                    }}
+                  >
+                    Inactivos
+                  </button>
+                  <button
+                    className={`active ${selectedState.activo ? 'selected' : ''}`}
+                    onClick={() => {
+                      setSelectedState((prevState) => ({
+                        ...prevState,
+                        activo: !prevState.activo,
+                      }));
+                    }}
+                  >
+                    Activos
+                  </button>
+                </div>
               </div>
+              <button className="btn_createInstructor" onClick={showModalCreateInstructor}>Agregar Instructor</button>
 
-              <div className="containerGestionsInstructorResults">
+            </div>
 
-                {/* Mostrar flecha izquierda solo si hay más de un resultado */}
-                {filteredInstructors.length > 1 && (
-                  <button className="arrow left" onClick={prev}>❮</button>
-                )}
+            <div className="containerGestionsInstructorResults">
 
-                <div className="carousel-container_2">
-                  <div className="carousel-track">
-                    {filteredInstructors.length === 0 ? (
-                      // Mostrar mensaje si no hay resultados
-                      <p className="no-results">No hay resultados</p>
+              {/* Mostrar flecha izquierda solo si hay más de un resultado */}
+              {filteredInstructors.length > 1 && (
+                <button className="arrow-results left" onClick={prev}>❮</button>
+              )}
+
+              <div className="carousel-container_2-results">
+                <div className="carousel-track-results">
+                  {filteredInstructors.length === 0 ? (
+                    // Mostrar mensaje si no hay resultados
+                    <p className="no-results">No hay resultados</p>
+                  ) : (
+                    // Mostrar una carta si hay un solo resultado
+                    filteredInstructors.length === 1 ? (
+                      <div className="carousel-card-results card-center">
+                        <img
+                          src={getImageSrcFromBase64(filteredInstructors[0]?.foto_perfil)}
+                          alt="Instructor"
+                          className="carousel-image-results"
+                        />
+                      </div>
                     ) : (
-                      // Mostrar una carta si hay un solo resultado
-                      filteredInstructors.length === 1 ? (
-                        <div className="carousel-card card-center">
-                          <img
-                            src={filteredInstructors[0]?.foto_perfil || 'default-profile.png'} // Imagen del instructor
-                            alt="Instructor"
-                            className="carousel-image"
-                          />
-                          <div className="carousel-card-info">
-                            <h3>{filteredInstructors[0]?.nombres} {filteredInstructors[0]?.apellidos}</h3>
-                            <p>{filteredInstructors[0]?.titulo_profesional}</p>
-                          </div>
-                        </div>
+                      // Mostrar una carta centrada con flechas si hay dos resultados
+                      filteredInstructors.length === 2 ? (
+                        [0].map((offset) => {
+                          const index = (current + offset) % filteredInstructors.length;
+                          const instructor = filteredInstructors[index];
+
+                          return (
+                            <div className="carousel-card-results card-center" key={index}>
+                              <img
+                                src={getImageSrcFromBase64(instructor?.foto_perfil)}
+                                alt="Instructor"
+                                className="carousel-image"
+                              />                 
+                            </div>
+                          );
+                        })
                       ) : (
-                        // Mostrar una carta centrada con flechas si hay dos resultados
-                        filteredInstructors.length === 2 ? (
-                          [0].map((offset) => {
-                            const index = (current + offset) % filteredInstructors.length;
-                            const instructor = filteredInstructors[index];
+                        // Mostrar tres cartas si hay tres o más resultados
+                        [0, 1, 2].map((offset) => {
+                          const index = (current + offset) % filteredInstructors.length;
+                          const instructor = filteredInstructors[index];
 
-                            return (
-                              <div className="carousel-card card-center" key={index}>
-                                <img
-                                  src={instructor?.foto_perfil || 'default-profile.png'} // Imagen del instructor
-                                  alt="Instructor"
-                                  className="carousel-image"
-                                />
-                                <div className="carousel-card-info">
-                                  <h3>{instructor?.nombres} {instructor?.apellidos}</h3>
-                                  <p>{instructor?.titulo_profesional}</p>
-                                </div>
-                              </div>
-                            );
-                          })
-                        ) : (
-                          // Mostrar tres cartas si hay tres o más resultados
-                          [0, 1, 2].map((offset) => {
-                            const index = (current + offset) % filteredInstructors.length;
-                            const instructor = filteredInstructors[index];
+                          let positionClass = '';
+                          if (offset === 1) {
+                            positionClass = 'card-center';
+                          } else {
+                            positionClass = 'card-side';
+                          }
 
-                            let positionClass = '';
-                            if (offset === 1) {
-                              positionClass = 'card-center';
-                            } else {
-                              positionClass = 'card-side';
-                            }
-
-                            return (
-                              <div className={`carousel-card ${positionClass}`} key={index}>
-                                <img
-                                  src={instructor?.foto_perfil || 'default-profile.png'} // Imagen del instructor
-                                  alt="Instructor"
-                                  className="carousel-image"
-                                />
-                                <div className="carousel-card-info">
-                                  <h3>{instructor?.nombres} {instructor?.apellidos}</h3>
-                                  <p>{instructor?.titulo_profesional}</p>
-                                </div>
-                              </div>
-                            );
-                          })
-                        )
+                          return (
+                            <div className={`carousel-card-results ${positionClass}`} key={index}>
+                              <img
+                                src={getImageSrcFromBase64(instructor?.foto_perfil)}
+                                alt="Instructor"
+                                className="carousel-image"
+                              />
+                            </div>
+                          );
+                        })
                       )
-                    )}
-                  </div>
-
-                  {/* Mostrar información del instructor actual */}
-                  {filteredInstructors.length > 0 && (
-                    <div className="instructor-info">
-                      <h3>{filteredInstructors[(current + 1) % filteredInstructors.length]?.nombres} {filteredInstructors[(current + 1) % filteredInstructors.length]?.apellidos}</h3>
-                      <p>{filteredInstructors[(current + 1) % filteredInstructors.length]?.titulo_profesional}</p>
-                      <button
-                        className="profile-btn"
-                        onClick={() => showModalSeeProfile(filteredInstructors[(current + 1) % filteredInstructors.length])}
-                      >
-                        Ver perfil
-                      </button>
-                    </div>
+                    )
                   )}
                 </div>
 
-                {/* Mostrar flecha derecha solo si hay más de un resultado */}
-                {filteredInstructors.length > 1 && (
-                  <button className="arrow right" onClick={next}>❯</button>
+                {/* Mostrar información del instructor actual */}
+                {filteredInstructors.length > 0 && (
+                  <div className="instructor-info">
+                    <h3>{filteredInstructors[(current + 1) % filteredInstructors.length]?.nombres} {filteredInstructors[(current + 1) % filteredInstructors.length]?.apellidos}</h3>
+                    <p>{filteredInstructors[(current + 1) % filteredInstructors.length]?.titulo_profesional}</p>
+                    <button
+                      className="profile-btn"
+                      onClick={() => showModalSeeProfile(filteredInstructors[(current + 1) % filteredInstructors.length])}
+                    >
+                      Ver perfil
+                    </button>
+                  </div>
                 )}
               </div>
+
+              {/* Mostrar flecha derecha solo si hay más de un resultado */}
+              {filteredInstructors.length > 1 && (
+                <button className="arrow-results right" onClick={next}>❯</button>
+              )}
             </div>
           </div>
-        </Main>
-        {selectedInstructor && (
-          <UpdateInstructor
-            instructor={selectedInstructor}
-          />
-        )}
+        </div>
+      </Main>
+      {selectedInstructor && (
+        <UpdateInstructor
+          instructor={selectedInstructor}
+        />
+      )}
 
-        <Footer />
-      </>
-    );
+      <Footer />
+    </>
+  );
 
 };

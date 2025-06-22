@@ -4,6 +4,10 @@ const path = require("path");
 const storage = multer.memoryStorage(); // Guarda como buffer
 
 const fileFilter = (req, file, cb) => {
+      console.log("Tipo MIME recibido:", file.mimetype); // 🔍
+
+    
+    
     if (file.fieldname === 'foto_perfil' || file.fieldname === 'imagen') {
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         if (allowedTypes.includes(file.mimetype)) {

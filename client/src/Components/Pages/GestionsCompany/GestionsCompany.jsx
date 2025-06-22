@@ -1,27 +1,67 @@
-
-import { useState } from "react"; // 👈 Agregado
+import { useState, useEffect } from "react";
 import { Header } from "../../Layouts/Header/Header";
 import { Main } from "../../Layouts/Main/Main";
 import "./GestionsCompany.css";
 import { Search } from "lucide-react";
+import axiosInstance from "../../../config/axiosInstance";
+
+const categoriasDisponibles = [
+  "Administracion",
+  "Gastronomia",
+  "Tecnologia",
+  "Construccion",
+  "Salud",
+  "Diseño",
+  "Mecanica",
+  "Agricultura",
+];
 
 export const GestionsCompany = () => {
-  const empresas = [
-    { nombre: "Tech Corp", nit: "4764-576", categoria: "Tecnología" },
-    { nombre: "Agro S.A.", nit: "2334-56", categoria: "Agricultura" },
-    { nombre: "EducaNet", nit: "4324-65", categoria: "Educación" },
-    { nombre: "Tech Corp", nit: "432-56", categoria: "Tecnología" },
-    { nombre: "Agro S.A.", nit: "432-45", categoria: "Agricultura" },
-    { nombre: "EducaNet", nit: "344-54", categoria: "Educación" },
-    { nombre: "Tech Corp", nit: "Medellín", categoria: "Tecnología" },
-    { nombre: "Agro S.A.", nit: "Armenia", categoria: "Agricultura" },
-    { nombre: "EducaNet", nit: "45278-89", categoria: "Educación" },
-    { nombre: "Tech Corp", nit: "4324-67", categoria: "Tecnología" },
-    { nombre: "Agro S.A.", nit: "679-89", categoria: "Agricultura" },
-    { nombre: "EducaNet", nit: "456-88", categoria: "Educación" },
-  ];
+  const [empresas, setEmpresas] = useState([]);
+  const [filtro, setFiltro] = useState("");
+  const [categoriasSeleccionadas, setCategoriasSeleccionadas] = useState([]);
 
-  const [filtro, setFiltro] = useState(""); // 👈 Agregado
+  useEffect(() => {
+    const fetchEmpresas = async () => {
+      try {
+        const res = await axiosInstance.get("/api/users/empresas");
+        setEmpresas(res.data);
+      } catch (error) {
+        setEmpresas([]);
+        console.error("Error al cargar empresas:", error);
+      }
+    };
+    fetchEmpresas();
+  }, []);
+
+  // Manejar selección de categorías (multi-selección)
+  const handleCategoriaClick = (categoria) => {
+    setCategoriasSeleccionadas((prev) =>
+      prev.includes(categoria)
+        ? prev.filter((cat) => cat !== categoria)
+        : [...prev, categoria]
+    );
+  };
+
+  // Filtrado por nombre/NIT y categorías seleccionadas
+  const empresasFiltradas = empresas.filter((empresa) => {
+    // Filtro por nombre o NIT
+    const nombreONitMatch =
+      (empresa.Empresa?.nombre_empresa || "")
+        .toLowerCase()
+        .includes(filtro.toLowerCase()) ||
+      (empresa.Empresa?.NIT || "")
+        .toLowerCase()
+        .includes(filtro.toLowerCase());
+
+    // Filtro por categorías seleccionadas
+    const categoriaEmpresa = empresa.Empresa?.categoria || "";
+    const categoriaMatch =
+      categoriasSeleccionadas.length === 0 ||
+      categoriasSeleccionadas.includes(categoriaEmpresa);
+
+    return nombreONitMatch && categoriaMatch;
+  });
 
   return (
     <div className="pantallaGestionsCompany">
@@ -48,18 +88,14 @@ export const GestionsCompany = () => {
               <article className="filterOptionsGestionsCompany">
                 <div className="filterOptionName">
                   <label className="labelFilterOption1">Nombre o NIT</label>
-
                   <div className="inputFilterOption1">
                     <input
                       className="inputFilterOptionText"
                       type="text"
                       placeholder="Escriba el nombre o nit de la empresa"
                       value={filtro}
-                      onChange={(e) => setFiltro(e.target.value)} // 👈 Agregado
+                      onChange={(e) => setFiltro(e.target.value)}
                     />
-                    {/* <div className="iconSearchFilter">
-                      <Search className="searchIcon" />
-                    </div> */}
                   </div>
                 </div>
                 <div className="courseStatusFilte">
@@ -69,7 +105,6 @@ export const GestionsCompany = () => {
                   >
                     Estado del Curso
                   </label>
-
                   <section className="sectionStatusFilter">
                     <p className="statusOption">Finalizados</p>
                     <p className="statusOption">Activos</p>
@@ -78,7 +113,6 @@ export const GestionsCompany = () => {
                     <p className="statusOption">Cancelados</p>
                   </section>
                 </div>
-
                 <div className="courseStatusFilte">
                   <label
                     className="labelFilterOption1"
@@ -86,16 +120,26 @@ export const GestionsCompany = () => {
                   >
                     Categoria
                   </label>
-
                   <section className="sectionStatusFilter">
-                    <p className="statusOption">Administracion</p>
-                    <p className="statusOption">Gastronomia</p>
-                    <p className="statusOption">Tecnologia</p>
-                    <p className="statusOption">Construccion</p>
-                    <p className="statusOption">Salud</p>
-                    <p className="statusOption">Diseño</p>
-                    <p className="statusOption">Mecanica</p>
-                    <p className="statusOption">Agricultura</p>
+                    {categoriasDisponibles.map((categoria) => (
+                      <p
+                        key={categoria}
+                        className={`statusOption ${
+                          categoriasSeleccionadas.includes(categoria)
+                            ? "selected"
+                            : ""
+                        }`}
+                        onClick={() => handleCategoriaClick(categoria)}
+                        style={{
+                          cursor: "pointer",
+                          background: categoriasSeleccionadas.includes(categoria)
+                            ? "#b2f2bb"
+                            : "",
+                        }}
+                      >
+                        {categoria}
+                      </p>
+                    ))}
                   </section>
                 </div>
               </article>
@@ -103,44 +147,37 @@ export const GestionsCompany = () => {
 
             <section className="resultTableGestionsCompany">
               <label className="labelFilterOption12">
-                {
-                  empresas.filter((empresa) =>
-                    empresa.nombre.toLowerCase().includes(filtro.toLowerCase()) ||
-                    empresa.nit.toLowerCase().includes(filtro.toLowerCase())
-                  ).length
-                }{" "}
-                Resultados
+                {empresasFiltradas.length} Resultados
               </label>
 
               <section className="scrollElement">
-                {empresas
-                  .filter(
-                    (empresa) =>
-                      empresa.nombre.toLowerCase().includes(filtro.toLowerCase()) ||
-                      empresa.nit.toLowerCase().includes(filtro.toLowerCase())
-                  )
-                  .map((empresa, index) => (
+                {empresas.length === 0 ? (
+                  <p className="no-results">No hay empresas registradas</p>
+                ) : empresasFiltradas.length === 0 ? (
+                  <p className="no-results">No hay empresas que coincidan con los filtros</p>
+                ) : (
+                  empresasFiltradas.map((empresa, index) => (
                     <div key={index} className="elementoProvisionalTabla">
                       <div className="circuloBlancoIcono"></div>
-
                       <section className="Contenedor-NombreEmpresa">
                         <p className="NombreEmpresaTitulo">
-                          {empresa.nombre}
+                          {empresa.Empresa?.nombre_empresa || "Sin nombre"}
                           <span className="NombreEmpresaSubtitulo">
-                            {empresa.nit}
+                            {empresa.Empresa?.NIT}
                           </span>
                         </p>
                       </section>
-
                       <section className="Contenedor-categoria">
-                        <span>categoria:{empresa.categoria}</span>
+                        <span>
+                          categoria: {empresa.Empresa?.categoria || "Sin categoría"}
+                        </span>
                       </section>
-
                       <section className="Contenedor-emojis">
                         <span>{"emojis"}</span>
                       </section>
                     </div>
-                  ))}
+                  ))
+                )}
               </section>
             </section>
           </section>

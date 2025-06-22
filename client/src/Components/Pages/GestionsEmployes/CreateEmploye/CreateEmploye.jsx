@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import './CreateEmploye.css';
 import addIMG from '../../../../assets/Icons/addImg.png';
 import axiosInstance from '../../../../config/axiosInstance';
+import fotoPerfilDefect from '../../../../assets/Icons/userDefect.png';
 import { useModal } from '../../../../Context/ModalContext';
 export const CreateEmploye = () => {
   const fileInputRef = useRef(null);
@@ -37,14 +38,19 @@ export const CreateEmploye = () => {
     reader.readAsDataURL(selectedFile);
   };
 
-
   // Enviar datos al backend
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Crear un objeto FormData
     const data = new FormData();
-    data.append('foto_perfil', file);
+    if (file) {
+      data.append('foto_perfil', file);
+    } else {
+      // Si no hay archivo, usa la imagen por defecto
+      const response = await fetch(fotoPerfilDefect);
+      const blob = await response.blob();
+      data.append('foto_perfil', blob, "fotoPerfilDefect.png");
+    }
     data.append('nombres', formData.nombres);
     data.append('apellidos', formData.apellidos);
     data.append('cedula', formData.cedula);
@@ -62,7 +68,6 @@ export const CreateEmploye = () => {
       alert('Empleado creado con éxito');
       console.log(response.data);
 
-      // Cerrar el modal y recargar la página
       document.getElementById("modal-overlayCreateEmploye").style.display = "none";
       window.location.reload();
     } catch (error) {
@@ -71,7 +76,6 @@ export const CreateEmploye = () => {
       alert(`Error: ${errorMsg}`);
     }
   };
-
 
   return (
     <div id="modal-overlayCreateEmploye">

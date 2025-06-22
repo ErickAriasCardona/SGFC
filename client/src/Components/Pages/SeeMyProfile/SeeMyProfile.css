@@ -83,7 +83,6 @@
     flex-wrap: wrap;
     align-items: center;
     background-color: #00843e3f;
-    gap: 1rem;
 }
 
 .data_company>p {
@@ -249,5 +248,13 @@
     background-color: #007736;
     color: #fff;
     
+}
+
+#titleDataSede{
+    width: 100%;
+    height: auto;
+    font-size: 18px;
+    text-align: center;
+    margin-top: 0.5rem;
 }
 

@@ -197,3 +197,11 @@
     left: 4%;
     cursor: pointer;
 }
+
+/* Para Chrome, Safari, Edge */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+

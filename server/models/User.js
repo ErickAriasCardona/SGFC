@@ -1,5 +1,7 @@
 const { DataTypes, Model } = require('sequelize');
 const bcrypt = require('bcrypt'); // Importar bcrypt para hashear la contraseña
+const fs = require('fs');
+const path = require('path');
 
 class Usuario extends Model {
   static init(sequelize) {
@@ -32,13 +34,13 @@ class Usuario extends Model {
         },
         // --- Campo para foto_perfil (cambiado a STRING) ---
         foto_perfil: {
-          type: DataTypes.TEXT, // Usar STRING para la URL de la imagen de Google
+          type: DataTypes.TEXT('medium'), // Esto es MEDIUMTEXT en MySQL
           allowNull: true,
         },
         verificacion_email: {
           type: DataTypes.BOOLEAN,
           defaultValue: false,
-        }, 
+        },
         token: {
           type: DataTypes.STRING(255),
           allowNull: true,
@@ -124,6 +126,16 @@ class Usuario extends Model {
         return;
       }
 
+      // Leer la imagen y convertirla a base64
+      const imgPath = path.join(__dirname, '../Img/userDefect.png');
+      let foto_perfil_base64 = null;
+      try {
+        const imgBuffer = fs.readFileSync(imgPath);
+        foto_perfil_base64 = imgBuffer.toString('base64');
+      } catch (err) {
+        console.error('No se pudo leer la imagen por defecto:', err);
+      }
+
       // Crear el usuario administrador con la contraseña hasheada
       const hashedPassword = await bcrypt.hash(adminPassword, 10);
       await this.create({
@@ -131,6 +143,8 @@ class Usuario extends Model {
         password: hashedPassword,
         verificacion_email: true, // El correo ya está verificado
         accountType: 'Administrador',
+        foto_perfil: foto_perfil_base64, // Ahora es base64
+        estado: 'activo',
         sena_ID: 1
       });
 
@@ -139,6 +153,7 @@ class Usuario extends Model {
       console.error('Error al crear el usuario administrador:', error);
     }
   }
+
 }
 
 module.exports = Usuario;

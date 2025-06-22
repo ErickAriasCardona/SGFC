@@ -4,7 +4,6 @@ import axiosInstance from "../../../../config/axiosInstance";
 import { Routes, Route, useNavigate } from "react-router-dom";
 
 export const UpdateGestor = ({ gestor }) => {
-  const navigate = useNavigate();
 
   // Validación de sesión de usuario y rol de administrador
   const userSessionString = sessionStorage.getItem("userSession");
@@ -15,6 +14,18 @@ export const UpdateGestor = ({ gestor }) => {
 
   const closeModalUpdateGestor = () => {
     document.getElementById("modal-overlayUpdateGestor").style.display = "none";
+  };
+
+  const getImageSrc = (data) => {
+    if (!data) return null;
+
+    if (data.startsWith('/9j/')) {
+      return `data:image/jpeg;base64,${data}`; // jpg y jpeg
+    } else if (data.startsWith('iVBORw0KGgo')) {
+      return `data:image/png;base64,${data}`; // png
+    } else {
+      return `data:image/jpeg;base64,${data}`; // fallback
+    }
   };
 
   const handleChange = (e) => {
@@ -80,103 +91,150 @@ export const UpdateGestor = ({ gestor }) => {
     }
   };
 
-    return (
-      <div id="modal-overlayUpdateGestor" style={{ display: "flex" }}>
-        <form className="modal-bodyUpdateGestor" onSubmit={handleButtonClick}>
-          <div className="modal-left-update">
-            {["nombres", "apellidos", "cedula", "celular", "email"].map(
-              (field) => (
-                <label key={field}>
-                  {field.charAt(0).toUpperCase() +
-                    field.slice(1).replace("_", " ")}
-                  <input
-                    type={field === "email" ? "email" : "text"}
-                    name={field}
-                    value={formData[field] || ""}
-                    readOnly={!isEditing}
-                    onChange={handleChange}
-                    className={`form-input ${!isEditing ? "read-only" : ""}`}
-                  />
-                </label>
-              )
+  return (
+    <div id="modal-overlayUpdateGestor" style={{ display: "flex" }}>
+      <form className="modal-bodyUpdateInstructor" onSubmit={handleButtonClick}>
+        <div className="modal-left-update">
+          <p>
+            <strong>Nombres:</strong>{" "}
+            {isEditing ? (
+              <input
+                type="text"
+                name="nombres"
+                className="input_updateData"
+                value={formData.nombres || ""}
+                onChange={handleChange}
+              />
+            ) : (
+              <span className="valor-campo">{formData.nombres || ""}</span>
             )}
-          </div>
-
-          <div className="modal-right">
-            <input
-              type="file"
-              accept="image/*"
-              hidden={!isEditing}
-              disabled={!isEditing}
-              onChange={handleImageChange}
-              id="imageUpload"
-            />
-
-            <label
-              className={`upload-area-update ${
-                !isEditing ? "read-only-border" : ""
-              }`}
-              htmlFor="imageUpload"
-            >
-              {" "}
-              {formData.foto_perfil instanceof File ? (
-                <img
-                  src={URL.createObjectURL(formData.foto_perfil)}
-                  alt="Vista previa"
-                  className="preview-image"
-                />
-              ) : formData.foto_perfil ? (
-                <img
-                  src={formData.foto_perfil}
-                  alt="Foto de perfil"
-                  className="preview-image-update"
-                />
-              ) : (
-                <div className="upload-placeholder">
-                  <p>Sin imagen disponible</p>
-                </div>
-              )}
-            </label>
-
-            <div className="status-container">
-              <span>Estado:</span>
+          </p>
+          <p>
+            <strong>Apellidos:</strong>{" "}
+            {isEditing ? (
+              <input
+                type="text"
+                name="apellidos"
+                className="input_updateData"
+                value={formData.apellidos || ""}
+                onChange={handleChange}
+              />
+            ) : (
+              <span className="valor-campo">{formData.apellidos || ""}</span>
+            )}
+          </p>
+          <p>
+            <strong>Cédula:</strong>{" "}
+            {isEditing ? (
+              <input
+                type="text"
+                name="documento"
+                className="input_updateData"
+                value={formData.documento || ""}
+                onChange={handleChange}
+              />
+            ) : (
+              <span className="valor-campo">{formData.documento || ""}</span>
+            )}
+          </p>
+          <p>
+            <strong>Celular:</strong>{" "}
+            {isEditing ? (
+              <input
+                type="text"
+                name="celular"
+                className="input_updateData"
+                value={formData.celular || ""}
+                onChange={handleChange}
+              />
+            ) : (
+              <span className="valor-campo">{formData.celular || ""}</span>
+            )}
+          </p>
+          <p>
+            <strong>Email:</strong>{" "}
+            {isEditing ? (
+              <input
+                type="email"
+                name="email"
+                className="input_updateData"
+                value={formData.email || ""}
+                onChange={handleChange}
+              />
+            ) : (
+              <span className="valor-campo">{formData.email || ""}</span>
+            )}
+          </p>
+          <p>
+            <strong>Estado:</strong>{" "}
+            {isEditing ? (
               <div className="status-buttons">
-                {isEditing ? (
-                  ["Activo", "Inactivo"].map((estado) => (
-                    <button
-                      key={estado}
-                      type="button"
-                      className={`status ${
-                        formData.estado === estado ? "active" : ""
-                      }`}
-                      onClick={() => handleEstadoChange(estado)}
-                    >
-                      {estado}
-                    </button>
-                  ))
-                ) : (
-                  <button type="button" className="status active">
-                    {formData.estado}
+                {["Activo", "Inactivo"].map((estado) => (
+                  <button
+                    key={estado}
+                    type="button"
+                    className={`status ${formData.estado === estado ? "active" : ""}`}
+                    onClick={() => handleEstadoChange(estado)}
+                  >
+                    {estado}
                   </button>
-                )}
+                ))}
               </div>
-            </div>
+            ) : (
+              <span className="valor-campo">{formData.estado}</span>
+            )}
+          </p>
+        </div>
 
-            <button type="submit" className="edit-button-update">
-              {isEditing ? "Guardar Cambios" : "Actualizar Perfil"}
-            </button>
-          </div>
+        <div className="modal-right">
+          <input
+            type="file"
+            accept="image/*"
+            hidden={!isEditing}
+            disabled={!isEditing}
+            onChange={handleImageChange}
+            id="imageUpload"
+          />
 
-          <div className="container_return_UpdateGestor">
-            <h5>Volver</h5>
-            <button
-              type="button"
-              onClick={closeModalUpdateGestor}
-              className="closeModal"
-            ></button>
-          </div>
-        </form>
-      </div>
-    );
+          <label
+            className={`upload-area-update ${!isEditing ? "read-only-border" : ""}`}
+            htmlFor="imageUpload"
+          >
+            {formData.foto_perfil instanceof File ? (
+              <img
+                src={URL.createObjectURL(formData.foto_perfil)}
+                alt="Vista previa"
+                className="preview-image"
+              />
+            ) : formData.foto_perfil ? (
+              <img
+                src={getImageSrc(formData.foto_perfil)}
+                alt="Foto de perfil"
+                className="preview-image-update"
+              />
+            ) : (
+              <div className="upload-placeholder">
+                <p>Sin imagen disponible</p>
+              </div>
+            )}
+          </label>
+
+          <button type="submit" className="edit-button-updateInstructor">
+            {isEditing ? "Guardar Cambios" : "Actualizar Perfil"}
+          </button>
+        </div>
+
+
+        <div className="container_return_UpdateInstructor">
+          <h5>Volver</h5>
+          <button
+            type="button"
+            onClick={closeModalUpdateGestor}
+            className="closeModal"
+          ></button>
+        </div>
+      </form>
+    </div>
+  );
 
 };

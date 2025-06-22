@@ -117,14 +117,14 @@ export const Modal_SignUp = ({ accountType }) => {
     setShowSignIn(true);
   };
 
-  const handleGoogleResponse = async (response) => {
+const handleGoogleResponse = async (response) => {
     const idToken = response.credential;
 
     try {
-      const res = await fetch("http://localhost:3001/api/users/auth/googleSignUp", { // Cambia la ruta a googleSignUp
+      const res = await fetch("http://localhost:3001/api/users/auth/googleSignUp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
+        body: JSON.stringify({ idToken, accountType }), 
       });
 
       const data = await res.json();

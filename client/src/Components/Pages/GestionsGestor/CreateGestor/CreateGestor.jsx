@@ -3,24 +3,24 @@ import "./CreateGestor.css";
 import addIMG from "../../../../assets/Icons/addImg.png";
 import axiosInstance from "../../../../config/axiosInstance";
 import { useNavigate } from "react-router-dom";
+import fotoPerfilDefect from "../../../../assets/Icons/userDefect.png";
 
 export const CreateGestor = ({ onClose }) => {
   // 1. Todos los Hooks al inicio del componente
   const navigate = useNavigate();
   const mounted = useRef(false);
   const fileInputRef = useRef(null);
-  
+
   const [preview, setPreview] = useState(null);
   const [formData, setFormData] = useState({
     nombres: "",
     apellidos: "",
-    cedula: "",
+    documento: "",
     celular: "",
     email: "",
     estado: "Inactivo",
   });
   const [file, setFile] = useState(null);
-  const [acces_granted, setAccesGranted] = useState(false);
 
   // 2. Efectos después de los estados
   useEffect(() => {
@@ -61,10 +61,18 @@ export const CreateGestor = ({ onClose }) => {
     e.preventDefault();
 
     const data = new FormData();
-    data.append("foto_perfil", file);
+    // Si no se subió archivo, usa la imagen por defecto
+    if (file) {
+      data.append("foto_perfil", file);
+    } else {
+      // Convierte la imagen importada a blob para enviarla como archivo
+      const response = await fetch(fotoPerfilDefect);
+      const blob = await response.blob();
+      data.append("foto_perfil", blob, "fotoPerfilDefect.png");
+    }
     data.append("nombres", formData.nombres);
     data.append("apellidos", formData.apellidos);
-    data.append("cedula", formData.cedula);
+    data.append("documento", formData.documento);
     data.append("celular", formData.celular);
     data.append("email", formData.email);
     data.append("estado", formData.estado);
@@ -80,7 +88,6 @@ export const CreateGestor = ({ onClose }) => {
       console.log(response.data);
 
       closeModalCreateGestor();
-      
       window.location.reload();
     } catch (error) {
       console.error("Error al crear el gestor:", error);
@@ -89,10 +96,6 @@ export const CreateGestor = ({ onClose }) => {
     }
   };
 
-  // 4. Renderizado condicional después de toda la lógica
-  if (!acces_granted) {
-    return null;
-  }
 
   return (
     <div id="modal-overlayCreateGestor">
@@ -122,8 +125,8 @@ export const CreateGestor = ({ onClose }) => {
             Documento
             <input
               type="text"
-              name="cedula"
-              value={formData.cedula}
+              name="documento"
+              value={formData.documento}
               onChange={handleInputChange}
               required
             />

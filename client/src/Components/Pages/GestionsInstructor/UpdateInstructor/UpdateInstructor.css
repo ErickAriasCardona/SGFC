@@ -16,15 +16,14 @@
 
 
 .modal-bodyUpdateInstructor {
-    width: 800px;
-    height: 550px;
+    width: 740px;
+    height: 464px;
     background-color: #1A1A1A;
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
     border-radius: 15px;
     overflow: hidden;
-    gap: 5rem;
 }
 
 
@@ -33,28 +32,8 @@
     height: auto;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 20px;
-}
-
-.modal-left-update label {
-    width: 100%;
-    height: auto;
-    color: white;
-    font-size: 16px;
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-left-update>label>input {
-    width: 15rem;
-    height: 40px;
-    margin-top: px;
-    border-radius: 10px;
-    border: 1px solid white;
-    background-color: transparent;
-    color: white;
-    padding: 0 10px;
 }
 
 .modal-right-update {
@@ -194,8 +173,8 @@
     flex-direction: column;
     align-items: center;
     position: absolute;
-    top: 44px;
-    right: 303px;
+    top: 87px;
+    right: 333px;
     z-index: 1000;
 }
 
@@ -233,9 +212,6 @@
 
 }
 
-
-
-
 /* Inputs en modo solo lectura */
 .read-only {
     border: none !important;
@@ -250,8 +226,28 @@
     cursor: default;
 }
 
-.cursosAsignados{
+.cursosAsignados {
     width: auto;
     height: auto;
 
+}
+
+.modal-left-update>p {
+    width: auto;
+    height: auto;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-left-update>p>strong, .modal-left-update>p>span{
+    width: auto;
+    height: auto;
+}
+
+
+.valor-campo {
+  margin-left: 8px;
+  display: inline-block;
 }

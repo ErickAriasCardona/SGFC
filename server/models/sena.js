@@ -1,21 +1,23 @@
 const { DataTypes, Model } = require('sequelize');
+const fs = require('fs');
+const path = require('path');
 
 class Sena extends Model {
   static init(sequelize) {
-    super.init( 
-      {  
+    super.init(
+      {
         ID: {
           type: DataTypes.INTEGER,
           primaryKey: true,
           allowNull: false,
-          autoIncrement: true, 
-        }, 
+          autoIncrement: true,
+        },
         NIT: {
           type: DataTypes.STRING,
           allowNull: true,
         },
         img_sena: {
-          type: DataTypes.BLOB('medium'),
+          type: DataTypes.TEXT('medium'),
           allowNull: true,
         },
         nombre_sede: {
@@ -46,41 +48,52 @@ class Sena extends Model {
   }
 
   static associate(models) {
-    this.belongsTo(models.Ciudad, { foreignKey: 'ciudad_ID', as:'Ciudad' ,onDelete: 'NO ACTION', onUpdate: 'NO ACTION' });
+    this.belongsTo(models.Ciudad, { foreignKey: 'ciudad_ID', as: 'Ciudad', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' });
   }
 
-    // Método para crear una sede SENA por defecto
-    static async createDefaultSENA() {
-      try {
-        const senaEmail = 'senacct@gmail.com';
-        const senaNombre = 'Centro de Comercio y Turismo';
-        const senaNIT = '899.999.034-1';
-        const senaDireccion = 'Cra. 18 #7-58, Galán';
-        const senaTelefono = '67494999';
+  // Método para crear una sede SENA por defecto
+  static async createDefaultSENA() {
+    try {
+      const senaEmail = 'senacct@gmail.com';
+      const senaNombre = 'Centro de Comercio y Turismo';
+      const senaNIT = '899.999.034-1';
+      const senaDireccion = 'Cra. 18 #7-58, Galán';
+      const senaTelefono = '67494999';
 
-  
-        // Verificar si el email sena existe
-        const existingEmailSena = await this.findOne({ where: { email_sena: senaEmail } });
-        if (existingEmailSena) {
-          console.log('La sede sena ya existe.');
-          return; 
-        }
-  
-        // Crear el usuario administrador con la contraseña hasheada
-        await this.create({
-          email_sena: senaEmail,
-          nombre_sede: senaNombre,
-          direccion: senaDireccion, // El correo ya está verificado
-          NIT: senaNIT,
-          telefono: senaTelefono,
-          ciudad_ID: 1 // Asignar el ID de la ciudad correspondiente (Armenia)
-        });
-  
-        console.log('sede sena creado con éxito.');
-      } catch (error) {
-        console.error('Error al crear la sede sena:', error);
+      // Leer la imagen y convertirla a base64
+      const imgPath = path.join(__dirname, '../Img/sena.png');
+      let img_sena_base64 = null;
+      try {
+        const imgBuffer = fs.readFileSync(imgPath);
+        img_sena_base64 = imgBuffer.toString('base64');
+      } catch (err) {
+        console.error('No se pudo leer la imagen de SENA por defecto:', err);
       }
+
+      // Verificar si el email sena existe
+      const existingEmailSena = await this.findOne({ where: { email_sena: senaEmail } });
+      if (existingEmailSena) {
+        console.log('La sede sena ya existe.');
+        return;
+      }
+
+      // Crear la sede SENA con la imagen en base64
+      await this.create({
+        email_sena: senaEmail,
+        nombre_sede: senaNombre,
+        direccion: senaDireccion,
+        NIT: senaNIT,
+        telefono: senaTelefono,
+        img_sena: img_sena_base64, // Imagen en base64
+        ciudad_ID: 1 // Asignar el ID de la ciudad correspondiente (Armenia)
+      });
+
+      console.log('sede sena creado con éxito.');
+    } catch (error) {
+      console.error('Error al crear la sede sena:', error);
     }
+  }
+
 }
 
 module.exports = Sena;

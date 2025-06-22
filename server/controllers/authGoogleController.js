@@ -1,29 +1,29 @@
-// controllers/auth.controller.js
 const { OAuth2Client } = require('google-auth-library');
-const generalConfig = require('../config/general'); // Importa tu nueva configuración general
+const generalConfig = require('../config/general');
 const jwt = require('jsonwebtoken');
+
 let dbInstance; // Variable para almacenar la instancia de la base de datos y los modelos
 
 // Esta función se llamará desde app.js para inyectar la instancia de db
-// así el controlador no tiene que llamar a initializeDatabase() por sí mismo
 const setDb = (databaseInstance) => {
-    dbInstance  = databaseInstance;
+    dbInstance = databaseInstance;
 };
 
 const client = new OAuth2Client(generalConfig.googleClientId);
 
 /**
- * Maneja el inicio de sesión/registro con Google.
- * Recibe el ID Token del frontend, lo verifica y procesa el usuario.
+ * Maneja el inicio de sesión con Google.
+ * Si el usuario existe por googleId, inicia sesión.
+ * Si existe por email pero no tiene googleId, lo asocia y permite el login.
+ * Si no existe, pide registro.
  */
 const googleSignIn = async (req, res) => {
     if (!dbInstance || !dbInstance.Usuario) {
-        // Esto debería prevenir errores si el controlador se usa antes de que la DB esté lista
         console.error('Error: La instancia de la base de datos o el modelo Usuario no están disponibles.');
         return res.status(500).json({ success: false, message: 'El servidor no está completamente inicializado.' });
     }
 
-    const { idToken } = req.body; // El ID Token enviado desde el frontend
+    const { idToken } = req.body;
 
     if (!idToken) {
         return res.status(400).json({ success: false, message: 'No se proporcionó token de Google.' });
@@ -53,32 +53,44 @@ const googleSignIn = async (req, res) => {
             return res.status(400).json({ success: false, message: 'El correo electrónico de Google no está verificado.' });
         }
 
-        // Buscar usuario en tu base de datos
-        const user = await dbInstance.Usuario.findOne({ where: { googleId: googleId } });
+        // Buscar usuario por googleId y por email
+        const userByGoogleId = await dbInstance.Usuario.findOne({ where: { googleId: googleId } });
+        const userByEmail = await dbInstance.Usuario.findOne({ where: { email: email } });
 
-        if (user) {
-            console.log('Usuario existente ha iniciado sesión con Google:', user.email);
-            // Si el usuario ya existe, actualiza sus datos si han cambiado en Google
-            await user.update({
+        if (userByGoogleId) {
+            // Usuario ya tiene googleId, login normal
+            await userByGoogleId.update({
                 nombres: nombres,
                 apellidos: apellidos,
                 foto_perfil: foto_perfil,
                 verificacion_email: true,
             });
-
-            // Generar token JWT y devolver la información del usuario
-            return generateTokenAndRespond(user, res);
+            return generateTokenAndRespond(userByGoogleId, res);
+        } else if (userByEmail) {
+            // Usuario existe por email, pero no tiene googleId: actualízalo
+            await userByEmail.update({
+                googleId: googleId,
+                nombres: nombres,
+                apellidos: apellidos,
+                foto_perfil: foto_perfil,
+                verificacion_email: true,
+            });
+            return generateTokenAndRespond(userByEmail, res);
         } else {
             return res.status(400).json({ success: false, message: 'Correo no registrado. Por favor, regístrese primero.' });
         }
     } catch (error) {
-        // Manejo de errores
         console.error('Error al procesar el inicio de sesión con Google:', error);
         res.status(500).json({ success: false, message: 'Error interno del servidor al autenticar con Google.' });
     }
 };
+
+/**
+ * Maneja el registro con Google.
+ * Recibe el tipo de cuenta desde el frontend.
+ */
 const googleSignUp = async (req, res) => {
-    const { idToken } = req.body;
+    const { idToken, accountType } = req.body;
 
     if (!idToken) {
         return res.status(400).json({ success: false, message: 'No se proporcionó token de Google.' });
@@ -115,7 +127,7 @@ const googleSignUp = async (req, res) => {
             return res.status(400).json({ success: false, message: 'El correo ya está registrado. Por favor, inicie sesión.' });
         }
 
-        // Crear nuevo usuario
+        // Crear nuevo usuario con el tipo de cuenta recibido
         console.log('Creando nuevo usuario con Google:', email);
         const user = await dbInstance.Usuario.create({
             googleId: googleId,
@@ -123,12 +135,11 @@ const googleSignUp = async (req, res) => {
             nombres: nombres,
             apellidos: apellidos,
             foto_perfil: foto_perfil,
-            accountType: 'Aprendiz',
+            accountType: accountType || 'Aprendiz',
             verificacion_email: true,
             password: null,
         });
 
-        // Generar token JWT y devolver la información del usuario
         return generateTokenAndRespond(user, res);
     } catch (error) {
         console.error('Error al procesar el registro con Google:', error);
@@ -166,5 +177,7 @@ const generateTokenAndRespond = (user, res) => {
 };
 
 module.exports = {
-    googleSignIn, setDb, googleSignUp
+    googleSignIn,
+    setDb,
+    googleSignUp
 };

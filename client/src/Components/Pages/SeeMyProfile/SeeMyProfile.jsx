@@ -6,6 +6,7 @@ import { Footer } from '../../../Components/Layouts/Footer/Footer';
 import { Main } from '../../../Components/Layouts/Main/Main';
 import axiosInstance from '../../../config/axiosInstance';
 import { Header } from '../../Layouts/Header/Header';
+import fotoPerfilDefect from "../../../assets/Icons/userDefect.png";
 
 export const SeeMyProfile = () => {
     const location = useLocation();
@@ -14,6 +15,30 @@ export const SeeMyProfile = () => {
     const [perfil, setPerfil] = useState(null);
     const [tipoCuenta, setTipoCuenta] = useState('');
     const [editMode, setEditMode] = useState(false);
+
+    const getImageSrcFromBase64OrPath = (foto_perfil) => {
+        if (!foto_perfil) return fotoPerfilDefect;
+        if (typeof foto_perfil === "object" && foto_perfil.data) {
+            const base64String = btoa(
+                new Uint8Array(foto_perfil.data).reduce(
+                    (data, byte) => data + String.fromCharCode(byte),
+                    ""
+                )
+            );
+            return `data:image/jpeg;base64,${base64String}`;
+        }
+        // Si es base64 string
+        if (typeof foto_perfil === "string") {
+            if (foto_perfil.startsWith("iVBOR")) {
+                return `data:image/png;base64,${foto_perfil}`;
+            } else if (foto_perfil.startsWith("/9j/")) {
+                return `data:image/jpeg;base64,${foto_perfil}`;
+            } else {
+                return `data:image/jpeg;base64,${foto_perfil}`;
+            }
+        }
+        return fotoPerfilDefect;
+    };
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -48,7 +73,6 @@ export const SeeMyProfile = () => {
         }
     };
 
-
     const handleSaveChanges = async () => {
         try {
             // Clonamos el perfil
@@ -59,7 +83,7 @@ export const SeeMyProfile = () => {
                 payload.empresa = JSON.stringify(perfil.Empresa);
             }
 
-            await axiosInstance.put(`/api/users/profile/${userId}`, payload);
+            await axiosInstance.put(`/api/users/perfil/actualizar/${userId}`, payload);
             alert('Perfil actualizado con éxito');
             setEditMode(false);
         } catch (error) {
@@ -75,8 +99,11 @@ export const SeeMyProfile = () => {
                 <div className='container_mainSeeMyProfile'>
                     <div className='container_profile'>
                         <h3>{tipoCuenta}</h3>
-                        <img src="" alt="" />
-                        <h4>Datos <span>{tipoCuenta}</span></h4>
+                        <img
+                            src={getImageSrcFromBase64OrPath(perfil?.foto_perfil)}
+                            alt="Foto de perfil"
+                            className="profile-img"
+                        />                        <h4>Datos <span>{tipoCuenta}</span></h4>
 
                         <p>
                             Nombres <br />
@@ -157,8 +184,11 @@ export const SeeMyProfile = () => {
 
                             <div className='container_nameCompany-Status'>
                                 <div className='name_company'>
-                                    <img src="" alt="" />
-                                    <div>
+                                    <img
+                                        src={getImageSrcFromBase64OrPath(perfil?.Sena?.img_sena)}
+                                        alt="Logo sede"
+                                        className="profile-img"
+                                    />                                    <div>
                                         <h3>{perfil.Sena.nombre_sede || '-'}</h3>
                                         <p>
                                             NIT: {perfil.Sena.NIT || '-'}
@@ -190,6 +220,7 @@ export const SeeMyProfile = () => {
                             </div>
                             <div className='container_data'>
                                 <div className='data_company'>
+                                    <h4 id='titleDataSede'>Datos sede</h4>
                                     <p>
                                         Dirección: <br />
                                         {perfil.Sena.direccion || '-'}
@@ -227,8 +258,11 @@ export const SeeMyProfile = () => {
                         <div className='container_data_company'>
                             <div className='container_nameCompany-Status'>
                                 <div className='name_company'>
-                                    <img src="" alt="" />
-                                    <div>
+                                    <img
+                                        src={getImageSrcFromBase64OrPath(perfil?.Empresa?.img_empresa)}
+                                        alt="Logo empresa"
+                                        className="profile-img"
+                                    />                                    <div>
                                         <h3>{perfil.Empresa.nombre_empresa || '-'}</h3>
                                         <p>
                                             NIT: {perfil.Empresa.NIT || '-'}
@@ -261,6 +295,8 @@ export const SeeMyProfile = () => {
 
                             <div className='container_data'>
                                 <div className='data_company'>
+                                    <h4 id='titleDataSede'>Datos Emoresa</h4>
+
                                     <p>
                                         Dirección: <br />
                                         {editMode ? (

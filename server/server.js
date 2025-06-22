@@ -33,7 +33,8 @@ cron.schedule('0 * * * *', async () => {
 });
 
 const app = express();
-
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 const allowedOrigins = [
   "http://localhost:5173"

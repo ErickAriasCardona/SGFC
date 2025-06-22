@@ -102,8 +102,9 @@ export const SeeCourse = () => {
 
                                     </div>
                                     <div className="offer-type-container">
-                                        <span>Empresa: {curso.Empresa.nombre_empresa} </span>
-
+                                        <span>
+                                            Empresa: {curso.Empresa?.nombre_empresa ? curso.Empresa.nombre_empresa : "Sin empresa asignada"}
+                                        </span>
                                     </div>
                                     <p id='p_addInstructor'> Instructor: Sin asignar</p>
                                 </div>
@@ -117,15 +118,15 @@ export const SeeCourse = () => {
                                     </button>
                                 </div>
                             </div>
-                        {/* Mostrar botón solo si el usuario es Administrador o Gestor */}
-                        {userSession && (userSession.accountType === 'Administrador' || userSession.accountType === 'Gestor') && (
-                            <button
-                                className='editCourse'
-                                onClick={() => navigate(`/Cursos/ActualizarCurso/${id}`)}
-                            >
-                                Editar Curso
-                            </button>
-                        )}
+                            {/* Mostrar botón solo si el usuario es Administrador o Gestor */}
+                            {userSession && (userSession.accountType === 'Administrador' || userSession.accountType === 'Gestor') && (
+                                <button
+                                    className='editCourse'
+                                    onClick={() => navigate(`/Cursos/ActualizarCurso/${id}`)}
+                                >
+                                    Editar Curso
+                                </button>
+                            )}
                         </div>
                     </div>
 

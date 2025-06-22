@@ -1,26 +1,21 @@
 import React, { useState, useEffect } from "react";
 import "./UpdateInstructor.css";
 import axiosInstance from "../../../../config/axiosInstance"; // Asegúrate de ajustar esta ruta según la estructura de tu proyecto
-import { Routes, Route, useNavigate } from "react-router-dom";
 
 export const UpdateInstructor = ({ instructor }) => {
-  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ ...instructor });
   const [cantidadCursos, setCantidadCursos] = useState(0);
-
-  // Validación de sesión de usuario y rol de administrador
-  const userSessionString = sessionStorage.getItem("userSession");
-  const userSession = userSessionString ? JSON.parse(userSessionString) : null;
 
   useEffect(() => {
     const obtenerCursosAsignados = async () => {
       try {
         console.log("ID del instructor seleccionado:", instructor.ID); // 👈 Valida el ID aquí
 
-
-        const response = await axiosInstance.get(`/api/courses/cursos-asignados/${instructor.ID}`);
-        console.log('Cursos asignados:', response.data); // 👈 Aquí puedes ver lo que devuelve el backend
+        const response = await axiosInstance.get(
+          `/api/courses/cursos-asignados/${instructor.ID}`
+        );
+        console.log("Cursos asignados:", response.data); // 👈 Aquí puedes ver lo que devuelve el backend
 
         if (Array.isArray(response.data)) {
           setCantidadCursos(response.data.length);
@@ -87,7 +82,7 @@ export const UpdateInstructor = ({ instructor }) => {
       }
 
       const response = await axiosInstance.put(
-        `/api/users/perfil/actualizar/${instructor.ID}}`,
+        `/api/users/perfil/actualizar/${formData.ID}`,
         formDataToSend,
         {
           headers: {
@@ -113,102 +108,167 @@ export const UpdateInstructor = ({ instructor }) => {
     }
   };
 
-
-    return (
-      <div id="modal-overlayUpdateInstructor" style={{ display: 'flex' }}>
-        <form className="modal-bodyUpdateInstructor" onSubmit={handleButtonClick}>
-          <div className="modal-left-update">
-            {['nombres', 'apellidos', 'documento', 'titulo_profesional', 'celular', 'email'].map((field) => (
-              <label key={field}>
-                {field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ')}
-                <input
-                  type={field === 'email' ? 'email' : 'text'}
-                  name={field}
-                  value={formData[field] || ''}
-                  readOnly={!isEditing}
-                  onChange={handleChange}
-                  className={`form-input ${!isEditing ? 'read-only' : ''}`}
-                />
-              </label>
-            ))}
-          </div>
-
-          <div className="modal-right">
-            <input
-              type="file"
-              accept="image/*"
-              hidden={!isEditing}
-              disabled={!isEditing}
-              onChange={handleImageChange}
-              id="imageUpload"
-            />
-
-            <label
-              className={`upload-area-update ${!isEditing ? "read-only-border" : ""
-                }`}
-              htmlFor="imageUpload"
-            >
-              {" "}
-              {formData.foto_perfil instanceof File ? (
-                <img
-                  src={URL.createObjectURL(formData.foto_perfil)}
-                  alt="Vista previa"
-                  className="preview-image"
-                />
-              ) : formData.foto_perfil ? (
-                <img
-                  src={formData.foto_perfil}
-                  alt="Foto de perfil"
-                  className="preview-image-update"
-                />
-              ) : (
-                <div className="upload-placeholder">
-                  <p>Sin imagen disponible</p>
-                </div>
-              )}
-            </label>
-
-            <div className="status-container">
-              <span>Estado:</span>
+  return (
+    <div id="modal-overlayUpdateInstructor" style={{ display: "flex" }}>
+      <form className="modal-bodyUpdateInstructor" onSubmit={handleButtonClick}>
+        <div className="modal-left-update">
+          <p>
+            <strong>Nombres:</strong>{" "}
+            {isEditing ? (
+              <input
+                type="text"
+                name="nombres"
+                className="input_updateData"
+                value={formData.nombres || ""}
+                onChange={handleChange}
+              />
+            ) : (
+              <span className="valor-campo">{formData.nombres || ""}</span>
+            )}
+          </p>
+          <p>
+            <strong>Apellidos:</strong>{" "}
+            {isEditing ? (
+              <input
+                type="text"
+                name="apellidos"
+                className="input_updateData"
+                value={formData.apellidos || ""}
+                onChange={handleChange}
+              />
+            ) : (
+              <span className="valor-campo">{formData.apellidos || ""}</span>
+            )}
+          </p>
+          <p>
+            <strong>Cédula:</strong>{" "}
+            {isEditing ? (
+              <input
+                type="text"
+                name="documento"
+                className="input_updateData"
+                value={formData.documento || ""}
+                onChange={handleChange}
+              />
+            ) : (
+              <span className="valor-campo">{formData.documento || ""}</span>
+            )}
+          </p>
+          <p>
+            <strong>Título Profesional:</strong>{" "}
+            {isEditing ? (
+              <input
+                type="text"
+                name="titulo_profesional"
+                className="input_updateData"
+                value={formData.titulo_profesional || ""}
+                onChange={handleChange}
+              />
+            ) : (
+              <span className="valor-campo">{formData.titulo_profesional || ""}</span>
+            )}
+          </p>
+          <p>
+            <strong>Celular:</strong>{" "}
+            {isEditing ? (
+              <input
+                type="text"
+                name="celular"
+                className="input_updateData"
+                value={formData.celular || ""}
+                onChange={handleChange}
+              />
+            ) : (
+              <span className="valor-campo">{formData.celular || ""}</span>
+            )}
+          </p>
+          <p>
+            <strong>Email:</strong>{" "}
+            {isEditing ? (
+              <input
+                type="email"
+                name="email"
+                className="input_updateData"
+                value={formData.email || ""}
+                onChange={handleChange}
+              />
+            ) : (
+              <span className="valor-campo">{formData.email || ""}</span>
+            )}
+          </p>
+          <p>
+            <strong>Estado:</strong>{" "}
+            {isEditing ? (
               <div className="status-buttons">
-                {isEditing ? (
-                  ["Activo", "Inactivo"].map((estado) => (
-                    <button
-                      key={estado}
-                      type="button"
-                      className={`status ${formData.estado === estado ? "active" : ""
-                        }`}
-                      onClick={() => handleEstadoChange(estado)}
-                    >
-                      {estado}
-                    </button>
-                  ))
-                ) : (
-                  <button type="button" className="status active">
-                    {formData.estado}
+                {["Activo", "Inactivo"].map((estado) => (
+                  <button
+                    key={estado}
+                    type="button"
+                    className={`status ${formData.estado === estado ? "active" : ""}`}
+                    onClick={() => handleEstadoChange(estado)}
+                  >
+                    {estado}
                   </button>
-                )}
+                ))}
               </div>
-            </div>
-            <p className="cursosAsignados">
-              Cursos Asignados: {cantidadCursos}
-            </p>
+            ) : (
+              <span className="valor-campo">{formData.estado}</span>
+            )}
+          </p>
 
-            <button type="submit" className="edit-button-updateInstructor">
-              {isEditing ? "Guardar Cambios" : "Actualizar Perfil"}
-            </button>
-          </div>
+          <p className="cursosAsignados">
+            <strong>Cursos Asignados:</strong> {cantidadCursos}
+          </p>
+        </div>
 
-          <div className="container_return_UpdateInstructor">
-            <h5>Volver</h5>
-            <button
-              type="button"
-              onClick={closeModalUpdateInstructor}
-              className="closeModal"
-            ></button>
-          </div>
-        </form>
-      </div>
-    );
+        <div className="modal-right">
+          <input
+            type="file"
+            accept="image/*"
+            hidden={!isEditing}
+            disabled={!isEditing}
+            onChange={handleImageChange}
+            id="imageUpload"
+          />
 
+          <label
+            className={`upload-area-update ${!isEditing ? "read-only-border" : ""}`}
+            htmlFor="imageUpload"
+          >
+            {formData.foto_perfil instanceof File ? (
+              <img
+                src={URL.createObjectURL(formData.foto_perfil)}
+                alt="Vista previa"
+                className="preview-image"
+              />
+            ) : formData.foto_perfil ? (
+              <img
+                src={`data:image/jpeg;base64,${formData.foto_perfil}`}
+                alt="Foto de perfil"
+                className="preview-image-update"
+              />
+            ) : (
+              <div className="upload-placeholder">
+                <p>Sin imagen disponible</p>
+              </div>
+            )}
+          </label>
+
+          <button type="submit" className="edit-button-updateInstructor">
+            {isEditing ? "Guardar Cambios" : "Actualizar Perfil"}
+          </button>
+        </div>
+
+
+        <div className="container_return_UpdateInstructor">
+          <h5>Volver</h5>
+          <button
+            type="button"
+            onClick={closeModalUpdateInstructor}
+            className="closeModal"
+          ></button>
+        </div>
+      </form>
+    </div>
+  );
 };

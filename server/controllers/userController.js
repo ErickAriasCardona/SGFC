@@ -12,7 +12,7 @@ const Empresa = require('../models/empresa'); // Importar el modelo Empresa
 const Sena = require('../models/sena'); // Importar el modelo Sena
 const Departamento = require('../models/departamento'); // Importar el modelo Departamento 
 const Ciudad = require('../models/ciudad'); // Importar el modelo Ciudad
-
+const fotoDefectPerfil = '../Img/userDefect.png'; // Importar la imagen por defecto
 
 
 //registrar usuario (empresa o aprendiz)
@@ -55,22 +55,22 @@ const registerUser = async (req, res) => {
             titulo_profesional: titulo_profesional || null,
             verificacion_email: false,
             token,
+            foto_perfil: fotoDefectPerfil // <-- FOTO POR DEFECTO
         });
 
         // Si el tipo de cuenta es Empresa, crear un registro en la tabla Empresa y relacionarlo con el usuario
         if (accountType === 'Empresa') {
             const nuevaEmpresa = await Empresa.create({
-                NIT: null, // Inicialmente vacío
-                email_empresa: null, // Usar el email del usuario como email de la empresa
-                nombre_empresa: null, // Inicialmente vacío
-                direccion: null, // Inicialmente vacío
-                estado: 'inactivo', // Estado por defecto
-                categoria: null, // Inicialmente vacío
-                telefono: null, // Inicialmente vacío
-                img_empresa: null, // Inicialmente vacío
+                NIT: null,
+                email_empresa: null,
+                nombre_empresa: null,
+                direccion: null,
+                estado: 'inactivo',
+                categoria: null,
+                telefono: null,
+                img_empresa: null,
             });
 
-            // Relacionar el usuario con la empresa
             newUser.empresa_ID = nuevaEmpresa.ID;
             await newUser.save();
         }
@@ -119,51 +119,53 @@ const verifyEmail = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-
-        // Validar datos de entrada
         if (!email || !password) {
             return res.status(400).json({ message: "Todos los campos son obligatorios" });
         }
 
-        // Buscar usuario por correo
         const user = await User.findOne({ where: { email } });
-        if (!user) {
-            return res.status(400).json({ message: "Usuario o contraseña incorrectos" });
+        if (!user || !user.verificacion_email) {
+            return res.status(403).json({ message: "Credenciales inválidas o correo no verificado." });
         }
 
-        // Validar si el correo está verificado
-        if (!user.verificacion_email) {
-            return res.status(403).json({ message: "Debes verificar tu correo antes de iniciar sesión." });
-        }
-
-        // Comparar contraseñas
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(400).json({ message: "Usuario o contraseña incorrectos" });
         }
 
-        // Generar token JWT
-        const token = jwt.sign(
+        // Access token (15 min) y Refresh token (7 días)
+        const accessToken = jwt.sign(
             { id: user.ID, email: user.email, accountType: user.accountType },
             process.env.JWT_SECRET || "secret",
-            { expiresIn: "1h" }
+            { expiresIn: "1m" }
         );
 
-        // Enviar el token como una cookie HTTP-only
-        res.cookie("token", token, {
+        const refreshToken = jwt.sign(
+            { id: user.ID },
+            process.env.JWT_SECRET || "secret",
+            { expiresIn: "7d" }
+        );
+
+        // Guardar refresh token en la cookie
+        res.cookie("accessToken", accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // Solo en HTTPS en producción
+            secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
-            maxAge: 3600000, // 1 hora
+            maxAge: 15 * 60 * 1000 // 15 minutos
         });
 
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
+        });
 
         res.status(200).json({
             message: "Inicio de sesión exitoso",
             id: user.ID,
-            accountType: user.accountType,
             email: user.email,
-            token: token
+            accountType: user.accountType
         });
     } catch (error) {
         console.error(error);
@@ -171,14 +173,58 @@ const loginUser = async (req, res) => {
     }
 };
 
+//refrescar el acces web token
+const refreshAccessToken = async (req, res) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+        if (!refreshToken) {
+            return res.status(401).json({ message: "Refresh token faltante" });
+        }
+
+        const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET || "secret");
+        // Buscar usuario para obtener email y accountType
+        const user = await User.findByPk(decoded.id);
+        if (!user) {
+            return res.status(401).json({ message: "Usuario no encontrado" });
+        }
+
+        const accessToken = jwt.sign(
+            { id: user.ID, email: user.email, accountType: user.accountType },
+            process.env.JWT_SECRET || "secret",
+            { expiresIn: "15m" }
+        );
+
+        res.cookie("accessToken", accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 15 * 60 * 1000 // 15 minutos
+        });
+
+        res.status(200).json({ message: "Token renovado" });
+    } catch (error) {
+        console.error("Error al refrescar el token:", error);
+        res.status(401).json({ message: "Refresh token inválido o expirado" });
+    }
+};
+
+//cerrar sesion 
 const logoutUser = (req, res) => {
-    res.clearCookie("token", {
+    res.clearCookie("accessToken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
     });
+
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+    });
+
     res.status(200).json({ message: "Sesión cerrada correctamente" });
 };
+
 
 // Solicitud de restablecimiento de contraseña
 const requestPasswordReset = async (req, res) => {
@@ -371,51 +417,52 @@ const getEmpresas = async (req, res) => {
 
 //obtener empresa(activa) por ID 
 const getEmpresaByNIT = async (req, res) => {
-  try {
-    const { NIT } = req.params;
+    try {
+        const { NIT } = req.params;
 
-    const empresa = await Empresa.findOne({
-      where: {
-        NIT,
-        estado: 'Activo'
-      }
-    });
+        const empresa = await Empresa.findOne({
+            where: {
+                NIT,
+                estado: 'Activo'
+            }
+        });
 
-    if (!empresa) {
-      return res.status(404).json({ message: 'Empresa no encontrada o no está activa.' });
+        if (!empresa) {
+            return res.status(404).json({ message: 'Empresa no encontrada o no está activa.' });
+        }
+
+        res.status(200).json(empresa);
+    } catch (error) {
+        console.error('Error al obtener la empresa:', error);
+        res.status(500).json({ message: 'Error al obtener la empresa.' });
     }
-
-    res.status(200).json(empresa);
-  } catch (error) {
-    console.error('Error al obtener la empresa:', error);
-    res.status(500).json({ message: 'Error al obtener la empresa.' });
-  }
 };
 
-//Consultar lista de instructores
+// Consultar lista de instructores
 const getInstructores = async (req, res) => {
     try {
         const instructores = await User.findAll({
             where: { accountType: 'Instructor' },
-            attributes: ['ID', 'email', 'nombres', 'apellidos', 'estado', 'celular', 'documento', 'foto_perfil', 'titulo_profesional'],
+            attributes: [
+                'ID',
+                'email',
+                'nombres',
+                'apellidos',
+                'estado',
+                'celular',
+                'documento',
+                'foto_perfil',
+                'titulo_profesional'
+            ],
         });
 
-        // Transformar el campo foto_perfil para devolver una URL
-        const instructoresConFoto = instructores.map((instructor) => {
-            return {
-                ...instructor.toJSON(),
-                foto_perfil: instructor.foto_perfil
-                    ? `https://sgfc-production.up.railway.app/${instructor.foto_perfil}` // Construir la URL completa
-                    : null, // Si no hay foto, devolver null
-            };
-        });
-
-        res.status(200).json(instructoresConFoto);
+        res.status(200).json(instructores);
     } catch (error) {
         console.error('Error al obtener los instructores:', error);
         res.status(500).json({ message: 'Error al obtener los instructores.' });
     }
 };
+
 
 //Consultar lista de gestores
 const getGestores = async (req, res) => {
@@ -425,17 +472,7 @@ const getGestores = async (req, res) => {
             attributes: ['ID', 'email', 'nombres', 'apellidos', 'estado', 'celular', 'documento', 'foto_perfil'],
         });
 
-        // Transformar el campo foto_perfil para devolver una URL
-        const gestoresConFoto = gestores.map((gestor) => {
-            return {
-                ...gestor.toJSON(),
-                foto_perfil: gestor.foto_perfil
-                    ? `https://sgfc-production.up.railway.app//${gestor.foto_perfil}` // Construir la URL completa
-                    : null, // Si no hay foto, devolver null
-            };
-        });
-
-        res.status(200).json(gestoresConFoto);
+        res.status(200).json(gestores);
     } catch (error) {
         console.error('Error al obtener los gestores:', error);
         res.status(500).json({ message: 'Error al obtener los gestores.' });
@@ -465,7 +502,7 @@ const updateUserProfile = async (req, res) => {
             foto_perfil = req.file.buffer.toString('base64');
         }
 
-        const token = req.cookies.token;
+        const token = req.cookies.accessToken
         if (!token) {
             return res.status(401).json({ message: "No autorizado. Debes iniciar sesión." });
         }
@@ -764,7 +801,7 @@ const createGestor = async (req, res) => {
 const getAprendicesByEmpresa = async (req, res) => {
     try {
         // Verifica el token y obtiene el usuario logueado
-        const token = req.cookies.token;
+        const token = req.cookies.accessToken
         if (!token) {
             return res.status(401).json({ message: "No autorizado. Debes iniciar sesión." });
         }
@@ -897,4 +934,4 @@ const createMasiveUsers = async (req, res) => {
 }
 
 
-module.exports = { getAprendicesByEmpresa, registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers, getEmpresaByNIT };
+module.exports = { refreshAccessToken, getAprendicesByEmpresa, registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers, getEmpresaByNIT };

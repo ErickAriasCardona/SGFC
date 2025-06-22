@@ -1,5 +1,5 @@
 const express = require("express");
-const { getAprendicesByEmpresa, registerUser, verifyEmail, loginUser,requestPasswordReset,resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile,createInstructor, createGestor,logoutUser, createMasiveUsers, getEmpresaByNIT } = require("../controllers/userController");
+const { refreshAccessToken, getAprendicesByEmpresa, registerUser, verifyEmail, loginUser,requestPasswordReset,resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile,createInstructor, createGestor,logoutUser, createMasiveUsers, getEmpresaByNIT } = require("../controllers/userController");
 const { googleSignIn, googleSignUp } = require("../controllers/authGoogleController"); // Importar controlador de autenticación de Google
 const router = express.Router();
 const upload = require("../config/multer"); // Importar configuración de multer
@@ -12,7 +12,7 @@ router.post("/auth/googleSignUp", googleSignUp); // Ruta para registrar usuario 
 router.post("/requestPasswordReset", requestPasswordReset); // Solicitar recuperación de contraseña
 router.post("/resetPassword", resetPassword); // Restablecer contraseña
 router.get("/users",getAllUsers); // Obtener todos los usuarios
-router.get('/perfil/:id', getUserProfile); // Obtener perfil de usuario por ID
+router.get('/profile/:id', getUserProfile); // Obtener perfil de usuario por ID
 router.get('/aprendices', getAprendices); // Obtener todos los aprendices
 router.get('/empresas', getEmpresas); // Obtener todas las empresas
 router.get('/instructores', getInstructores); // Obtener todos los instructores
@@ -24,6 +24,7 @@ router.post("/logout", logoutUser);
 router.get("/empresa/empleados/:id", getAprendicesByEmpresa); // Obtener aprendices por ID de empresa
 router.post('/createMasiveUsers', upload.single('archivo_xlsx'), createMasiveUsers)
 router.get("/empresa/:NIT", getEmpresaByNIT); // Obtener empresa por ID
+router.post("/refresh", refreshAccessToken);
 
 router.get("/", (req, res) => {
     res.send("🚀 API funcionando correctamente");

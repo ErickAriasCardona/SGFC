@@ -3,24 +3,20 @@ import "./CreateInstructor.css";
 import addIMG from "../../../../assets/Icons/addImg.png";
 import axiosInstance from "../../../../config/axiosInstance";
 import { Routes, Route, useNavigate } from "react-router-dom";
+import fotoPerfilDefect from '../../../../assets/Icons/userDefect.png';
 
 export const CreateInstructor = ({ onClose }) => {
-  const navigate = useNavigate();
 
   // Validación de sesión de usuario y rol de administrador
   const userSessionString = sessionStorage.getItem("userSession");
   const userSession = userSessionString ? JSON.parse(userSessionString) : null;
-  const acces_granted =
-    userSessionString &&
-    (userSession.accountType === "Administrador" ||
-      userSession.accountType === "Gestor");
 
   const fileInputRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const [formData, setFormData] = useState({
     nombres: "",
     apellidos: "",
-    cedula: "",
+    documento: "",
     titulo_profesional: "",
     celular: "",
     email: "",
@@ -57,12 +53,18 @@ export const CreateInstructor = ({ onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Crear un objeto FormData
     const data = new FormData();
-    data.append("foto_perfil", file);
+    if (file) {
+      data.append("foto_perfil", file);
+    } else {
+      // Si no hay archivo, usa la imagen por defecto
+      const response = await fetch(fotoPerfilDefect);
+      const blob = await response.blob();
+      data.append("foto_perfil", blob, "fotoPerfilDefect.png");
+    }
     data.append("nombres", formData.nombres);
     data.append("apellidos", formData.apellidos);
-    data.append("cedula", formData.cedula);
+    data.append("documento", formData.documento);
     data.append("titulo_profesional", formData.titulo_profesional);
     data.append("celular", formData.celular);
     data.append("email", formData.email);
@@ -78,9 +80,7 @@ export const CreateInstructor = ({ onClose }) => {
       alert("Instructor creado con éxito");
       console.log(response.data);
 
-      // Cerrar el modal y recargar la página
-      document.getElementById("modal-overlayCreateInstructor").style.display =
-        "none";
+      document.getElementById("modal-overlayCreateInstructor").style.display = "none";
       window.location.reload();
     } catch (error) {
       console.error("Error al crear el instructor:", error);
@@ -90,147 +90,143 @@ export const CreateInstructor = ({ onClose }) => {
       alert(`Error: ${errorMsg}`);
     }
   };
-  if (acces_granted) {
-    return (
-      <div id="modal-overlayCreateInstructor">
-        <form className="modal-bodyCreateInstructor" onSubmit={handleSubmit}>
-          <div className="modal-left">
-            <label>
-              Nombres
-              <input
-                type="text"
-                name="nombres"
-                value={formData.nombres}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-            <label>
-              Apellidos
-              <input
-                type="text"
-                name="apellidos"
-                value={formData.apellidos}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-            <label>
-              Cédula
-              <input
-                type="text"
-                name="cedula"
-                value={formData.cedula}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-            <label>
-              Título
-              <input
-                type="text"
-                name="titulo_profesional"
-                value={formData.titulo_profesional}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-            <label>
-              Celular
-              <input
-                type="text"
-                name="celular"
-                value={formData.celular}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-            <label>
-              Email
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-          </div>
 
-          <div className="modal-right">
+  return (
+    <div id="modal-overlayCreateInstructor">
+      <form className="modal-bodyCreateInstructor" onSubmit={handleSubmit}>
+        <div className="modal-left">
+          <label>
+            Nombres
             <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              hidden
+              type="text"
+              name="nombres"
+              value={formData.nombres}
+              onChange={handleInputChange}
+              required
             />
+          </label>
+          <label>
+            Apellidos
+            <input
+              type="text"
+              name="apellidos"
+              value={formData.apellidos}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+          <label>
+            Cédula
+            <input
+              type="number"
+              name="documento"
+              value={formData.documento}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+          <label>
+            Título
+            <input
+              type="text"
+              name="titulo_profesional"
+              value={formData.titulo_profesional}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+          <label>
+            Celular
+            <input
+              type="number"
+              name="celular"
+              value={formData.celular}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+          <label>
+            Email
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+            />
+          </label>
+        </div>
 
-            <label
-              className="upload-area"
-              onClick={() => fileInputRef.current.click()}
-            >
-              {preview ? (
+        <div className="modal-right">
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            hidden
+          />
+
+          <label
+            className="upload-area"
+            onClick={() => fileInputRef.current.click()}
+          >
+            {preview ? (
+              <img
+                src={preview}
+                alt="Vista previa"
+                className="preview-image"
+              />
+            ) : (
+              <div className="upload-placeholder">
                 <img
-                  src={preview}
-                  alt="Vista previa"
-                  className="preview-image"
+                  src={addIMG}
+                  alt="icono agregar imagen"
+                  className="icon"
                 />
-              ) : (
-                <div className="upload-placeholder">
-                  <img
-                    src={addIMG}
-                    alt="icono agregar imagen"
-                    className="icon"
-                  />
-                  <p>Arrastra o sube la foto del curso aquí.</p>
-                </div>
-              )}
-            </label>
-
-            <div className="status-container">
-              <span>Estado:</span>
-              <div className="status-buttons">
-                <button
-                  type="button"
-                  className={`status ${
-                    formData.estado === "Activo" ? "active" : ""
-                  }`}
-                  onClick={() => setFormData({ ...formData, estado: "Activo" })}
-                >
-                  Activo
-                </button>
-                <button
-                  type="button"
-                  className={`status ${
-                    formData.estado === "Inactivo" ? "active" : ""
-                  }`}
-                  onClick={() =>
-                    setFormData({ ...formData, estado: "Inactivo" })
-                  }
-                >
-                  Inactivo
-                </button>
+                <p>Arrastra o sube la foto del curso aquí.</p>
               </div>
+            )}
+          </label>
+
+          <div className="status-container">
+            <span>Estado:</span>
+            <div className="status-buttons">
+              <button
+                type="button"
+                className={`status ${formData.estado === "Activo" ? "active" : ""
+                  }`}
+                onClick={() => setFormData({ ...formData, estado: "Activo" })}
+              >
+                Activo
+              </button>
+              <button
+                type="button"
+                className={`status ${formData.estado === "Inactivo" ? "active" : ""
+                  }`}
+                onClick={() =>
+                  setFormData({ ...formData, estado: "Inactivo" })
+                }
+              >
+                Inactivo
+              </button>
             </div>
-
-            <button type="submit" className="save-button">
-              Guardar
-            </button>
           </div>
 
-          <div className="container_return_AssignInstructor">
-            <h5>Volver</h5>
-            <button
-              type="button"
-              onClick={closeModalCreateInstructor}
-              className="closeModal"
-            ></button>
-          </div>
-        </form>
-      </div>
-    );
-  } else {
-    navigate("/ProtectedRoute"); // Redirigir a la página de inicio si no es administrador
-  }
+          <button type="submit" className="save-button">
+            Guardar
+          </button>
+        </div>
+
+        <div className="container_return_AssignInstructor">
+          <h5>Volver</h5>
+          <button
+            type="button"
+            onClick={closeModalCreateInstructor}
+            className="closeModal"
+          ></button>
+        </div>
+      </form>
+    </div>
+  );
+
 };

@@ -422,7 +422,6 @@ const updateCurso = async (req, res) => {
   }
 };
 
-
 // Obtener todos los cursos
 const getAllCursos = async (req, res) => {
   try {
