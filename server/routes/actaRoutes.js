@@ -9,6 +9,9 @@ router.post('/actas', actaController.crearActa);
 // Listar todas las actas
 router.get('/actas', actaController.listarActas);
 
+// Filtrar actas por query params
+router.get('/actas/filtrar', actaController.filtrarActas);
+
 // Registrar una firma para un acta
 router.post('/firmas-acta', firmaActaController.crearFirma);
 
