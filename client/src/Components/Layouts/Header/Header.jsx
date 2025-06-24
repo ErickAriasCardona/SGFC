@@ -228,7 +228,7 @@ export const Header = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => 
                   className={location.pathname.startsWith('/Empleados/CrearEmpleado') ? 'active' : ''}
                   onClick={() => handleMenuClick('/Empleados/CrearEmpleado')}
                 >
-                  Crear empleados
+                  Crear empleado
                 </button>
                 <button
                   className={location.pathname.startsWith('/Empleados/CrearVariosEmpleados') ? 'active' : ''}

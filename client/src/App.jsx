@@ -21,11 +21,13 @@ import { GestionsGestor } from './Components/Pages/GestionsGestor/GestionsGestor
 import { SeeMyProfile } from './Components/Pages/SeeMyProfile/SeeMyProfile';
 import { GestionsCompany } from './Components/Pages/GestionsCompany/GestionsCompany';
 import { UpdateEmploye } from './Components/Pages/GestionsEmployes/UpdateEmploye/UpdateEmploye';
-import { SeachEmployes } from './Components/Pages/GestionsEmployes/SeachEmployes/SeachEmployes';
 import { GestionsEmployes } from './Components/Pages/GestionsEmployes/GestionsEmployes';
 import { AttendanceRecords } from './components/Pages/AttendanceRecords/AttendanceRecords';
 import { ManageAttendance } from './Components/Pages/Courses/ManageAttendance/ManageAttendance';
-import {MisCursosAdmin} from './Components/Pages/Courses/MisCursos/MisCursosAdmin/MisCursosAdmin';  
+import { MisCursosAdmin } from './Components/Pages/Courses/MisCursos/MisCursosAdmin/MisCursosAdmin';
+import { RequestCourse } from './Components/Pages/Courses/RequestCourse/RequestCourse';
+
+
 // Importación de modales
 import { NavBar } from './Components/UI/NavBar/NavBar';
 import { Modal_SignIn } from './Components/UI/Modal_SignIn/Modal_SignIn';
@@ -183,7 +185,7 @@ function App() {
           </Layout>
           } />
           <Route path="/Cursos/:id" element={<SeeCourse />} />
-           <Route path="/Cursos/MisCursos" element={
+          <Route path="/Cursos/MisCursos" element={
             <Layout
               setShowSignIn={setShowSignIn}
               setShowSignUp={setShowSignUp}
@@ -192,7 +194,7 @@ function App() {
               <MisCursosAdmin />
             </Layout>
           } />
-          
+
           <Route path="/Cursos/MisCursosAsignados" element={
             <Layout
               setShowSignIn={setShowSignIn}
@@ -243,7 +245,7 @@ function App() {
           } />
 
           <Route path="/no-autorizado" element={<NoAutorizado />} />
-        </Routes>
+          <Route path="/SolicitarCurso/:nombreCurso" element={<RequestCourse />} />        </Routes>
       </>
     </GoogleOAuthProvider>
   );

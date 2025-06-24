@@ -53,13 +53,27 @@ export const CreateEmploye = () => {
     }
     data.append('nombres', formData.nombres);
     data.append('apellidos', formData.apellidos);
-    data.append('cedula', formData.cedula);
+    data.append('documento', formData.cedula); // Cambia 'cedula' por 'documento'
     data.append('celular', formData.celular);
     data.append('email', formData.email);
     data.append('estado', formData.estado);
 
     try {
-      const response = await axiosInstance.post('/crearEmploye', data, {
+      // Obtener empresa_ID de la sesión
+      let userSessionString = localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
+      if (!userSessionString) {
+        alert("No se encontró la sesión de usuario.");
+        return;
+      }
+      const userSession = JSON.parse(userSessionString);
+      const empresaId = userSession.empresa_ID;
+      if (!empresaId) {
+        alert("No se encontró el ID de la empresa en la sesión.");
+        return;
+      }
+
+      // Usar el endpoint correcto
+      const response = await axiosInstance.post(`/api/users/empresa/${empresaId}/empleados`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

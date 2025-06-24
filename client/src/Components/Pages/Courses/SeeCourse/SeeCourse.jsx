@@ -127,6 +127,14 @@ export const SeeCourse = () => {
                                     Editar Curso
                                 </button>
                             )}
+                            {/* Mostrar botón solo si el usuario es Empresa */}
+                            {userSession && (userSession.accountType === 'Empresa') && (
+                                <button
+                                    className='editCourse'
+                                    onClick={() => navigate(`/SolicitarCurso/${encodeURIComponent(curso.nombre_curso)}`)}                                >
+                                    Solicitar Curso
+                                </button>
+                            )}
                         </div>
                     </div>
 

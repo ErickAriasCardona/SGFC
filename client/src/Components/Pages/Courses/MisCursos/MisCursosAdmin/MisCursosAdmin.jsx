@@ -12,31 +12,69 @@ export const MisCursosAdmin = () => {
     const [current, setCurrent] = useState(0);
     const [direction, setDirection] = useState("next");
     const [filtroActivo, setFiltroActivo] = useState("Todos");
+    const [loading, setLoading] = useState(true);
 
     const navigate = useNavigate();
 
+    // Obtener datos del usuario logueado (ajusta según tu auth)
+    const user = JSON.parse(localStorage.getItem("user")) || {};
+    const empresaId = user.Empresa?.ID || user.empresa_ID; // Ajusta según cómo guardes la empresa
+
     useEffect(() => {
         const fetchCursos = async () => {
+            setLoading(true);
             try {
-                const response = await axiosInstance.get("/api/courses/cursos");
-                setTodosLosCursos(response.data);
-                setCursos(response.data);
+                // Obtener datos de sesión desde localStorage o sessionStorage
+                const userSession =
+                    JSON.parse(localStorage.getItem("userSession")) ||
+                    JSON.parse(sessionStorage.getItem("userSession")) ||
+                    {};
+
+                const accountType = userSession.accountType;
+                const empresaId = userSession.Empresa?.ID || userSession.empresa_ID;
+
+                let response;
+                if (accountType === "Administrador" || accountType === "Gestor") {
+                    response = await axiosInstance.get("/api/courses/cursos");
+                    setTodosLosCursos(response.data);
+                    setCursos(response.data);
+                } else if (accountType === "Empresa" && empresaId) {
+                    response = await axiosInstance.get(`/api/courses/empresa/${empresaId}`);
+                    setTodosLosCursos(response.data.cursos || []);
+                    setCursos(response.data.cursos || []);
+                } else {
+                    setTodosLosCursos([]);
+                    setCursos([]);
+                }
+                // Guardar el tipo de cuenta en el estado si lo necesitas
+                setAccountType(accountType);
             } catch (error) {
                 console.error("Error al cargar los cursos:", error);
+                setTodosLosCursos([]);
+                setCursos([]);
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchCursos();
     }, []);
 
-    const filtros = [
-        "Todos",
-        "Activos",
-        "En oferta",
-        "Finalizados",
-        "Oferta abierta",
-        "Oferta cerrada",
-    ];
+    // Nuevo estado para accountType
+    const [accountType, setAccountType] = useState("");
+
+    // Filtros según tipo de cuenta
+    const filtros =
+        accountType === "Empresa"
+            ? ["Todos", "Activos", "Finalizados", "Pendientes", "Cancelados"]
+            : [
+                "Todos",
+                "Activos",
+                "En oferta",
+                "Finalizados",
+                "Oferta abierta",
+                "Oferta cerrada",
+            ];
 
     const filtrarCursos = (filtro) => {
         setFiltroActivo(filtro);
@@ -82,8 +120,8 @@ export const MisCursosAdmin = () => {
 
     const handleVerCurso = () => {
         const cursoCentral = getCursoAt(0);
-        if (cursoCentral && cursoCentral.ID) {
-            navigate(`/Cursos/${cursoCentral.ID}`);
+        if (cursoCentral && (cursoCentral.ID || cursoCentral.id)) {
+            navigate(`/Cursos/${cursoCentral.ID || cursoCentral.id}`);
         }
     };
 
@@ -110,63 +148,64 @@ export const MisCursosAdmin = () => {
                         </div>
 
                         <div className="containerMisCoursesResults">
-                            {cursos.length > 1 && (
-                                <button className="arrow-courses left" onClick={prev}>
-                                    ❮
-                                </button>
-                            )}
+                            {loading ? (
+                                <p className="no-results">Cargando cursos...</p>
+                            ) : cursos.length === 0 ? (
+                                <p className="no-results">No hay cursos disponibles</p>
+                            ) : (
+                                <>
+                                    {cursos.length > 1 && (
+                                        <button className="arrow-courses left" onClick={prev}>
+                                            ❮
+                                        </button>
+                                    )}
 
-                            <div className="carousel-container-courses">
-                                <div
-                                    key={current}
-                                    className={`carousel-track-courses animate-${direction}`}
-                                >
-                                    {cursos.length === 0 ? (
-                                        <p className="no-results">No hay cursos disponibles</p>
-                                    ) : (
-                                        <>
+                                    <div className="carousel-container-courses">
+                                        <div
+                                            key={current}
+                                            className={`carousel-track-courses animate-${direction}`}
+                                        >
                                             {[getCursoAt(-1), getCursoAt(0), getCursoAt(1)].map(
                                                 (curso, idx) => (
                                                     <div
-                                                        key={`${curso.id}-${current}`}
-                                                        className={`carousel-card-courses ${
-                                                            idx === 1
-                                                                ? "card-center-courses animate-card"
-                                                                : "card-side-courses"
-                                                        }`}
+                                                        key={`${curso?.id || curso?.ID}-${current}`}
+                                                        className={`carousel-card-courses ${idx === 1
+                                                            ? "card-center-courses animate-card"
+                                                            : "card-side-courses"
+                                                            }`}
                                                     >
                                                         <div className="imagen-curso">
                                                             <img
                                                                 src={
-                                                                    curso.imagen
+                                                                    curso?.imagen
                                                                         ? `data:image/jpeg;base64,${curso.imagen}`
                                                                         : "/src/assets/Ilustrations/f3.jpg"
                                                                 }
-                                                                alt={curso.nombre_curso}
+                                                                alt={curso?.nombre_curso}
                                                             />
                                                             {idx === 1 && (
                                                                 <div className="overlay-course-info">
-                                                                    <h3>{curso.nombre_curso}</h3>
-                                                                    <p><strong>Ficha:</strong> {curso.ficha}</p>
+                                                                    <h3>{curso?.nombre_curso}</h3>
+                                                                    <p><strong>Ficha:</strong> {curso?.ficha}</p>
                                                                 </div>
                                                             )}
                                                         </div>
                                                     </div>
                                                 )
                                             )}
-                                        </>
-                                    )}
-                                </div>
-                            </div>
+                                        </div>
+                                    </div>
 
-                            {cursos.length > 1 && (
-                                <button className="arrow-courses right" onClick={next}>
-                                    ❯
-                                </button>
+                                    {cursos.length > 1 && (
+                                        <button className="arrow-courses right" onClick={next}>
+                                            ❯
+                                        </button>
+                                    )}
+                                </>
                             )}
                         </div>
 
-                        {cursos.length > 0 && (
+                        {cursos.length > 0 && !loading && (
                             <button className="ver-curso" onClick={handleVerCurso}>
                                 Ver curso
                             </button>

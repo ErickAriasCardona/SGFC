@@ -161,18 +161,24 @@ const loginUser = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
         });
 
+        // Agregar empresa_ID si es cuenta tipo Empresa
+        let extraData = {};
+        if (user.accountType === "Empresa") {
+            extraData.empresa_ID = user.empresa_ID;
+        }
+
         res.status(200).json({
             message: "Inicio de sesión exitoso",
             id: user.ID,
             email: user.email,
-            accountType: user.accountType
+            accountType: user.accountType,
+            ...extraData
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Error en el servidor" });
     }
 };
-
 //refrescar el acces web token
 const refreshAccessToken = async (req, res) => {
     try {
@@ -224,7 +230,6 @@ const logoutUser = (req, res) => {
 
     res.status(200).json({ message: "Sesión cerrada correctamente" });
 };
-
 
 // Solicitud de restablecimiento de contraseña
 const requestPasswordReset = async (req, res) => {
@@ -362,8 +367,20 @@ const getUserProfile = async (req, res) => {
                 },
                 {
                     model: Empresa,
-                    as: 'Empresa',
-                },
+                    as: "Empresa",
+                    include: [
+                        {
+                            model: Ciudad,
+                            as: "Ciudad",
+                            include: [
+                                {
+                                    model: Departamento,
+                                    as: "Departamento"
+                                }
+                            ]
+                        }
+                    ]
+                }
             ],
         });
 
@@ -463,7 +480,6 @@ const getInstructores = async (req, res) => {
     }
 };
 
-
 //Consultar lista de gestores
 const getGestores = async (req, res) => {
     try {
@@ -498,11 +514,10 @@ const updateUserProfile = async (req, res) => {
         // Procesar imagen de perfil si se sube
         let foto_perfil = null;
         if (req.file) {
-            // Guardar la imagen en base64 directamente en la base de datos
             foto_perfil = req.file.buffer.toString('base64');
         }
 
-        const token = req.cookies.accessToken
+        const token = req.cookies.accessToken;
         if (!token) {
             return res.status(401).json({ message: "No autorizado. Debes iniciar sesión." });
         }
@@ -528,7 +543,6 @@ const updateUserProfile = async (req, res) => {
         // ADMINISTRADOR
         if (loggedInUser.accountType === "Administrador") {
             if (["Instructor", "Gestor", "Administrador", "Empresa", "Aprendiz"].includes(user.accountType)) {
-
                 // Validaciones únicas
                 if (email && email !== user.email) {
                     const existingEmail = await User.findOne({ where: { email } });
@@ -536,21 +550,18 @@ const updateUserProfile = async (req, res) => {
                         return res.status(400).json({ message: "El correo electrónico ya está registrado." });
                     }
                 }
-
                 if (documento && documento !== user.documento) {
                     const existingDocumento = await User.findOne({ where: { documento } });
                     if (existingDocumento) {
                         return res.status(400).json({ message: "El documento ya está registrado." });
                     }
                 }
-
                 if (celular && celular !== user.celular) {
                     const existingCelular = await User.findOne({ where: { celular } });
                     if (existingCelular) {
                         return res.status(400).json({ message: "El número de celular ya está registrado." });
                     }
                 }
-
                 // Asignación directa de campos
                 if (email) user.email = email;
                 if (nombres) user.nombres = nombres;
@@ -564,7 +575,6 @@ const updateUserProfile = async (req, res) => {
                     const hashedPassword = await bcrypt.hash(password, 10);
                     user.password = hashedPassword;
                 }
-
                 if (foto_perfil) user.foto_perfil = foto_perfil;
 
                 await user.save();
@@ -572,7 +582,7 @@ const updateUserProfile = async (req, res) => {
             }
         }
 
-        // EMPRESA
+        // EMPRESA puede actualizar su propio perfil
         if (loggedInUser.accountType === "Empresa" && user.accountType === "Empresa") {
             if (email) user.email = email;
             if (nombres) user.nombres = nombres;
@@ -617,14 +627,58 @@ const updateUserProfile = async (req, res) => {
                 const hashedPassword = await bcrypt.hash(password, 10);
                 user.password = hashedPassword;
             }
-
             if (foto_perfil) user.foto_perfil = foto_perfil;
 
             await user.save();
             return res.status(200).json({ message: "Perfil de empresa actualizado con éxito." });
         }
 
-        // APRENDIZ
+        // EMPRESA puede actualizar a sus empleados (Aprendiz)
+        if (loggedInUser.accountType === "Empresa" && user.accountType === "Aprendiz") {
+            // Validar que el empleado pertenezca a la empresa logueada
+            if (user.empresa_ID !== loggedInUser.empresa_ID) {
+                return res.status(403).json({ message: "No tienes permiso para actualizar este empleado." });
+            }
+
+            // Validaciones únicas
+            if (email && email !== user.email) {
+                const existingEmail = await User.findOne({ where: { email } });
+                if (existingEmail) {
+                    return res.status(400).json({ message: "El correo electrónico ya está registrado." });
+                }
+            }
+            if (documento && documento !== user.documento) {
+                const existingDocumento = await User.findOne({ where: { documento } });
+                if (existingDocumento) {
+                    return res.status(400).json({ message: "El documento ya está registrado." });
+                }
+            }
+            if (celular && celular !== user.celular) {
+                const existingCelular = await User.findOne({ where: { celular } });
+                if (existingCelular) {
+                    return res.status(400).json({ message: "El número de celular ya está registrado." });
+                }
+            }
+
+            // Asignación directa de campos
+            if (email) user.email = email;
+            if (nombres) user.nombres = nombres;
+            if (apellidos) user.apellidos = apellidos;
+            if (celular) user.celular = celular;
+            if (documento) user.documento = documento;
+            if (estado) user.estado = estado;
+
+            if (password) {
+                const hashedPassword = await bcrypt.hash(password, 10);
+                user.password = hashedPassword;
+            }
+            if (foto_perfil) user.foto_perfil = foto_perfil;
+
+            await user.save();
+            return res.status(200).json({ message: "Perfil de empleado actualizado con éxito." });
+        }
+
+        // APRENDIZ puede actualizar su propio perfil
         if (loggedInUser.accountType === "Aprendiz" && user.accountType === "Aprendiz") {
             if (email && email !== user.email) {
                 const existingEmail = await User.findOne({ where: { email } });
@@ -836,6 +890,7 @@ const getAprendicesByEmpresa = async (req, res) => {
     }
 };
 
+// Crear múltiples usuarios desde un archivo Excel
 const createMasiveUsers = async (req, res) => {
     try {
         if (!req.file || !req.file.buffer) {
@@ -933,5 +988,98 @@ const createMasiveUsers = async (req, res) => {
     }
 }
 
+// Consultar empleados (aprendices) por empresa_ID
+const getEmpleadosByEmpresaId = async (req, res) => {
+    try {
+        const { empresaId } = req.params;
 
-module.exports = { refreshAccessToken, getAprendicesByEmpresa, registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers, getEmpresaByNIT };
+        if (!empresaId) {
+            return res.status(400).json({ message: "El ID de la empresa es obligatorio." });
+        }
+
+        // Buscar aprendices que tengan el empresa_ID igual al proporcionado
+        const empleados = await User.findAll({
+            where: {
+                accountType: "Aprendiz",
+                empresa_ID: empresaId
+            },
+            attributes: { exclude: ['password', 'token', 'resetPasswordToken', 'resetPasswordExpires'] }
+        });
+
+        res.status(200).json({ success: true, empleados });
+    } catch (error) {
+        console.error("Error al obtener los empleados de la empresa:", error);
+        res.status(500).json({ message: "Error al obtener los empleados de la empresa." });
+    }
+};
+
+// Crear empleado (Aprendiz) asociado a una empresa
+const createEmpleado = async (req, res) => {
+    try {
+        const { nombres, apellidos, email, documento, celular, estado, titulo_profesional, password } = req.body;
+        const { empresaId } = req.params;
+
+        // Validar datos obligatorios
+        if (!nombres || !apellidos || !email || !documento || !celular || !estado || !empresaId) {
+            return res.status(400).json({ message: "Todos los campos son obligatorios." });
+        }
+
+        // Verificar si el correo ya está registrado
+        const existingEmail = await User.findOne({ where: { email } });
+        if (existingEmail) {
+            return res.status(400).json({ message: "El correo ya está registrado." });
+        }
+
+        // Verificar si el documento ya está registrado
+        const existingDocumento = await User.findOne({ where: { documento } });
+        if (existingDocumento) {
+            return res.status(400).json({ message: "El documento ya está registrado." });
+        }
+
+        // Verificar que la empresa exista
+        const empresa = await Empresa.findByPk(empresaId);
+        if (!empresa) {
+            return res.status(404).json({ message: "Empresa no encontrada." });
+        }
+
+        // Procesar imagen de perfil si se sube
+        let foto_perfil = null;
+        if (req.file) {
+            foto_perfil = req.file.buffer.toString('base64');
+        }
+
+        // Generar token de verificación
+        const token = crypto.randomBytes(32).toString("hex");
+
+        // Encriptar la contraseña (si no se envía, usar una por defecto)
+        const hashedPassword = await bcrypt.hash(password || "defaultPassword123", 10);
+
+        // Crear el empleado (Aprendiz)
+        const newEmpleado = await User.create({
+            nombres,
+            apellidos,
+            email,
+            documento,
+            celular,
+            estado,
+            titulo_profesional: titulo_profesional || null,
+            foto_perfil,
+            accountType: "Aprendiz",
+            empresa_ID: empresaId,
+            password: hashedPassword,
+            verificacion_email: false,
+            token,
+        });
+
+        // Enviar correo de verificación
+        await sendVerificationEmail(email, token);
+
+        res.status(201).json({ message: "Empleado creado con éxito. Por favor verifica tu correo.", empleado: newEmpleado });
+    } catch (error) {
+        console.error("Error al crear el empleado:", error);
+        res.status(500).json({ message: "Error al crear el empleado." });
+    }
+};
+
+
+module.exports = { createEmpleado, getEmpleadosByEmpresaId, refreshAccessToken, getAprendicesByEmpresa, registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers, getEmpresaByNIT };

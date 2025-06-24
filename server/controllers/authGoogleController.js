@@ -172,6 +172,7 @@ const generateTokenAndRespond = (user, res) => {
             apellidos: user.apellidos,
             foto_perfil: user.foto_perfil,
             accountType: user.accountType,
+            empresa_ID: user.empresa_ID || null // <-- Agrega esto
         }
     });
 };

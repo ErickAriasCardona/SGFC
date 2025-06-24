@@ -7,8 +7,6 @@
 
 }
 
-
-
 .container_GestionsGestor>h2 {
     width: 100%;
     height: auto;
@@ -139,8 +137,6 @@
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-
-
 .statusButtons .inactive.selected {
     background-color: #00843d; /* Rojo para el botón seleccionado de "Inactivos" */
     color: white;
@@ -153,153 +149,6 @@
     color: white;
     transform: scale(1.05);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-}
-.carousel-container_2 {
-    width: auto;
-    height: auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    flex-direction: column;
-}
-
-
-.arrow {
-    font-size: 30px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    user-select: none;
-    width: auto;
-    height: auto;
-    transition: color 0.3s ease;
-}
-
-.arrow:hover {
-    color: #00c853;
-}
-
-.carousel-card {
-    text-align: center;
-    background-color: #1e1e1e;
-    border-radius: 12px;
-    width: auto;
-    height: auto;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.356);
-    transition: transform 0.8s ease, box-shadow 0.3s ease;
-}
-
-.carousel-image {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    border-radius: 12px;
-}
-
-.carousel-card h3 {
-    color: white;
-    margin-top: 15px;
-    font-size: 18px;
-    width: auto;
-    height: auto;
-}
-
-.carousel-card p {
-    color: gray;
-    font-size: 14px;
-    margin-bottom: 15px;
-    width: auto;
-    height: auto;
-}
-
-.profile-btn {
-    background-color: #00c853;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    width: auto;
-    height: auto;
-    margin-top: 1rem;
-}
-
-.carousel-track {
-    display: flex;
-    overflow: hidden;
-    width: auto;
-    height: 14rem;
-    justify-content: center;
-    align-items: center;
-    transition: transform 0.3s ease;
-}
-
-/* Imagen del Gestor en la carta */
-.carousel-card>img {
-    width: 8rem;
-    height: 11rem;
-}
-
-/* === Nuevos estilos para el efecto de escala === */
-
-/* Carta central destacada */
-.carousel-card.card-center {
-    transform: scale(1.1);
-    z-index: 2;
-    display: flex;
-}
-
-/* Cartas laterales reducidas */
-.carousel-card.card-side {
-    transform: scale(0.9);
-    opacity: 0.7;
-    display: flex;
-}
-
-.Gestor-info {
-    text-align: center;
-    color: white;
-    margin-top: 15px;
-    width: 100%;
-    height: auto;
-
-}
-
-.Gestor-info h3 {
-    font-size: 20px;
-    margin-bottom: 5px;
-    width: auto;
-    height: auto;
-}
-
-.Gestor-info p {
-    font-size: 14px;
-    color: gray;
-    margin-bottom: 10px;
-    width: auto;
-    height: auto;
-}
-
-.Gestor-info .profile-btn {
-    background-color: #00c853;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    width: auto;
-    height: auto;
-    font-size: 14px;
-}
-
-.carousel-track-wrapper {
-    width: 900px;
-    /* 3 cartas de 300px */
-    overflow: hidden;
-    position: relative;
 }
 
 .btn_createGestor {

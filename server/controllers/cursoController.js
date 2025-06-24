@@ -555,6 +555,39 @@ const getCursoById = async (req, res) => {
   }
 };
 
+// Obtener todos los cursos relacionados a una empresa por su ID
+const getCursosByEmpresaId = async (req, res) => {
+  try {
+    const { empresaId } = req.params;
+
+    if (!empresaId) {
+      return res.status(400).json({ message: "El ID de la empresa es obligatorio." });
+    }
+
+    // Verificar si la empresa existe
+    const empresa = await Empresa.findByPk(empresaId);
+    if (!empresa) {
+      return res.status(404).json({ message: `No se encontró una empresa con el ID ${empresaId}.` });
+    }
+
+    const cursos = await Curso.findAll({
+      where: { empresa_ID: empresaId },
+      include: [
+        {
+          model: Empresa,
+          as: 'Empresa'
+        }
+      ]
+    });
+
+    res.status(200).json({ success: true, cursos });
+  } catch (error) {
+    console.error("Error al obtener los cursos de la empresa:", error);
+    res.status(500).json({ message: "Error al obtener los cursos de la empresa." });
+  }
+};
+
+
 
 module.exports = {
   setDb,
@@ -567,5 +600,6 @@ module.exports = {
   uploadImagesBase64,
   getCursoParticipants,
   actualizarProgramacion,
-  getCursoById
+  getCursoById,
+  getCursosByEmpresaId
 };

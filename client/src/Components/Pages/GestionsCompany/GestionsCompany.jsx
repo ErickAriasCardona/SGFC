@@ -4,7 +4,7 @@ import { Main } from "../../Layouts/Main/Main";
 import "./GestionsCompany.css";
 import { Search } from "lucide-react";
 import axiosInstance from "../../../config/axiosInstance";
-
+import { Footer } from "../../Layouts/Footer/Footer";
 const categoriasDisponibles = [
   "Administracion",
   "Gastronomia",
@@ -183,6 +183,7 @@ export const GestionsCompany = () => {
           </section>
         </section>
       </Main>
+      <Footer />
     </div>
   );
 };

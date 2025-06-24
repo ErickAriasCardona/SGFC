@@ -9,7 +9,10 @@ const { crearOActualizarInscripcion } = require('../controllers/inscripcionCurso
 router.get("/cursos", cursoController.getAllCursos);
 router.get('/searchCurso', cursoController.getCursoByNameOrFicha)
 router.get("/cursos/:id", cursoController.getCursoById); // Obtener curso por ID
+router.get('/empresa/:empresaId', cursoController.getCursosByEmpresaId);
 
+
+//ruta que requieren autorizacion
 router.use(authMiddleware);
 
 router.post("/cursos", upload.single("imagen"), cursoController.createCurso);
@@ -29,5 +32,6 @@ router.get('/cursos/:courseId/participants', cursoController.getCursoParticipant
 
 // Ruta para crear o actualizar el estado de una inscripción (solo administradores)
 router.put('/inscripciones', crearOActualizarInscripcion);
+
 
 module.exports = router;

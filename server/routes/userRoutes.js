@@ -1,5 +1,5 @@
 const express = require("express");
-const { refreshAccessToken, getAprendicesByEmpresa, registerUser, verifyEmail, loginUser,requestPasswordReset,resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile,createInstructor, createGestor,logoutUser, createMasiveUsers, getEmpresaByNIT } = require("../controllers/userController");
+const { createEmpleado, getEmpleadosByEmpresaId, refreshAccessToken, getAprendicesByEmpresa, registerUser, verifyEmail, loginUser,requestPasswordReset,resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile,createInstructor, createGestor,logoutUser, createMasiveUsers, getEmpresaByNIT } = require("../controllers/userController");
 const { googleSignIn, googleSignUp } = require("../controllers/authGoogleController"); // Importar controlador de autenticación de Google
 const router = express.Router();
 const upload = require("../config/multer"); // Importar configuración de multer
@@ -25,6 +25,9 @@ router.get("/empresa/empleados/:id", getAprendicesByEmpresa); // Obtener aprendi
 router.post('/createMasiveUsers', upload.single('archivo_xlsx'), createMasiveUsers)
 router.get("/empresa/:NIT", getEmpresaByNIT); // Obtener empresa por ID
 router.post("/refresh", refreshAccessToken);
+router.get("/empresa/:empresaId/empleados", getEmpleadosByEmpresaId); // Obtener empleados (aprendices) por empresa_ID
+router.post('/empresa/:empresaId/empleados', upload.single('foto_perfil'), createEmpleado); // Crear empleado (aprendiz) asociado a una empresa
+
 
 router.get("/", (req, res) => {
     res.send("🚀 API funcionando correctamente");

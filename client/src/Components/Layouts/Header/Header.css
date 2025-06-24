@@ -8,19 +8,21 @@
 
 .header {
     width: 100%;
-    height: 10rem;
-    background-color: transparent;
+    height: auto;
+    background-color: #1a1a1a;
     display: flex;
     justify-content: center;
     position: fixed;
     z-index: 1;
+        border-radius: 0 0 8rem 8rem;
+
 }
 
 .startOption,
 .whoWeAre,
 .courses,
 .gestiones,
-.empresas {
+.empresas, .empleados {
     width: auto;
     height: auto;
     padding: 5px 15px 5px 15px;

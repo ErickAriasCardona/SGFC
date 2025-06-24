@@ -93,11 +93,16 @@ export const Modal_SignIn = () => {
     axiosInstance.post("api/users/login", { email, password })
       .then((response) => {
         // Guardar sesión
-        sessionStorage.setItem("userSession", JSON.stringify({
+        const sessionData = {
           accountType: response.data.accountType,
           email: email,
-          id: response.data.id
-        }));
+          id: response.data.id,
+        };
+        // Si es empresa, guarda también empresa_ID
+        if (response.data.accountType === "Empresa" && response.data.empresa_ID) {
+          sessionData.empresa_ID = response.data.empresa_ID;
+        }
+        sessionStorage.setItem("userSession", JSON.stringify(sessionData));
 
         // Esperar 2 segundos antes de cerrar modal y navegar
         setTimeout(() => {
@@ -139,6 +144,8 @@ export const Modal_SignIn = () => {
           googleId: data.user.googleId,
           accountType: data.user.accountType,
           email: data.user.email,
+          empresa_ID: data.user.empresa_ID || null,
+          id: data.user.ID,
         }));
         closeModalSignIn();
         navigate('/', { state: { accountType: data.user.accountType } });
