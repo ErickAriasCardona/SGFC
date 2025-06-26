@@ -14,6 +14,7 @@ const userRoutes = require("./routes/userRoutes");
 const cursoRoutes = require("./routes/cursoRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const evaluacionYCertificacionRoutes = require("./routes/evaluacionYCertificacionRoutes");
 
 // libreria para programar tareas
 const cron = require('node-cron');
@@ -68,6 +69,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/courses", cursoRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/evaluacionYCertificacion", evaluacionYCertificacionRoutes);
 
 async function startServer() {
   try {

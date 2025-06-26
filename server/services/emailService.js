@@ -322,6 +322,57 @@ const sendStudentsInstructorAssignedEmail = (emails, curso,nombreInstructor) => 
 };
 
 
+// Función para enviar notificación de certificación
+const sendCertificationNotification = (email, estado, curso_ID, razones_rechazo, porcentajeCumplido) => {
+    let subject;
+    let html;
+
+    if (estado === 'aprobado') {
+        subject = `¡Felicidades! Certificación aprobada para el curso ${curso_ID}`;
+        html = `
+            <h2>¡Felicidades!</h2>
+            <p>Tu certificación para el curso <strong>${curso_ID}</strong> ha sido aprobada.</p>
+            <p>Has cumplido con el <strong>${porcentajeCumplido.toFixed(2)}%</strong> de los criterios establecidos.</p>
+            <p>Gracias por tu esfuerzo y dedicación.</p>
+        `;
+    } else if (estado === 'rechazado') {
+        subject = `Certificación rechazada para el curso ${curso_ID}`;
+        html = `
+            <h2>Lo sentimos</h2>
+            <p>Tu certificación para el curso <strong>${curso_ID}</strong> ha sido rechazada.</p>
+            <p>Razones del rechazo: <strong>${razones_rechazo}</strong></p>
+            <p>Porcentaje cumplido: <strong>${porcentajeCumplido.toFixed(2)}%</strong></p>
+            <p>Te invitamos a revisar los criterios y prepararte para una nueva oportunidad.</p>
+        `;
+    } else {
+        subject = `Certificación condicional para el curso ${curso_ID}`;
+        html = `
+            <h2>Certificación condicional</h2>
+            <p>Tu certificación para el curso <strong>${curso_ID}</strong> ha sido aprobada con condiciones.</p>
+            <p>Porcentaje cumplido: <strong>${porcentajeCumplido.toFixed(2)}%</strong></p>
+            <p>Por favor, revisa los detalles en la plataforma.</p>
+        `;
+    }
+
+    const mailOptions = {
+        from: 'eariassena19@gmail.com',
+        to: email,
+        subject,
+        html,
+    };
+
+    return new Promise((resolve, reject) => {
+        transporter.sendMail(mailOptions, (err, info) => {
+            if (err) {
+                console.error("Error al enviar la notificación de certificación:", err);
+                reject(err);
+            } else {
+                console.log("Notificación de certificación enviada:", info.response);
+                resolve(info);
+            }
+        });
+    });
+};
 
 // Exportar ambas funciones
 
@@ -332,6 +383,7 @@ const sendStudentsInstructorAssignedEmail = (emails, curso,nombreInstructor) => 
   sendCourseCreatedEmail,
   sendCursoUpdatedNotification,
   sendStudentsInstructorAssignedEmail,
-  sendInstructorAssignedEmail 
+  sendInstructorAssignedEmail,
+  sendCertificationNotification
  };
 

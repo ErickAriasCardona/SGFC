@@ -13,6 +13,9 @@ const AsignacionCursoInstructor = require("./AsignacionCursoInstructor");
 const InscripcionCurso = require("./InscripcionCurso");
 const Asistencia = require("./Asistencia");
 const Notificacion = require("./Notificacion");
+const CriteriosCertificacion = require('./criteriosCertificacion')
+const EvaluacionCriterios = require('./evaluacionCriterios')
+const Certificacion = require('./certificacion')
 
 // Leer la URL de conexión (recomendada en producción)
 const DB_URL = process.env.DB_URL;
@@ -70,7 +73,10 @@ async function initializeDatabase() {
   InscripcionCurso.init(sequelize);
   Asistencia.init(sequelize);
   Notificacion.init(sequelize);
-
+  CriteriosCertificacion.init(sequelize)
+  EvaluacionCriterios.init(sequelize)
+  Certificacion.init(sequelize)
+  
   // Asociar modelos
   const models = {
     Usuario,
@@ -83,7 +89,10 @@ async function initializeDatabase() {
     AsignacionCursoInstructor,
     InscripcionCurso,
     Asistencia,
-    Notificacion
+    Notificacion,
+    CriteriosCertificacion,
+    EvaluacionCriterios,
+    Certificacion
   };
 
   Object.values(models).forEach((model) => {
