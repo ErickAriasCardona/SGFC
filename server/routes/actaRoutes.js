@@ -18,4 +18,7 @@ router.post('/firmas-acta', firmaActaController.crearFirma);
 // Listar firmas de un acta
 router.get('/firmas-acta/:acta_ID', firmaActaController.listarFirmasPorActa);
 
+// Generar PDF de un acta
+router.get('/actas/:id/pdf', firmaActaController.generarPDF);
+
 module.exports = router;
