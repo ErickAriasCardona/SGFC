@@ -1,0 +1,80 @@
+.modal-support{
+    color: white;
+}
+
+.options1-add {
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+}
+
+.options1-add p {
+    width: auto;
+    height: auto;
+}
+
+.option-button-add {
+    width: 90px;
+    height: 90px;
+    background-color: #414141;
+    border-radius: 50%;
+    opacity: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-style: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.option-button-add.selected {
+    background-color: #00843D;
+    opacity: 100%;
+}
+
+.option-button-add img {
+    width: 55%;
+}
+
+.options2-view {
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+}
+
+.options2-view p {
+    width: auto;
+    height: auto;
+}
+
+.option-button-view {
+    width: 90px;
+    height: 90px;
+    background-color: #414141;
+    border-radius: 50%;
+    opacity: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-style: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.option-button-view.selected {
+    background-color: #00843D;
+    opacity: 100%;
+}
+
+.option-button-view img {
+    width: 55%;
+    
+}
