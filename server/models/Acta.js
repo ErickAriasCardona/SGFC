@@ -29,6 +29,10 @@ class Acta extends Model {
         contenido: {
           type: DataTypes.TEXT,
           allowNull: false,
+        },
+        observaciones: {
+          type: DataTypes.TEXT,
+          allowNull: true,
         }
       },
       {

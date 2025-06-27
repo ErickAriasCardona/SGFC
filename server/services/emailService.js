@@ -321,7 +321,33 @@ const sendStudentsInstructorAssignedEmail = (emails, curso,nombreInstructor) => 
   });
 };
 
+// Enviar PDF de acta por correo electrónico
+const sendActaPDFEmail = (emails, subject, html, pdfPath) => {
+  const mailOptions = {
+    from: 'eariassena19@gmail.com',
+    to: emails,
+    subject,
+    html,
+    attachments: [
+      {
+        filename: 'acta.pdf',
+        path: pdfPath
+      }
+    ]
+  };
 
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error("Error al enviar el correo con PDF:", err);
+        reject(err);
+      } else {
+        console.log("Correo enviado con PDF:", info.response);
+        resolve(info);
+      }
+    });
+  });
+};
 
 // Exportar ambas funciones
 module.exports = { 
@@ -331,4 +357,6 @@ module.exports = {
    sendCourseCreatedEmail,
    sendCursoUpdatedNotification,
    sendStudentsInstructorAssignedEmail,
-   sendInstructorAssignedEmail };
+   sendInstructorAssignedEmail,
+   sendActaPDFEmail // Exportar nueva función
+};

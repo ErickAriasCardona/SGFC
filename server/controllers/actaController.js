@@ -44,4 +44,22 @@ const filtrarActas = async (req, res) => {
   }
 };
 
-module.exports = { crearActa, listarActas, filtrarActas };
+// Actualizar observaciones y estado de un acta
+const actualizarObservacionesYEstado = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { observaciones, estado } = req.body;
+    const acta = await Acta.findByPk(id);
+    if (!acta) {
+      return res.status(404).json({ error: 'Acta no encontrada' });
+    }
+    if (observaciones !== undefined) acta.observaciones = observaciones;
+    if (estado !== undefined) acta.estado = estado;
+    await acta.save();
+    res.json(acta);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar el acta', detalle: error.message });
+  }
+};
+
+module.exports = { crearActa, listarActas, filtrarActas, actualizarObservacionesYEstado };
