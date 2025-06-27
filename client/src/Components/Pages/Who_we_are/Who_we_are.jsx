@@ -7,7 +7,7 @@ import { Header } from "../../Layouts/Header/Header";
 export const Who_we_are = () => {
   return (
     <>
-      <Header/>
+      <Header />
       <Main>
         <picture className="ilustration_who">
           <img
@@ -21,12 +21,11 @@ export const Who_we_are = () => {
             ¿Quiénes <span className="span_somos">somos</span>?
           </h1>
           <p className="description_who">
-            Lorem Ipsum es simplemente el texto de relleno de las imprentas y
-            archivos de texto. Lorem Ipsum ha sido el texto de relleno estándar
-            de las industrias desde el año 1500, cuando un impresor (N. del T.
-            persona que se dedica a la imprenta) desconocido usó una galería de
-            textos y los mezcló de tal manera que logró hacer un libro de
-            textosespecimen.
+            <b>SGFC – Sistema de Gestión de Formación Complementaria</b> es una solución tecnológica desarrollada en la Fábrica de Software del SENA, sede Centro de Comercio y Turismo.
+
+            <br /><br />Este proyecto nace con el propósito de digitalizar y modernizar la gestión académica de los cursos complementarios que ofrece el SENA en alianza con el sector empresarial, facilitando procesos como la programación, asignación de instructores, seguimiento de aprendices y control documental.
+
+            <br /><br />Nuestro compromiso es aportar al mejoramiento continuo de la formación para el trabajo, impulsando una experiencia más eficiente, transparente y colaborativa entre todos los actores del ecosistema formativo.
           </p>
         </section>
       </Main>

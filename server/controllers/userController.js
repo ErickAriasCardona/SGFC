@@ -14,7 +14,6 @@ const Departamento = require('../models/departamento'); // Importar el modelo De
 const Ciudad = require('../models/ciudad'); // Importar el modelo Ciudad
 const fotoDefectPerfil = '../Img/userDefect.png'; // Importar la imagen por defecto
 
-
 //registrar usuario (empresa o aprendiz)
 const registerUser = async (req, res) => {
     try {
@@ -133,11 +132,21 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ message: "Usuario o contraseña incorrectos" });
         }
 
-        // Access token (15 min) y Refresh token (7 días)
+        // Construir el payload del token
+        const payload = {
+            id: user.ID,
+            email: user.email,
+            accountType: user.accountType,
+        };
+        if (user.accountType === "Empresa") {
+            payload.empresa_ID = user.empresa_ID;
+        }
+
+        // Access token (10 min) y Refresh token (7 días)
         const accessToken = jwt.sign(
-            { id: user.ID, email: user.email, accountType: user.accountType },
+            payload,
             process.env.JWT_SECRET || "secret",
-            { expiresIn: "1m" }
+            { expiresIn: "10m" }
         );
 
         const refreshToken = jwt.sign(
@@ -146,7 +155,7 @@ const loginUser = async (req, res) => {
             { expiresIn: "7d" }
         );
 
-        // Guardar refresh token en la cookie
+        // Guardar tokens en cookies
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -179,6 +188,7 @@ const loginUser = async (req, res) => {
         res.status(500).json({ message: "Error en el servidor" });
     }
 };
+
 //refrescar el acces web token
 const refreshAccessToken = async (req, res) => {
     try {
@@ -635,6 +645,8 @@ const updateUserProfile = async (req, res) => {
 
         // EMPRESA puede actualizar a sus empleados (Aprendiz)
         if (loggedInUser.accountType === "Empresa" && user.accountType === "Aprendiz") {
+            console.log('Empresa logueada:', loggedInUser.empresa_ID, typeof loggedInUser.empresa_ID);
+            console.log('Aprendiz:', user.empresa_ID, typeof user.empresa_ID);
             // Validar que el empleado pertenezca a la empresa logueada
             if (user.empresa_ID !== loggedInUser.empresa_ID) {
                 return res.status(403).json({ message: "No tienes permiso para actualizar este empleado." });
@@ -1080,6 +1092,5 @@ const createEmpleado = async (req, res) => {
         res.status(500).json({ message: "Error al crear el empleado." });
     }
 };
-
 
 module.exports = { createEmpleado, getEmpleadosByEmpresaId, refreshAccessToken, getAprendicesByEmpresa, registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers, getEmpresaByNIT };

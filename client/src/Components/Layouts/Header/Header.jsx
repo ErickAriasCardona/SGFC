@@ -208,37 +208,12 @@ export const Header = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => 
 
         {/* Empleados (solo Empresa) */}
         {isLoggedIn && accountType === 'Empresa' && (
-          <div className="empleados-menu" ref={empleadosMenuRef}>
-            <button
-              className={`empleados${(showEmpleadosMenu || isEmpleadosActive) ? ' active' : ''}`}
-              onClick={toggleEmpleadosMenu}
-            >
-              Empleados
-            </button>
-            {showEmpleadosMenu && (
-              <div className="dropdown-empleados">
-                <div className="arrow-up" />
-                <button
-                  className={location.pathname.startsWith('/Empleados/MisEmpleados') ? 'active' : ''}
-                  onClick={() => handleMenuClick('/Empleados/MisEmpleados')}
-                >
-                  Mis empleados
-                </button>
-                <button
-                  className={location.pathname.startsWith('/Empleados/CrearEmpleado') ? 'active' : ''}
-                  onClick={() => handleMenuClick('/Empleados/CrearEmpleado')}
-                >
-                  Crear empleado
-                </button>
-                <button
-                  className={location.pathname.startsWith('/Empleados/CrearVariosEmpleados') ? 'active' : ''}
-                  onClick={() => handleMenuClick('/Empleados/CrearVariosEmpleados')}
-                >
-                  Crear varios empleados
-                </button>
-              </div>
-            )}
-          </div>
+                    <NavLink
+            to="/Empleados/MisEmpleados"
+            className={({ isActive }) => (isActive ? 'empleados active' : 'empleados')}
+          >
+            Empleados
+          </NavLink>
         )}
       </NavBar>
     </div>

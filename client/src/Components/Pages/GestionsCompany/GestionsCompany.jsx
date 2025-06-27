@@ -74,10 +74,7 @@ export const GestionsCompany = () => {
             </p>
 
             <p className="paragraphGestionsCompany">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat
-              fugit obcaecati vitae, ipsam cumque nihil itaque officia labore
-              consectetur dicta deserunt laboriosam ducimus nesciunt magnam
-              rerum alias harum nostrum provident.
+              Consulta y gestiona las empresas registradas en el sistema. Visualiza información clave como NIT, nombre, estado y datos de contacto. 
             </p>
           </section>
 

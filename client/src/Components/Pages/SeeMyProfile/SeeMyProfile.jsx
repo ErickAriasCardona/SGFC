@@ -97,6 +97,7 @@ export const SeeMyProfile = () => {
             <Header />
             <Main>
                 <div className='container_mainSeeMyProfile'>
+                    
                     <div className='container_profile'>
                         <h3>{tipoCuenta}</h3>
                         <img

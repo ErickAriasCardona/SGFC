@@ -21,6 +21,10 @@ class SolicitudCurso extends Model {
           type: DataTypes.DATE,
           allowNull: true,
         },
+        pdf: { // Ruta o nombre del archivo PDF
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
       },
       {
         sequelize,
@@ -33,7 +37,7 @@ class SolicitudCurso extends Model {
   static associate(models) {
     this.belongsTo(models.Usuario, { foreignKey: 'gestor_ID', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' });
     this.belongsTo(models.Curso, { foreignKey: 'curso_ID', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' });
-    this.belongsTo(models.Empresa, { foreignKey: 'empresa_NIT', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' });
+    this.belongsTo(models.Empresa, { foreignKey: 'empresa_ID', onDelete: 'NO ACTION', onUpdate: 'NO ACTION' });
   }
 }
 

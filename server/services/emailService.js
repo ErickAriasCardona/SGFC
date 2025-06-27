@@ -1,21 +1,82 @@
 const nodemailer = require("nodemailer");
-
+const PDFDocument = require('pdfkit');
+const SolicitudCurso = require('../models/SolicitudCurso'); // Asegúrate de importar el modelo
+const moment = require('moment-timezone');
+const fechaSolicitud = new Date(Date.now() - (new Date().getTimezoneOffset() * 60000));
 const transporter = nodemailer.createTransport({
-    service: "Gmail",
-    auth: {
-        user: "eariassena19@gmail.com",
-        pass: "jzcg vevx ixqj wcgv",
-    },
+  service: "Gmail",
+  auth: {
+    user: "eariassena19@gmail.com",
+    pass: "jzcg vevx ixqj wcgv",
+  },
 });
+
+
+const sendRequestCourseEmail = async (req, res) => {
+  try {
+    const { nombreCurso, numEmpleados, fechaInicio, fechaFin, curso_ID, empresa_ID, gestor_ID } = req.body;
+    const empresa = JSON.parse(req.body.empresa || '{}');
+    const manager = JSON.parse(req.body.manager || '{}');
+    const pdfBuffer = req.file.buffer;
+
+    // Guardar el PDF en el sistema de archivos (puedes cambiar la ruta si lo deseas)
+    const fs = require('fs');
+    const path = require('path');
+    const pdfFileName = `solicitud_curso_${Date.now()}.pdf`;
+    const pdfPath = path.join(__dirname, '../uploads/solicitudes', pdfFileName);
+
+    // Asegúrate de que la carpeta exista
+    fs.mkdirSync(path.dirname(pdfPath), { recursive: true });
+    fs.writeFileSync(pdfPath, pdfBuffer);
+
+    // Registrar la solicitud en la base de datos
+    await SolicitudCurso.create({
+      fecha_solicitud: fechaSolicitud,
+      estado_solicitud: 'pendiente',
+      fecha_respuesta: null,
+      empresa_ID: empresa_ID || empresa.ID, // Usa el ID recibido o el del objeto empresa
+      curso_ID: curso_ID || null,
+      gestor_ID: gestor_ID || null,
+      pdf: pdfFileName
+    });
+
+    // Enviar el correo
+    let transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USER || "eariassena19@gmail.com",
+        pass: process.env.EMAIL_PASS || "jzcg vevx ixqj wcgv",
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"SGFC" <${process.env.EMAIL_USER || "eariassena19@gmail.com"}>`,
+      to: "eariassena19@gmail.com",
+      subject: "Nueva Solicitud de Curso",
+      html: `<p>Solicitud de curso: ${nombreCurso}</p>`,
+      attachments: [
+        {
+          filename: 'solicitud_curso.pdf',
+          content: pdfBuffer
+        }
+      ]
+    });
+
+    res.status(200).json({ message: 'Solicitud enviada y registrada correctamente.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al enviar o registrar la solicitud.' });
+  }
+};
 
 // Función para enviar el correo de verificación
 const sendVerificationEmail = (email, token) => {
-    const enlaceVerificacion = `http://localhost:5173/verificarCorreo?token=${token}`;
-    const mailOptions = {
-        from: "eariassena19@gmail.com",
-        to: email,
-        subject: "Verificación de correo electrónico",
-        html: `
+  const enlaceVerificacion = `http://localhost:5173/verificarCorreo?token=${token}`;
+  const mailOptions = {
+    from: "eariassena19@gmail.com",
+    to: email,
+    subject: "Verificación de correo electrónico",
+    html: `
 <table width="100%" bgcolor="#f4f4f4" cellpadding="0" cellspacing="0" style="font-family: Arial, sans-serif; margin:0; padding:0;">
   <tr>
     <td align="center">
@@ -62,24 +123,24 @@ const sendVerificationEmail = (email, token) => {
   </tr>
 </table>
 `,
-    };
+  };
 
-    transporter.sendMail(mailOptions, (err, info) => {
-        if (err) {
-            console.log("Error al enviar el correo:", err);
-        } else {
-            console.log("Correo enviado:", info.response);
-        }
-    });
+  transporter.sendMail(mailOptions, (err, info) => {
+    if (err) {
+      console.log("Error al enviar el correo:", err);
+    } else {
+      console.log("Correo enviado:", info.response);
+    }
+  });
 };
 
 // Función para enviar el correo de recuperación de contraseña
 const sendPasswordResetEmail = (email, resetLink) => {
-    const mailOptions = {
-        from: "eariassena19@gmail.com",
-        to: email,
-        subject: "Recuperación de contraseña",
-        html: `
+  const mailOptions = {
+    from: "eariassena19@gmail.com",
+    to: email,
+    subject: "Recuperación de contraseña",
+    html: `
 <table width="100%" bgcolor="#f4f4f4" cellpadding="0" cellspacing="0" style="font-family: Arial, sans-serif; margin:0; padding:0;">
   <tr>
     <td align="center">
@@ -128,28 +189,28 @@ const sendPasswordResetEmail = (email, resetLink) => {
   </tr>
 </table>
 `,
-    };
+  };
 
-    return new Promise((resolve, reject) => {
-        transporter.sendMail(mailOptions, (err, info) => {
-            if (err) {
-                console.error("Error al enviar el correo:", err);
-                reject(err);
-            } else {
-                console.log("Correo enviado:", info.response);
-                resolve(info);
-            }
-        });
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error("Error al enviar el correo:", err);
+        reject(err);
+      } else {
+        console.log("Correo enviado:", info.response);
+        resolve(info);
+      }
     });
+  });
 };
 
 // Función para notificar la actualización del curso
 const sendCursoUpdatedNotification = (email, curso) => {
-    const mailOptions = {
-        from: "eariassena19@gmail.com",
-        to: email,
-        subject: `El curso "${curso.nombre_curso}" ha sido actualizado`,
-        html: `
+  const mailOptions = {
+    from: "eariassena19@gmail.com",
+    to: email,
+    subject: `El curso "${curso.nombre_curso}" ha sido actualizado`,
+    html: `
             <p>Hola,</p>
             <p>Te informamos que el curso <strong>${curso.nombre_curso}</strong> ha sido actualizado.</p>
             <p><strong>Descripción:</strong> ${curso.descripcion}</p>
@@ -158,25 +219,24 @@ const sendCursoUpdatedNotification = (email, curso) => {
             <p><strong>Lugar:</strong> ${curso.lugar_formacion}</p>
             <p>Saludos,<br/>SGFC</p>
         `,
-    };
+  };
 
-    transporter.sendMail(mailOptions, (err, info) => {
-        if (err) {
-            console.log("Error al enviar notificación de actualización:", err);
-        } else {
-            console.log("📨 Notificación enviada:", info.response);
-        }
-    });
+  transporter.sendMail(mailOptions, (err, info) => {
+    if (err) {
+      console.log("Error al enviar notificación de actualización:", err);
+    } else {
+      console.log("📨 Notificación enviada:", info.response);
+    }
+  });
 };
-
 
 // Función para enviar el correo de confirmación de cambio de contraseña
 const sendPasswordChangeConfirmationEmail = (email, resetLink) => {
-    const mailOptions = {
-        from: "eariassena19@gmail.com",
-        to: email,
-        subject: "Confirmación de cambio de contraseña",
-        html: `
+  const mailOptions = {
+    from: "eariassena19@gmail.com",
+    to: email,
+    subject: "Confirmación de cambio de contraseña",
+    html: `
 <table width="100%" bgcolor="#f4f4f4" cellpadding="0" cellspacing="0" style="font-family: Arial, sans-serif; margin:0; padding:0;">
   <tr>
     <td align="center">
@@ -224,45 +284,45 @@ const sendPasswordChangeConfirmationEmail = (email, resetLink) => {
   </tr>
 </table>
 `,
-    };
+  };
 
-    return new Promise((resolve, reject) => {
-        transporter.sendMail(mailOptions, (err, info) => {
-            if (err) {
-                console.error("Error al enviar el correo:", err);
-                reject(err);
-            } else {
-                console.log("Correo enviado:", info.response);
-                resolve(info);
-            }
-        });
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error("Error al enviar el correo:", err);
+        reject(err);
+      } else {
+        console.log("Correo enviado:", info.response);
+        resolve(info);
+      }
     });
+  });
 };
 
 //Funcion para enviar correo de notificacion de curso creado
 const sendCourseCreatedEmail = (emails, nombre_curso, courseLink) => {
 
-    const mailOptions = {
-        from: 'eariassena19@gmail.com',
-        to: emails,
-        subject: "Nuevo curso en linea",
-        html: ` <h2>El nuevo curso: ${nombre_curso} ha creado</h2>
+  const mailOptions = {
+    from: 'eariassena19@gmail.com',
+    to: emails,
+    subject: "Nuevo curso en linea",
+    html: ` <h2>El nuevo curso: ${nombre_curso} ha creado</h2>
             <p>Haz clic en el siguiente enlace para mas informacion del curso: </p>
                <a href="${courseLink}">Nuevo curso</a>`,
-    }
-    console.log(emails, nombre_curso, courseLink)
-    return new Promise((resolve, reject) => {
-        transporter.sendMail(mailOptions, (err, info) => {
-            if (err) {
-                console.error("Error al enviar el correo:", err);
-                reject(err);
-            }else {
-                console.log("Correo enviado:", info.response);
-                resolve(info);
-                console.log('se ejecuto la funcion')
-            }
-        })
+  }
+  console.log(emails, nombre_curso, courseLink)
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error("Error al enviar el correo:", err);
+        reject(err);
+      } else {
+        console.log("Correo enviado:", info.response);
+        resolve(info);
+        console.log('se ejecuto la funcion')
+      }
     })
+  })
 }
 
 // Enviar correo al instructor notificando su asignación
@@ -293,9 +353,8 @@ const sendInstructorAssignedEmail = (email, curso) => {
   });
 };
 
-
 // Enviar correo al aprendiz notificando su instructor asignado
-const sendStudentsInstructorAssignedEmail = (emails, curso,nombreInstructor) => {
+const sendStudentsInstructorAssignedEmail = (emails, curso, nombreInstructor) => {
   const mailOptions = {
     from: 'eariassena19@gmail.com',
     to: emails, // puede ser un string o un array de emails
@@ -321,17 +380,16 @@ const sendStudentsInstructorAssignedEmail = (emails, curso,nombreInstructor) => 
   });
 };
 
-
-
 // Exportar ambas funciones
 
- module.exports = {
+module.exports = {
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendPasswordChangeConfirmationEmail,
   sendCourseCreatedEmail,
   sendCursoUpdatedNotification,
   sendStudentsInstructorAssignedEmail,
-  sendInstructorAssignedEmail 
- };
+  sendInstructorAssignedEmail,
+  sendRequestCourseEmail
+};
 

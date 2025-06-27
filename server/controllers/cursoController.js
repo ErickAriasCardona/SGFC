@@ -11,6 +11,7 @@ const { Op } = require('sequelize');
 const fs = require('fs');
 const InscripcionCurso = require('../models/InscripcionCurso');
 
+
 let dbInstance;
 
 // Función para inyectar la instancia de la base de datos
@@ -586,7 +587,6 @@ const getCursosByEmpresaId = async (req, res) => {
     res.status(500).json({ message: "Error al obtener los cursos de la empresa." });
   }
 };
-
 
 
 module.exports = {

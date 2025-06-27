@@ -19,8 +19,6 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const cron = require('node-cron');
 const { cleanExpiredTokens } = require('./controllers/userController');
 
-
-
 // Ejecuta la limpieza de tokens expirados cada hora
 cron.schedule('0 * * * *', async () => {
   try {

@@ -4,12 +4,15 @@ const cursoController = require("../controllers/cursoController");
 const {authMiddleware} = require("../middlewares/authMiddleware");
 const upload = require("../config/multer");
 const { crearOActualizarInscripcion } = require('../controllers/inscripcionCursoController');
+// filepath: [userRoutes.js](http://_vscodecontentref_/2)
+const { sendRequestCourseEmail } = require('../services/emailService');
 
 // Rutas públicas (no requieren autenticación)
 router.get("/cursos", cursoController.getAllCursos);
 router.get('/searchCurso', cursoController.getCursoByNameOrFicha)
 router.get("/cursos/:id", cursoController.getCursoById); // Obtener curso por ID
 router.get('/empresa/:empresaId', cursoController.getCursosByEmpresaId);
+router.post('/solicitud-curso', upload.single('pdf'), sendRequestCourseEmail);
 
 
 //ruta que requieren autorizacion

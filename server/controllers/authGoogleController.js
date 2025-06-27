@@ -127,6 +127,22 @@ const googleSignUp = async (req, res) => {
             return res.status(400).json({ success: false, message: 'El correo ya está registrado. Por favor, inicie sesión.' });
         }
 
+        let empresaId = null;
+        // Si es empresa, crea el registro en la tabla Empresa
+        if (accountType === 'Empresa') {
+            const nuevaEmpresa = await dbInstance.Empresa.create({
+                NIT: null,
+                email_empresa: null,
+                nombre_empresa: null,
+                direccion: null,
+                estado: 'inactivo',
+                categoria: null,
+                telefono: null,
+                img_empresa: null,
+            });
+            empresaId = nuevaEmpresa.ID;
+        }
+
         // Crear nuevo usuario con el tipo de cuenta recibido
         console.log('Creando nuevo usuario con Google:', email);
         const user = await dbInstance.Usuario.create({
@@ -138,6 +154,7 @@ const googleSignUp = async (req, res) => {
             accountType: accountType || 'Aprendiz',
             verificacion_email: true,
             password: null,
+            empresa_ID: empresaId // Asigna el ID de la empresa si aplica
         });
 
         return generateTokenAndRespond(user, res);
@@ -148,17 +165,41 @@ const googleSignUp = async (req, res) => {
 };
 
 const generateTokenAndRespond = (user, res) => {
-    const token = jwt.sign(
-        { id: user.ID, email: user.email, accountType: user.accountType },
+    const accessToken = jwt.sign(
+        {
+            id: user.ID,
+            email: user.email,
+            accountType: user.accountType,
+            empresa_ID: user.empresa_ID || null
+        },
         process.env.JWT_SECRET || "secret",
         { expiresIn: "1h" }
     );
 
-    res.cookie("token", token, {
+    // Genera el refreshToken (ejemplo: 7 días)
+    const refreshToken = jwt.sign(
+        {
+            id: user.ID,
+            email: user.email,
+            accountType: user.accountType,
+            empresa_ID: user.empresa_ID || null
+        },
+        process.env.JWT_REFRESH_SECRET || "refresh_secret",
+        { expiresIn: "7d" }
+    );
+
+    res.cookie("accessToken", accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: 3600000,
+        maxAge: 3600000, // 1 hora
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
     });
 
     res.status(200).json({
@@ -172,7 +213,7 @@ const generateTokenAndRespond = (user, res) => {
             apellidos: user.apellidos,
             foto_perfil: user.foto_perfil,
             accountType: user.accountType,
-            empresa_ID: user.empresa_ID || null // <-- Agrega esto
+            empresa_ID: user.empresa_ID || null
         }
     });
 };

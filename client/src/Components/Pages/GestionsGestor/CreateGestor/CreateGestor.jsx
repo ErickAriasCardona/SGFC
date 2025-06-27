@@ -189,33 +189,37 @@ export const CreateGestor = ({ onClose }) => {
             <div className="status-buttons">
               <button
                 type="button"
-                className={formData.estado === "Activo" ? "active" : ""}
-                onClick={() => setFormData(prev => ({ ...prev, estado: "Activo" }))}
+                className={`status ${formData.estado === "Activo" ? "active" : ""
+                  }`}
+                onClick={() => setFormData({ ...formData, estado: "Activo" })}
               >
                 Activo
               </button>
               <button
                 type="button"
-                className={formData.estado === "Inactivo" ? "active" : ""}
-                onClick={() => setFormData(prev => ({ ...prev, estado: "Inactivo" }))}
+                className={`status ${formData.estado === "Inactivo" ? "active" : ""
+                  }`}
+                onClick={() =>
+                  setFormData({ ...formData, estado: "Inactivo" })
+                }
               >
                 Inactivo
               </button>
             </div>
           </div>
 
-          <div className="modal-buttons">
-            <button type="submit" className="submit-button">
-              Crear Gestor
-            </button>
-            <button
-              type="button"
-              className="cancel-button"
-              onClick={closeModalCreateGestor}
-            >
-              Cancelar
-            </button>
-          </div>
+          <button type="submit" className="save-button">
+            Guardar
+          </button>
+          
+        </div>
+        <div className="container_return_AssignInstructor">
+          <h5>Volver</h5>
+          <button
+            type="button"
+            onClick={closeModalCreateGestor}
+            className="closeModal"
+          ></button>
         </div>
       </form>
     </div>

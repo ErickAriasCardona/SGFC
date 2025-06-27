@@ -109,6 +109,44 @@ export const RequestCourse = () => {
   const handleEdit = () => setIsEditing(true);
   const handleSave = () => setIsEditing(false);
 
+const handleSendRequest = async () => {
+  try {
+    if (!pdfRef.current) return;
+
+    // Opciones para html2pdf
+    const opt = {
+      margin: 10,
+      filename: 'solicitud_curso.pdf',
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // Genera el PDF y obtén el blob
+    const worker = html2pdf().set(opt).from(pdfRef.current);
+    const pdfBlob = await worker.outputPdf ? await worker.outputPdf('blob') : await worker.output('blob');
+
+    // Prepara el FormData
+    const formData = new FormData();
+    formData.append('pdf', pdfBlob, 'solicitud_curso.pdf');
+    formData.append('nombreCurso', nombreCurso);
+    formData.append('numEmpleados', numEmpleados);
+    formData.append('fechaInicio', fechaInicio);
+    formData.append('fechaFin', fechaFin);
+    formData.append('empresa', JSON.stringify(empresa));
+    formData.append('empresa_ID', empresa?.ID); // <-- Agrega esto
+    formData.append('manager', JSON.stringify(manager));
+
+    await axiosInstance.post('/api/courses/solicitud-curso', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+
+    alert('¡Solicitud enviada correctamente!');
+  } catch (error) {
+    alert('Error al enviar la solicitud.');
+    console.error(error);
+  }
+};
+
   return (
     <>
       <Header />
@@ -251,8 +289,7 @@ export const RequestCourse = () => {
               <button className="submit-button" onClick={handleEdit}>Editar</button>
             )}
 
-            <button className="submit-button" >Enviar Solicitud</button>
-
+            <button className="submit-button" onClick={handleSendRequest}>Enviar Solicitud</button>
           </div>
 
         </div>

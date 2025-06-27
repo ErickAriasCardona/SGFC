@@ -22,18 +22,12 @@ export const Start = ({ setShowSignIn, setShowSignUp, setShowModalGeneral }) => 
             <span className="complementary">Formación Complementaria</span>
           </h1>
           <p>
-            Convierte la <b>capacitación de tu equipo</b> en un proceso{" "}
-            <b>ágil, claro y 100% digital</b>. Desde una sola plataforma podrás
-            solicitar cursos, cargar documentos en segundos y seguir el avance
-            en tiempo real. <br />
-            <br />
-            Conecta a tu empresa con instructores expertos del&nbsp;SENA, reduce
-            los trámites manuales y obtén <b>transparencia total</b> en cada
-            paso.
-            <em>
-              {" "}
-              ¡Impulsa hoy mismo la formación que acelera tu crecimiento!
-            </em>{" "}
+            Bienvenido al  <b>SGFC – Sistema de Gestión de Formación Complementaria
+            </b>, una plataforma digital diseñada para facilitar la planificación, solicitud y seguimiento de cursos complementarios entre el SENA y el sector productivo.
+
+            <br /><br />Aquí podrás explorar la oferta formativa disponible, solicitar capacitación para equipos de trabajo, consultar el avance de los cursos, generar reportes y gestionar todo el proceso de formación desde un entorno centralizado, ágil y seguro.
+
+            <br /><br />SGFC promueve el fortalecimiento del talento humano mediante el uso de herramientas tecnológicas que optimizan la interacción entre instituciones educativas y empresas.
           </p>
         </div>
         <div className="container_ilustrationStart">
