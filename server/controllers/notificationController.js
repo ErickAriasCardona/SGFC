@@ -1,3 +1,5 @@
+const Notificacion = require('../models/Notificacion');
+const User = require("../models/User");
 const { sendNotification, sendAbsenceNotifications } = require('../services/notificationService');
 let dbInstance;
 
@@ -14,8 +16,7 @@ const getUserNotifications = async (req, res) => {
         const userId = req.user.id;
         const { page = 1, limit = 10, type } = req.query;
 
-        const whereClause = { usuario_ID: userId };
-        if (type) {
+        const whereClause = { destinatario_ID: userId }; if (type) {
             whereClause.tipo = type;
         }
 
@@ -26,7 +27,7 @@ const getUserNotifications = async (req, res) => {
             include: [
                 {
                     model: dbInstance.Usuario,
-                    as: 'usuario',
+                    as: 'remitente',
                     attributes: ['ID', 'nombres', 'apellidos', 'email']
                 }
             ],
@@ -150,9 +151,57 @@ const sendManualAbsenceNotification = async (req, res) => {
     }
 };
 
+
+/**
+ * Crea notificaciones de solicitud de curso para administradores y gestores
+ */
+const crearNotificacionSolicitudCurso = async (req, res) => {
+    try {
+        const { asunto, mensaje, archivo } = req.body;
+        // El remitente es el usuario autenticado (empresa)
+        const remitente_ID = req.user.id;
+
+        // Busca todos los usuarios tipo 'Administrador' y 'Gestor'
+        const destinatarios = await User.findAll({
+            where: {
+                accountType: ['Administrador', 'Gestor']
+            }
+        });
+
+        // Crea una notificación para cada destinatario
+        const notificaciones = [];
+        for (const destinatario of destinatarios) {
+            const notificacion = await Notificacion.create({
+                remitente_ID, // ID del usuario empresa que envía la solicitud
+                destinatario_ID: destinatario.ID, // ID del admin/gestor que recibe
+                tipo: 'solicitud_curso',
+                titulo: asunto,
+                mensaje,
+                fecha_envio: new Date(),
+                estado: 'sin_leer',
+                archivo // nombre o ruta del PDF
+            });
+            notificaciones.push(notificacion);
+        }
+
+        res.status(201).json({
+            success: true,
+            message: 'Notificaciones de solicitud de curso creadas correctamente',
+            notificaciones
+        });
+    } catch (error) {
+        console.error('Error al crear notificaciones de solicitud de curso:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al crear las notificaciones'
+        });
+    }
+};
+
 module.exports = {
     setDb,
     getUserNotifications,
     markNotificationAsRead,
-    sendManualAbsenceNotification
+    sendManualAbsenceNotification,
+    crearNotificacionSolicitudCurso
 }; 

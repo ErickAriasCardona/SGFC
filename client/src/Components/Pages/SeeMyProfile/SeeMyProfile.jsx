@@ -97,7 +97,7 @@ export const SeeMyProfile = () => {
             <Header />
             <Main>
                 <div className='container_mainSeeMyProfile'>
-                    
+
                     <div className='container_profile'>
                         <h3>{tipoCuenta}</h3>
                         <img
@@ -263,14 +263,37 @@ export const SeeMyProfile = () => {
                                         src={getImageSrcFromBase64OrPath(perfil?.Empresa?.img_empresa)}
                                         alt="Logo empresa"
                                         className="profile-img"
-                                    />                                    <div>
-                                        <h3>{perfil.Empresa.nombre_empresa || '-'}</h3>
+                                    />
+                                    <div>
+                                        <h3>
+                                            {editMode ? (
+                                                <input
+                                                    type="text"
+                                                    name="Empresa.nombre_empresa"
+                                                    className='input_updateData'
+                                                    value={perfil?.Empresa?.nombre_empresa || ''}
+                                                    onChange={handleInputChange}
+                                                />
+                                            ) : (
+                                                perfil.Empresa.nombre_empresa || '-'
+                                            )}
+                                        </h3>
                                         <p>
-                                            NIT: {perfil.Empresa.NIT || '-'}
+                                            NIT:{" "}
+                                            {editMode ? (
+                                                <input
+                                                    type="text"
+                                                    name="Empresa.NIT"
+                                                    className='input_updateData'
+                                                    value={perfil?.Empresa?.NIT || ''}
+                                                    onChange={handleInputChange}
+                                                />
+                                            ) : (
+                                                perfil.Empresa.NIT || '-'
+                                            )}
                                         </p>
                                     </div>
                                 </div>
-
                                 {/* elemento gestion de estado */}
                                 <div className='status-company'>
                                     <div
@@ -296,7 +319,7 @@ export const SeeMyProfile = () => {
 
                             <div className='container_data'>
                                 <div className='data_company'>
-                                    <h4 id='titleDataSede'>Datos Emoresa</h4>
+                                    <h4 id='titleDataSede'>Datos Empresa</h4>
 
                                     <p>
                                         Dirección: <br />

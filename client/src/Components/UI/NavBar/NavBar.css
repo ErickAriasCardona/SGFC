@@ -269,3 +269,51 @@
         display: flex;
     }
 }
+
+.notification-modal{
+    width: 90%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    
+}
+
+.notification-modal>h2{
+    width: auto;
+    height: auto;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+}
+
+.notification-modal>p{
+    width: auto;
+    height: auto;
+    font-size: 14px;
+    margin-bottom: 2rem;
+    text-align: start;
+    font-weight: 600;
+    
+}
+
+.notification-message{
+    width: auto;
+    height: auto;
+    font-size: 12px;
+    text-align: start;
+    margin-bottom: 2rem;
+}
+
+.notification-attachment{
+    width: auto;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.notification-attachment>a{
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 10px;
+}

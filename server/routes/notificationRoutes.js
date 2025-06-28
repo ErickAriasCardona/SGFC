@@ -15,4 +15,7 @@ router.put('/:notificationId/read', notificationController.markNotificationAsRea
 // Enviar notificaciones de inasistencia manualmente (solo instructores)
 router.post('/attendance/:attendanceId/absence-notifications', notificationController.sendManualAbsenceNotification);
 
+// Crear notificaciones de solicitud de curso para administradores y gestores
+router.post('/solicitud-curso', notificationController.crearNotificacionSolicitudCurso);
+
 module.exports = router; 

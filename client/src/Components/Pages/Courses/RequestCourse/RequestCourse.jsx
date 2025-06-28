@@ -125,7 +125,7 @@ const handleSendRequest = async () => {
     const worker = html2pdf().set(opt).from(pdfRef.current);
     const pdfBlob = await worker.outputPdf ? await worker.outputPdf('blob') : await worker.output('blob');
 
-    // Prepara el FormData
+    // Prepara el FormData para la solicitud de curso
     const formData = new FormData();
     formData.append('pdf', pdfBlob, 'solicitud_curso.pdf');
     formData.append('nombreCurso', nombreCurso);
@@ -133,14 +133,25 @@ const handleSendRequest = async () => {
     formData.append('fechaInicio', fechaInicio);
     formData.append('fechaFin', fechaFin);
     formData.append('empresa', JSON.stringify(empresa));
-    formData.append('empresa_ID', empresa?.ID); // <-- Agrega esto
+    formData.append('empresa_ID', empresa?.ID);
     formData.append('manager', JSON.stringify(manager));
 
-    await axiosInstance.post('/api/courses/solicitud-curso', formData, {
+    // 1. Enviar la solicitud de curso
+    const response = await axiosInstance.post('/api/courses/solicitud-curso', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
 
-    alert('¡Solicitud enviada correctamente!');
+    // 2. Enviar la notificación al sistema
+    // Puedes obtener el nombre del archivo PDF desde el backend en la respuesta, o usar el mismo nombre si lo generas igual
+    const archivoPDF = response.data?.pdf || 'solicitud_curso.pdf'; // Ajusta según tu backend
+
+    await axiosInstance.post('/api/notifications/solicitud-curso', {
+      asunto: 'Nueva solicitud de curso',
+      mensaje: `Se ha recibido una nueva solicitud de curso de la empresa ${empresa?.nombre_empresa || ''}.`,
+      archivo: archivoPDF
+    });
+
+    alert('¡Solicitud enviada y notificación creada correctamente!');
   } catch (error) {
     alert('Error al enviar la solicitud.');
     console.error(error);

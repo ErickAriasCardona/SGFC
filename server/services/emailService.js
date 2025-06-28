@@ -11,7 +11,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-
 const sendRequestCourseEmail = async (req, res) => {
   try {
     const { nombreCurso, numEmpleados, fechaInicio, fechaFin, curso_ID, empresa_ID, gestor_ID } = req.body;
@@ -62,7 +61,10 @@ const sendRequestCourseEmail = async (req, res) => {
       ]
     });
 
-    res.status(200).json({ message: 'Solicitud enviada y registrada correctamente.' });
+    res.status(200).json({
+      message: 'Solicitud enviada y registrada correctamente.',
+      pdf: pdfFileName // <-- Esto envía el nombre real del PDF al frontend
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al enviar o registrar la solicitud.' });

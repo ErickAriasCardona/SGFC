@@ -14,6 +14,8 @@ export const NavBar = ({ children }) => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { setShowSignIn } = useModal();
+  const [notificationsList, setNotificationsList] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
 
   const userSession =
     JSON.parse(localStorage.getItem('userSession')) ||
@@ -29,13 +31,13 @@ export const NavBar = ({ children }) => {
 
   const handleLogout = async () => {
     try {
-      const response = await axiosInstance.post("/api/users/logout", {}, { 
+      const response = await axiosInstance.post("/api/users/logout", {}, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (response.status === 200) {
         localStorage.removeItem("userSession");
         sessionStorage.removeItem("userSession");
@@ -66,6 +68,51 @@ export const NavBar = ({ children }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    if (!showNotificationsMenu) return;
+
+    const fetchNotifications = async () => {
+      setLoadingNotifications(true);
+      try {
+        const res = await axiosInstance.get('/api/notifications?limit=5');
+        setNotificationsList(res.data.notifications || []);
+      } catch (err) {
+        setNotificationsList([]);
+      }
+      setLoadingNotifications(false);
+    };
+
+    fetchNotifications();
+  }, [showNotificationsMenu, isLoggedIn]);
+
+  const { setShowModalGeneral, setModalGeneralContent } = useModal();
+
+  const handleNotificationClick = (notif) => {
+    setModalGeneralContent(
+      <div className='notification-modal'>
+        <h2>{notif.titulo}</h2>
+        <p><b>De:</b> {notif.remitente?.nombres ? `${notif.remitente.nombres} ${notif.remitente.apellidos}` : 'SGFC'}</p>
+        <p><b>Mensaje:</b></p>
+        <div className='notification-message' dangerouslySetInnerHTML={{ __html: notif.mensaje }} />
+        {notif.archivo && (
+          <div className='notification-attachment'>
+            <a
+              href={`http://localhost:3001/uploads/solicitudes/${notif.archivo}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#007bff', textDecoration: 'underline' }}
+            >
+              Ver PDF adjunto
+            </a>
+          </div>
+        )}
+      </div>
+    );
+    setShowModalGeneral(true);
+  };
 
   return (
     <div className="navBar">
@@ -131,30 +178,41 @@ export const NavBar = ({ children }) => {
             </button>
 
             <div className="notifications-menu" ref={notificationsMenuRef}>
-              <button className='btn-notifications' onClick={() => setShowNotificationsMenu((prev) => !prev)}>
+              <button
+                className='btn-notifications'
+                onClick={() => setShowNotificationsMenu((prev) => !prev)}
+              >
                 <img className='img_notifications' src={notifications} alt="Notificaciones" />
               </button>
               {showNotificationsMenu && (
                 <div className="dropdown-notifications">
                   <div className="arrow-up" />
-                  <div className="notification-item">
-                    <div className='container-img-notifications'>
-                      <img src={noRead} alt="" />
-                    </div>
-                    <div className='container-text-notifications'>
-                      <p className="notification-sender">Remitente</p>
-                      <span className="notification-affair">Asunto de la notificación</span>
-                    </div>
-                  </div>
-                  <div className="notification-item">
-                    <div className='container-img-notifications'>
-                      <img src={ifRead} alt="" />
-                    </div>
-                    <div className='container-text-notifications'>
-                      <p className="notification-sender">Remitente</p>
-                      <span className="notification-affair">Asunto de la notificación</span>
-                    </div>
-                  </div>
+                  {loadingNotifications ? (
+                    <div className="notification-item">Cargando...</div>
+                  ) : notificationsList.length === 0 ? (
+                    <div className="notification-item">Sin notificaciones</div>
+                  ) : (
+                    notificationsList.map((notif) => (
+                      <div
+                        className="notification-item"
+                        key={notif.ID}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handleNotificationClick(notif)}
+                      >
+                        <div className='container-img-notifications'>
+                          <img src={notif.estado === 'sin_leer' ? noRead : ifRead} alt="" />
+                        </div>
+                        <div className='container-text-notifications'>
+                          <p className="notification-sender">
+                            {notif.remitente?.nombres
+                              ? `${notif.remitente.nombres} ${notif.remitente.apellidos}`
+                              : 'SGFC'}
+                          </p>
+                          <span className="notification-affair">{notif.titulo}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
             </div>

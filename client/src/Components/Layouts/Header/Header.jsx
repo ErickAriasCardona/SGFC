@@ -52,7 +52,8 @@ export const Header = ({ setShowSignIn, setShowSignUp, setShowAccountType }) => 
     '/Cursos/MisCursos',
     '/Cursos/BuscarCursos',
     '/Cursos/CrearCurso',
-    '/Cursos/SolicitarCurso'
+    '/SolicitarCurso',
+    '/Cursos'
   ].some(path => location.pathname.startsWith(path));
 
   const isGestionesActive = [

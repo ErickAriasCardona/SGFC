@@ -9,12 +9,14 @@ class Notificacion extends Model {
                     primaryKey: true,
                     autoIncrement: true
                 },
-                usuario_ID: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false
-                },
                 tipo: {
-                    type: DataTypes.ENUM('inasistencia', 'recordatorio', 'actualizacion_curso', 'otro'),
+                    type: DataTypes.ENUM(
+                        'inasistencia',
+                        'recordatorio',
+                        'actualizacion_curso',
+                        'solicitud_curso',
+                        'otro'
+                    ),
                     allowNull: false
                 },
                 titulo: {
@@ -31,12 +33,36 @@ class Notificacion extends Model {
                     defaultValue: DataTypes.NOW
                 },
                 estado: {
-                    type: DataTypes.ENUM('enviada', 'fallida', 'pendiente', 'leida'),
-                    defaultValue: 'pendiente'
+                    type: DataTypes.ENUM('enviada', 'fallida', 'pendiente', 'leida', 'sin_leer'),
+                    defaultValue: 'sin_leer'
                 },
-                curso_ID: {
+                remitente_ID: {
                     type: DataTypes.INTEGER,
+                    allowNull: false,
+                    references: {
+                        model: 'usuarios', // Relaciona con la tabla usuarios
+                        key: 'ID'
+                    }
+                },
+                destinatario_ID: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                    references: {
+                        model: 'usuarios', // Relaciona con la tabla usuarios
+                        key: 'ID'
+                    }
+                },
+                archivo: { // Ruta o nombre del archivo PDF adjunto
+                    type: DataTypes.STRING,
                     allowNull: true
+                },
+                curso_ID: { // Opcional, si quieres asociar con un curso
+                    type: DataTypes.INTEGER,
+                    allowNull: true,
+                    references: {
+                        model: 'curso',
+                        key: 'ID'
+                    }
                 }
             },
             {
@@ -49,13 +75,19 @@ class Notificacion extends Model {
     }
 
     static associate(models) {
-        // Relación con el usuario
+        // Relación con el usuario remitente
         this.belongsTo(models.Usuario, {
-            foreignKey: 'usuario_ID',
-            as: 'usuario'
+            foreignKey: 'remitente_ID',
+            as: 'remitente'
         });
 
-        // Relación con el curso
+        // Relación con el usuario destinatario
+        this.belongsTo(models.Usuario, {
+            foreignKey: 'destinatario_ID',
+            as: 'destinatario'
+        });
+
+        // Relación con el curso (opcional)
         this.belongsTo(models.Curso, {
             foreignKey: 'curso_ID',
             as: 'curso'
@@ -63,4 +95,4 @@ class Notificacion extends Model {
     }
 }
 
-module.exports = Notificacion; 
+module.exports = Notificacion;
