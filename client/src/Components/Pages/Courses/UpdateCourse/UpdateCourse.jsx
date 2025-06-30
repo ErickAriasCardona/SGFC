@@ -34,14 +34,20 @@ export const UpdateCourse = () => {
     const fetchCurso = async () => {
       try {
         const response = await axiosInstance.get(`/api/courses/cursos/${id}`);
+        // Normaliza tipo_oferta
+        const tipoOfertaNormalizado = response.data.tipo_oferta
+          ? response.data.tipo_oferta.charAt(0).toUpperCase() + response.data.tipo_oferta.slice(1).toLowerCase()
+          : "";
+
         setCurso({
           ...response.data,
-          empresa_ID: response.data.empresa_ID, // asegúrate de incluirlo explícitamente
+          tipo_oferta: tipoOfertaNormalizado,
+          empresa_ID: response.data.empresa_ID,
         });
 
-        //imagen base64:
-        if (curso.imagen) {
-          setPreview(`data:image/png;base64,${curso.imagen}`);
+        // Imagen base64:
+        if (response.data.imagen) {
+          setPreview(`data:image/png;base64,${response.data.imagen}`);
         }
 
         setCalendarData({
@@ -52,8 +58,16 @@ export const UpdateCourse = () => {
             : [],
         });
 
-        if (response.data.empresa_NIT) {
-          setEmpresaNIT(response.data.empresa_NIT);
+        // Si el curso ya tiene empresa asignada y es cerrada, selecciona la empresa
+        // Si el curso ya tiene empresa asignada y es cerrada, selecciona la empresa por ID
+        if (tipoOfertaNormalizado === "Cerrada" && response.data.empresa_ID) {
+          try {
+            const empresaResp = await axiosInstance.get(`/api/users/empresa/id/${response.data.empresa_ID}`);
+            setEmpresaSeleccionada(empresaResp.data);
+            setEmpresaNIT('');
+          } catch {
+            setEmpresaSeleccionada(null);
+          }
         }
       } catch (error) {
         console.error("Error al obtener el curso:", error);
@@ -314,13 +328,16 @@ export const UpdateCourse = () => {
                       <label htmlFor="nit_company">Empresa</label>
                       {empresaSeleccionada ? (
                         <div className='empresa-seleccionada'>
-                          <p className='nombre_empresaSeleccionada'>{empresaSeleccionada.nombre_empresa}</p>
+                          <p className='nombre_empresaSeleccionada'>
+                            {empresaSeleccionada.nombre_empresa}
+                          </p>
                           <button
                             type="button"
                             className='buttonEditEmpresa'
                             onClick={() => {
                               setEmpresaSeleccionada(null);
                               setEmpresaNIT('');
+                              setResultadosEmpresa([]);
                               setShowResultados(false);
                             }}
                           >

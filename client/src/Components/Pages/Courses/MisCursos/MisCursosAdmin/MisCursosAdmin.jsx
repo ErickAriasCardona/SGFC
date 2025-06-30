@@ -66,7 +66,7 @@ export const MisCursosAdmin = () => {
     // Filtros según tipo de cuenta
     const filtros =
         accountType === "Empresa"
-            ? ["Todos", "Activos", "Finalizados", "Pendientes", "Cancelados"]
+            ? ["Todos", "Activos", "Finalizados", "Pendientes", "Cancelados", "En oferta"]
             : [
                 "Todos",
                 "Activos",
@@ -86,6 +86,30 @@ export const MisCursosAdmin = () => {
             setCursos(
                 todosLosCursos.filter((curso) =>
                     curso.tipo_oferta?.toLowerCase() === "abierta"
+                )
+            );
+        } else if (filtro === "Activos") {
+            setCursos(
+                todosLosCursos.filter((curso) =>
+                    curso.estado?.toLowerCase() === "activo"
+                )
+            );
+        } else if (filtro === "Finalizados") {
+            setCursos(
+                todosLosCursos.filter((curso) =>
+                    curso.estado?.toLowerCase() === "finalizado"
+                )
+            );
+        } else if (filtro === "Pendientes") {
+            setCursos(
+                todosLosCursos.filter((curso) =>
+                    curso.estado?.toLowerCase() === "pendiente"
+                )
+            );
+        } else if (filtro === "Cancelados") {
+            setCursos(
+                todosLosCursos.filter((curso) =>
+                    curso.estado?.toLowerCase() === "cancelado"
                 )
             );
         } else if (filtro === "Oferta cerrada") {

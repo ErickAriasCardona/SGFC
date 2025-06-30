@@ -6,8 +6,8 @@ import axiosInstance from '../../../../config/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import ilustrationSearch from '../../../../assets/Ilustrations/search_course.svg';
 import nub1 from '../../../../assets/Ilustrations/nub1.svg';
-import nub2 from '../../../../assets/Ilustrations/nub2.svg';    
-import nub3 from '../../../../assets/Ilustrations/nub3.svg';     
+import nub2 from '../../../../assets/Ilustrations/nub2.svg';
+import nub3 from '../../../../assets/Ilustrations/nub3.svg';
 
 
 import arrowLeft from '../../../../assets/Icons/arrowLeft.png';
@@ -22,14 +22,28 @@ export const ConsultCourses = () => {
   const [startIndex, setStartIndex] = useState(0);
   const scrollRef = useRef(null);
   const navigate = useNavigate();
+  const userData =
+    JSON.parse(localStorage.getItem("userSession")) ||
+    JSON.parse(sessionStorage.getItem("userSession")) ||
+    {};
+  const tipoCuenta = userData.accountType || "invitado";
 
   // Obtener todos los cursos al cargar la página
   useEffect(() => {
     const fetchCursos = async () => {
       try {
         const response = await axiosInstance.get('/api/courses/cursos');
-        setCursos(response.data);
-        setAllCursos(response.data);
+        let cursosFiltrados = response.data;
+
+        const restringidos = ["invitado", "Empresa", "Aprendiz"];
+        if (restringidos.includes(tipoCuenta)) {
+          cursosFiltrados = cursosFiltrados.filter(
+            (curso) => curso.estado?.toLowerCase() === "en oferta"
+          );
+        }
+
+        setCursos(cursosFiltrados);
+        setAllCursos(cursosFiltrados);
         setErrorMessage("");
       } catch (error) {
         setCursos([]);
@@ -39,7 +53,6 @@ export const ConsultCourses = () => {
     };
     fetchCursos();
   }, []);
-
   // Resetear el carrusel al cambiar cursos
   useEffect(() => {
     setStartIndex(0);
@@ -58,7 +71,19 @@ export const ConsultCourses = () => {
         const response = await axiosInstance.get(
           `/api/courses/searchCurso?input=${encodeURIComponent(searchTerm.trim())}`
         );
-        setCursos(response.data);
+        let cursosFiltrados = response.data;
+
+        if (
+          tipoCuenta === "invitado" ||
+          tipoCuenta === "Empresa" ||
+          tipoCuenta === "Aprendiz"
+        ) {
+          cursosFiltrados = cursosFiltrados.filter(
+            (curso) => curso.estado?.toLowerCase() === "en oferta"
+          );
+        }
+
+        setCursos(cursosFiltrados);
         setErrorMessage("");
       } catch (error) {
         setCursos([]);
@@ -100,7 +125,7 @@ export const ConsultCourses = () => {
           <img className='nub1' src={nub1} alt="" />
           <img className='nub2' src={nub2} alt="" />
           <img className='nub3' src={nub3} alt="" />
-          
+
           <img className='illustration_search' src={ilustrationSearch} alt="" />
           <h2>
             Buscar <span className='complementary'>Cursos</span>

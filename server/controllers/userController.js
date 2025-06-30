@@ -465,6 +465,23 @@ const getEmpresaByNIT = async (req, res) => {
     }
 };
 
+// Obtener empresa por ID
+const getEmpresaById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const empresa = await Empresa.findByPk(id);
+
+        if (!empresa) {
+            return res.status(404).json({ message: 'Empresa no encontrada.' });
+        }
+
+        res.status(200).json(empresa);
+    } catch (error) {
+        console.error('Error al obtener la empresa por ID:', error);
+        res.status(500).json({ message: 'Error al obtener la empresa.' });
+    }
+};
+
 // Consultar lista de instructores
 const getInstructores = async (req, res) => {
     try {
@@ -518,14 +535,15 @@ const updateUserProfile = async (req, res) => {
             documento,
             estado,
             titulo_profesional,
-            password,
+            
         } = req.body;
 
-        // Procesar imagen de perfil si se sube
-        let foto_perfil = null;
-        if (req.file) {
-            foto_perfil = req.file.buffer.toString('base64');
+        // Procesar imagen de perfil si se sube (como base64)
+        const foto_perfil = null;
+        if (req.files?.foto_perfil?.[0]) {
+            foto_perfil = req.files.foto_perfil[0].buffer.toString("base64");
         }
+
 
         const token = req.cookies.accessToken;
         if (!token) {
@@ -581,10 +599,6 @@ const updateUserProfile = async (req, res) => {
                 if (estado) user.estado = estado;
                 if (titulo_profesional) user.titulo_profesional = titulo_profesional;
 
-                if (password) {
-                    const hashedPassword = await bcrypt.hash(password, 10);
-                    user.password = hashedPassword;
-                }
                 if (foto_perfil) user.foto_perfil = foto_perfil;
 
                 await user.save();
@@ -600,6 +614,8 @@ const updateUserProfile = async (req, res) => {
             if (celular) user.celular = celular;
             if (documento) user.documento = documento;
             if (estado) user.estado = estado;
+            if (foto_perfil) user.foto_perfil = foto_perfil;
+
 
             // Empresa viene como string JSON en el campo 'empresa'
             if (req.body.empresa && user.Empresa) {
@@ -633,10 +649,6 @@ const updateUserProfile = async (req, res) => {
                 await user.Empresa.save();
             }
 
-            if (password) {
-                const hashedPassword = await bcrypt.hash(password, 10);
-                user.password = hashedPassword;
-            }
             if (foto_perfil) user.foto_perfil = foto_perfil;
 
             await user.save();
@@ -645,8 +657,6 @@ const updateUserProfile = async (req, res) => {
 
         // EMPRESA puede actualizar a sus empleados (Aprendiz)
         if (loggedInUser.accountType === "Empresa" && user.accountType === "Aprendiz") {
-            console.log('Empresa logueada:', loggedInUser.empresa_ID, typeof loggedInUser.empresa_ID);
-            console.log('Aprendiz:', user.empresa_ID, typeof user.empresa_ID);
             // Validar que el empleado pertenezca a la empresa logueada
             if (user.empresa_ID !== loggedInUser.empresa_ID) {
                 return res.status(403).json({ message: "No tienes permiso para actualizar este empleado." });
@@ -680,10 +690,6 @@ const updateUserProfile = async (req, res) => {
             if (documento) user.documento = documento;
             if (estado) user.estado = estado;
 
-            if (password) {
-                const hashedPassword = await bcrypt.hash(password, 10);
-                user.password = hashedPassword;
-            }
             if (foto_perfil) user.foto_perfil = foto_perfil;
 
             await user.save();
@@ -714,10 +720,6 @@ const updateUserProfile = async (req, res) => {
             if (documento) user.documento = documento;
             if (estado) user.estado = estado;
             if (titulo_profesional) user.titulo_profesional = titulo_profesional;
-            if (password) {
-                const hashedPassword = await bcrypt.hash(password, 10);
-                user.password = hashedPassword;
-            }
             if (foto_perfil) user.foto_perfil = foto_perfil;
             await user.save();
             return res.status(200).json({ message: "Perfil de aprendiz actualizado con éxito. Por favor verifica tu nuevo correo." });
@@ -1093,4 +1095,4 @@ const createEmpleado = async (req, res) => {
     }
 };
 
-module.exports = { createEmpleado, getEmpleadosByEmpresaId, refreshAccessToken, getAprendicesByEmpresa, registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers, getEmpresaByNIT };
+module.exports = { getEmpresaById, createEmpleado, getEmpleadosByEmpresaId, refreshAccessToken, getAprendicesByEmpresa, registerUser, verifyEmail, loginUser, requestPasswordReset, resetPassword, getAllUsers, getUserProfile, getAprendices, getEmpresas, getInstructores, getGestores, updateUserProfile, createInstructor, createGestor, logoutUser, cleanExpiredTokens, createMasiveUsers, getEmpresaByNIT };

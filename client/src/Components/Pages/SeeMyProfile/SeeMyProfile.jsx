@@ -11,33 +11,25 @@ import fotoPerfilDefect from "../../../assets/Icons/userDefect.png";
 export const SeeMyProfile = () => {
     const location = useLocation();
     const userId = location.state?.userId;
-
+    const fotoPerfilInputRef = React.useRef(null);
+    const logoEmpresaInputRef = React.useRef(null);
     const [perfil, setPerfil] = useState(null);
     const [tipoCuenta, setTipoCuenta] = useState('');
     const [editMode, setEditMode] = useState(false);
 
-    const getImageSrcFromBase64OrPath = (foto_perfil) => {
-        if (!foto_perfil) return fotoPerfilDefect;
-        if (typeof foto_perfil === "object" && foto_perfil.data) {
-            const base64String = btoa(
-                new Uint8Array(foto_perfil.data).reduce(
-                    (data, byte) => data + String.fromCharCode(byte),
-                    ""
-                )
-            );
-            return `data:image/jpeg;base64,${base64String}`;
+
+    const getImageSrcFromBase64 = (base64) => {
+        if (!base64) return 'default-profile.png'; // Ruta a imagen por defecto
+
+        // Detectar tipo MIME por encabezado base64
+        if (base64.startsWith('iVBOR')) {
+            return `data:image/png;base64,${base64}`;
+        } else if (base64.startsWith('/9j/')) {
+            return `data:image/jpeg;base64,${base64}`;
+        } else {
+            // Si no puedes detectar, asume jpeg por defecto
+            return `data:image/jpeg;base64,${base64}`;
         }
-        // Si es base64 string
-        if (typeof foto_perfil === "string") {
-            if (foto_perfil.startsWith("iVBOR")) {
-                return `data:image/png;base64,${foto_perfil}`;
-            } else if (foto_perfil.startsWith("/9j/")) {
-                return `data:image/jpeg;base64,${foto_perfil}`;
-            } else {
-                return `data:image/jpeg;base64,${foto_perfil}`;
-            }
-        }
-        return fotoPerfilDefect;
     };
 
     useEffect(() => {
@@ -73,6 +65,24 @@ export const SeeMyProfile = () => {
         }
     };
 
+    const handleFileChange = (e, type) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64 = reader.result.split(",")[1];
+            if (type === "foto_perfil") {
+                setPerfil(prev => ({ ...prev, foto_perfil: base64 }));
+            } else if (type === "img_empresa") {
+                setPerfil(prev => ({
+                    ...prev,
+                    Empresa: { ...prev.Empresa, img_empresa: base64 }
+                }));
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
     const handleSaveChanges = async () => {
         try {
             // Clonamos el perfil
@@ -101,11 +111,29 @@ export const SeeMyProfile = () => {
                     <div className='container_profile'>
                         <h3>{tipoCuenta}</h3>
                         <img
-                            src={getImageSrcFromBase64OrPath(perfil?.foto_perfil)}
+                            src={getImageSrcFromBase64(perfil?.foto_perfil)}
                             alt="Foto de perfil"
                             className="profile-img"
-                        />                        <h4>Datos <span>{tipoCuenta}</span></h4>
+                            style={{ cursor: editMode ? "pointer" : "default" }}
+                            onClick={() => {
+                                if (editMode && fotoPerfilInputRef.current) fotoPerfilInputRef.current.click();
+                            }}
+                        />
+                        {/* Foto de perfil */}
+                        <input
+                            type="file"
+                            accept="image/*"
+                            ref={fotoPerfilInputRef}
+                            style={{ display: "none" }}
+                            onChange={e => handleFileChange(e, "foto_perfil")}
+                        />
 
+                        <h4>
+                            Datos{" "}
+                            <span>
+                                {tipoCuenta === "Empresa" ? "Manager" : tipoCuenta}
+                            </span>
+                        </h4>
                         <p>
                             Nombres <br />
                             {editMode ? (
@@ -186,7 +214,7 @@ export const SeeMyProfile = () => {
                             <div className='container_nameCompany-Status'>
                                 <div className='name_company'>
                                     <img
-                                        src={getImageSrcFromBase64OrPath(perfil?.Sena?.img_sena)}
+                                        src={getImageSrcFromBase64(perfil?.Sena?.img_sena)}
                                         alt="Logo sede"
                                         className="profile-img"
                                     />                                    <div>
@@ -260,9 +288,20 @@ export const SeeMyProfile = () => {
                             <div className='container_nameCompany-Status'>
                                 <div className='name_company'>
                                     <img
-                                        src={getImageSrcFromBase64OrPath(perfil?.Empresa?.img_empresa)}
+                                        src={getImageSrcFromBase64(perfil?.Empresa?.img_empresa)}
                                         alt="Logo empresa"
                                         className="profile-img"
+                                        style={{ cursor: editMode ? "pointer" : "default" }}
+                                        onClick={() => {
+                                            if (editMode && logoEmpresaInputRef.current) logoEmpresaInputRef.current.click();
+                                        }}
+                                    />
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        ref={logoEmpresaInputRef}
+                                        style={{ display: "none" }}
+                                        onChange={e => handleFileChange(e, "img_empresa")}
                                     />
                                     <div>
                                         <h3>

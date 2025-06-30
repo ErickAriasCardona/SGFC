@@ -41,13 +41,9 @@ const googleSignIn = async (req, res) => {
         const email = payload['email'];
         const nombres = payload['given_name'] || payload['name'];
         const apellidos = payload['family_name'] || '';
-        let foto_perfil = payload['picture'];
         const emailVerified = payload['email_verified'];
 
-        // Limpiar la URL de la foto de perfil
-        if (foto_perfil && foto_perfil.includes('googleusercontent.com')) {
-            foto_perfil = foto_perfil.split('=')[0];
-        }
+    
 
         if (!emailVerified) {
             return res.status(400).json({ success: false, message: 'El correo electrónico de Google no está verificado.' });
@@ -62,7 +58,6 @@ const googleSignIn = async (req, res) => {
             await userByGoogleId.update({
                 nombres: nombres,
                 apellidos: apellidos,
-                foto_perfil: foto_perfil,
                 verificacion_email: true,
             });
             return generateTokenAndRespond(userByGoogleId, res);
@@ -72,7 +67,6 @@ const googleSignIn = async (req, res) => {
                 googleId: googleId,
                 nombres: nombres,
                 apellidos: apellidos,
-                foto_perfil: foto_perfil,
                 verificacion_email: true,
             });
             return generateTokenAndRespond(userByEmail, res);
@@ -108,13 +102,8 @@ const googleSignUp = async (req, res) => {
         const email = payload['email'];
         const nombres = payload['given_name'] || payload['name'];
         const apellidos = payload['family_name'] || '';
-        let foto_perfil = payload['picture'];
         const emailVerified = payload['email_verified'];
 
-        // Limpiar la URL de la foto de perfil
-        if (foto_perfil && foto_perfil.includes('googleusercontent.com')) {
-            foto_perfil = foto_perfil.split('=')[0];
-        }
 
         if (!emailVerified) {
             return res.status(400).json({ success: false, message: 'El correo electrónico de Google no está verificado.' });
@@ -150,7 +139,6 @@ const googleSignUp = async (req, res) => {
             email: email,
             nombres: nombres,
             apellidos: apellidos,
-            foto_perfil: foto_perfil,
             accountType: accountType || 'Aprendiz',
             verificacion_email: true,
             password: null,

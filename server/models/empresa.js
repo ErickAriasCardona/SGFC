@@ -15,7 +15,7 @@ class Empresa extends Model {
           allowNull: true,
         },
         img_empresa: {
-          type: DataTypes.BLOB('medium'),
+          type: DataTypes.TEXT('medium'), // Esto es MEDIUMTEXT en MySQL
           allowNull: true,
         },
         nombre_empresa: {

@@ -116,19 +116,19 @@ export const GestionsInstructor = () => {
     }
   };
 
- const getImageSrcFromBase64 = (base64) => {
-  if (!base64) return 'default-profile.png'; // Ruta a imagen por defecto
+  const getImageSrcFromBase64 = (base64) => {
+    if (!base64) return 'default-profile.png'; // Ruta a imagen por defecto
 
-  // Detectar tipo MIME por encabezado base64
-  if (base64.startsWith('iVBOR')) {
-    return `data:image/png;base64,${base64}`;
-  } else if (base64.startsWith('/9j/')) {
-    return `data:image/jpeg;base64,${base64}`;
-  } else {
-    // Si no puedes detectar, asume jpeg por defecto
-    return `data:image/jpeg;base64,${base64}`;
-  }
-};
+    // Detectar tipo MIME por encabezado base64
+    if (base64.startsWith('iVBOR')) {
+      return `data:image/png;base64,${base64}`;
+    } else if (base64.startsWith('/9j/')) {
+      return `data:image/jpeg;base64,${base64}`;
+    } else {
+      // Si no puedes detectar, asume jpeg por defecto
+      return `data:image/jpeg;base64,${base64}`;
+    }
+  };
 
   return (
     <>
@@ -219,7 +219,7 @@ export const GestionsInstructor = () => {
                                 src={getImageSrcFromBase64(instructor?.foto_perfil)}
                                 alt="Instructor"
                                 className="carousel-image"
-                              />                 
+                              />
                             </div>
                           );
                         })
